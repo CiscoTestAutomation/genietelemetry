@@ -11,7 +11,8 @@ import importlib.machinery
 from textwrap import dedent
 
 from ats.topology import loader
-from ats.log import ScreenHandler
+from ats.log import ScreenHandler, managed_handlers, warnings
+
 from ats.log.utils import banner, title, str_shortener
 from ats.datastructures import TreeNode, MetaClassFactory
 
@@ -64,6 +65,7 @@ class Job(object, metaclass = MetaClassFactory):
 
         # store the runtime
         self.runtime = runtime
+        self.runinfo = runtime.runinfo
 
         # store stuff internally
         self.name = os.path.splitext(os.path.basename(testbed_file))[0]
@@ -90,6 +92,22 @@ class Job(object, metaclass = MetaClassFactory):
         Stage to setup the required environment of a job run.
 
         '''
+        self.runinfo.create()
+
+        # always print warnings from pyATS
+        warnings.enable_deprecation_warnings()
+
+        # redirect warnings to logging & stderr
+        warnings.enable_warnings_to_log()
+
+        self.joblog = os.path.join(self.runinfo.runinfo_dir, 
+                                   'MonitorLog.{name}'.format(name = self.name))
+
+        self.tasklog_handler = managed_handlers.tasklog
+
+        self.tasklog_handler.changeFile(self.joblog)
+
+        logging.root.addHandler(self.tasklog_handler)
 
         # start the reporter
         # ------------------
@@ -110,6 +128,9 @@ class Job(object, metaclass = MetaClassFactory):
         # ---------------
         #self.report
 
+        # Close down the JobLog.
+        self.tasklog_handler.close()
+        logging.root.removeHandler(self.tasklog_handler)
 
     def cleanup(self):
         '''Cleanup job environment

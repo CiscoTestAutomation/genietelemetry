@@ -16,6 +16,8 @@ from .results import ERRORED, OK
 from ats.topology import loader
 from ats.utils import sig_handlers
 
+from ats.log import managed_handlers, TaskLogHandler
+
 # tasks are only done using fork
 multiprocessing = __import__('multiprocessing').get_context('fork')
 
@@ -293,6 +295,29 @@ class Task(multiprocessing.Process):
         3. wrap up.
         '''
 
+        self.module_logger = logging.getLogger('geniemonitor')
+        self.task_handler = TaskLogHandler(self.runtime.job.joblog)
+
+        self.module_logger.addHandler(self.task_handler)
+        self.module_logger.addHandler(managed_handlers.screen)
+
+        # do not propagate to root - this is now a different logger
+        # for the task process
+        self.module_logger.propagate = False
+
+        self.tasklog_handler = managed_handlers.tasklog
+        self.tasklog_handler.changeFile('%s/Device.%s' % 
+                                          (self.runtime.directory,
+                                           self.device.name))
+
+        # enable tasklog forking
+        self.tasklog_handler.enableForked()
+
+        logging.root.addHandler(self.tasklog_handler)
+
+        # default to INFO
+        logging.root.setLevel(logging.INFO)
+
         # reporter start task
         # ------------------
         self.reporter.start()
@@ -354,6 +379,13 @@ class Task(multiprocessing.Process):
         # -----------------
         self.reporter.stop()
 
+        self.tasklog_handler.disableForked()
+        logging.root.removeHandler(self.tasklog_handler)
+
+        self.task_handler.close()
+        self.module_logger.removeHandler(self.task_handler)
+        self.module_logger.removeHandler(managed_handlers.screen)
+
         return self.result
 
     def get_result(self, stage, condition=None):
@@ -372,7 +404,6 @@ class Task(multiprocessing.Process):
         # log the error into TaskLog
         logger.error('Caught error during task execution: %s' % self.name)
         logger.error(traceback)
-
 
 
     def start(self):

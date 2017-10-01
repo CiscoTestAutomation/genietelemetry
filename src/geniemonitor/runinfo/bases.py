@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 YY_MM = '%y-%m'
 
+DD_H_M_S = '%d_%H_%M_%S'
+
 class RunInfo(object, metaclass = MetaClassFactory):
     '''RunInfo
 
@@ -80,6 +82,7 @@ class RunInfo(object, metaclass = MetaClassFactory):
         # set defaults & convert to pathlib.Path
         runinfo_dir = Path(self.runinfo_dir or user_runinfo)
         runinfo_dir /= time.strftime(YY_MM, timestamp)
+        runinfo_dir /= time.strftime(DD_H_M_S, timestamp)
 
         # save in string format for compatiblity :\
         self.runinfo_dir = str(runinfo_dir)
