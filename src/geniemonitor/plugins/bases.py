@@ -1,20 +1,95 @@
 import os
 import sys
+import json
 import inspect
 import logging
+
 from datetime import datetime
+
+from ats.log.utils import banner
+from ats.datastructures import OrderableDict, classproperty
+
+from geniemonitor.results import ERRORED, OK
+from geniemonitor.email import TextEmailReport
 
 from .. import utils
 
 from .stages import PluginStage, Scope
 
-from ats.datastructures import classproperty
-from geniemonitor.results import ERRORED, OK
-
 # declare module as infra
 __genie_monitor_infra__ = True
 
 logger = logging.getLogger(__name__)
+
+# default email subject (note, single line)
+DEFAULT_SUBJECT = ('Monitoring Notification - device: {plugin.object.name} '
+                   'status: {plugin.status}')
+
+# default email content (make sure to take a copy)
+DEFAULT_CONTENT = OrderableDict()
+
+DEFAULT_CONTENT['Monitoring Notification'] = '''\
+pyATS Instance   : {plugin.runtime.env.prefix}
+Python Version   : {plugin.runtime.env.python.name}-\
+{plugin.runtime.env.python.version} ({plugin.runtime.env.python.architecture})
+CLI Arguments    : {plugin.runtime.env.argv}
+User             : {plugin.runtime.env.user}
+Host Server      : {plugin.runtime.env.host.name}
+Host OS Version  : {plugin.runtime.env.host.distro} \
+({plugin.runtime.env.host.architecture})
+
+Monitoring Information
+    Testbed Name : {plugin.runtime.testbed.name}
+    Start time   : {plugin.runtime.job.starttime}
+
+{plugin.object.name}
+    Plugin Name : {plugin.name}
+    Status : {plugin.status}
+'''
+
+DEFAULT_CONTENT['Execution Meta'] = '{plugin.get_metas}'
+
+DEFAULT_CONTENT['Traceback'] = '{plugin.get_errors}'
+
+class Notification(TextEmailReport):
+    '''Notification class
+
+    Used as the standard email notification generator. 
+    '''
+
+    def __init__(self,
+                 plugin,
+                 subject = DEFAULT_SUBJECT,
+                 contents = None,
+                 attachment = None):
+        self.plugin = plugin
+        self.subject = subject
+        self.contents = contents or DEFAULT_CONTENT.copy()
+        self.attachment = attachment
+        self.custom_template = None
+
+    def format_subject(self):
+        try:
+            return self.subject.format(plugin = self.plugin)
+        except IndexError:
+            # This can occur if an entry has an embedded {} in it, which
+            # confuses format().
+            return self.subject
+
+    def format_content(self):
+        report = []
+        for title, content in self.contents.items():
+            try:
+                report.append('\n'.join((banner(title),
+                                         content.format(
+                                                    plugin = self.plugin))))
+            except (IndexError, ValueError):
+                # This can occur if an entry has an embedded {} in it, which
+                # confuses format().
+                report.append('\n'.join((banner(title), content)))
+
+        return '\n\n'.join(report)
+
 
 class BasePlugin(object):
     ''' Base class for all plugin'''
@@ -37,11 +112,13 @@ class BasePlugin(object):
 
         # result while running this plugin
         # (multiprocessing aware/shared dictionary)
-        self.results = self.runtime.synchro.dict()
         self.results_meta = self.runtime.synchro.dict()
 
         self.interval = interval
         self.last_execution = None
+        self.report = Notification(plugin = self)
+        self.object = None
+        self.status = OK
 
     @property
     def name(self):
@@ -103,6 +180,17 @@ class BasePlugin(object):
                      % (self.name, self.errors[stage_name]))
         logger.error(self.errors[stage_name])
 
+    @property
+    def get_errors(self):
+        return '\n\n'.join(self.errors.values())
+
+    @property
+    def get_metas(self):
+        metas = []
+        for data in self.results_meta.values():
+            for item in data:
+                metas.append(json.dumps(item, indent=2))
+        return '\n\n'.join(metas)
 
     def has_errors(self, stage = None):
         '''has_errors
@@ -152,6 +240,7 @@ class BasePlugin(object):
             stage (Stage): plugin stage to be run
 
         '''
+        self.object = obj
 
         # catch any bad-stages
         stage = PluginStage(stage)
@@ -165,6 +254,7 @@ class BasePlugin(object):
             return
 
         reporter = obj.reporter.child(self)
+        errors = None
         with reporter:
             # log it
             logger.debug('Running plugin %s: %s' % (repr(self), stage.name))
@@ -195,17 +285,22 @@ class BasePlugin(object):
 
             logger.debug('Finished running plugin %s: %s' % (repr(self), 
                                                              stage.name))
+        self.status = result
+        if result != OK:
+            self.runtime.mailbot.send_notify(self)
         return result
 
     def get_summary_detail(self):
         return {}
 
-    def generate_result_meta(self, now = None, **kwargs):
-        if not kwargs:
+    def generate_result_meta(self, now = None, status = None, **kwargs):
+        if not kwargs and not status:
             return
         if not now:
             now = datetime.now()
-        kwargs.update({'datetime': now.isoformat()})
+        if status is not None:
+            status = str(status)
+        kwargs.update({'datetime': now.isoformat(), 'status': status})
         meta = self.results_meta.get(now, [])
         meta += [kwargs]
         self.results_meta.update({now: meta})

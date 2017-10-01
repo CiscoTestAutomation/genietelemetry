@@ -12,13 +12,12 @@ from textwrap import dedent
 
 from ats.topology import loader
 from ats.log import ScreenHandler
-from ats.results import ResultCounter
 from ats.log.utils import banner, title, str_shortener
 from ats.datastructures import TreeNode, MetaClassFactory
 
-from ats.datastructures import AttrDict
-
 from . import utils, tasks
+from .results import StatusCounter
+from .email import TextEmailReport, PLUGIN_ERROR_SUBJECT
 
 # declare module as infra
 __genie_monitor_infra__ = True
@@ -69,12 +68,12 @@ class Job(object, metaclass = MetaClassFactory):
         # store stuff internally
         self.name = os.path.splitext(os.path.basename(testbed_file))[0]
         self.file = os.path.abspath(testbed_file)
-
+        self.report = TextEmailReport(runtime = runtime)
         # store the reporter
         self.reporter = runtime.reporter.child(self)
 
         # init other stuff
-        self.results = ResultCounter()
+        self.results = StatusCounter()
         self.diags_report = None
         self.starttime = None
         self.stoptime = None

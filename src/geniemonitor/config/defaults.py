@@ -18,6 +18,8 @@ core:
         class: geniemonitor.reporter.HealthReporter
     runinfo:
         class: geniemonitor.runinfo.RunInfo
+    mailbot:
+        class: geniemonitor.email.MailBot
     producer:
         class: geniemonitor.processor.DataProducer
     consumer:
@@ -25,7 +27,7 @@ core:
     connection:
         class: unicon.Unicon
     thresholds:
-        OK: 272h
-        Warning: 252h
-        Critical: 248h
+        OK: 372h
+        Warning: 352h
+        Critical: 348h
 '''

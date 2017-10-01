@@ -26,7 +26,6 @@ class HealthReporter(Reporter):
     def stop(self, *args, **kwargs):
         self.consumer.stop()
         self.producer.stop()
-        logger.info(self.consumer.final_report())
 
     def child(self, job):
 
@@ -57,7 +56,7 @@ class HealthJobReporter(ContextReporter):
         self.producer.stop_monitoring()
 
         # update job results
-        #self.job.results.update(self.client.get_summary_detail())
+        self.job.results.update(self.consumer.get_summary_detail())
 
         self.producer.release_testbed(self.job.name)
 
@@ -100,7 +99,8 @@ class DeviceHealthStatusReporter(ContextReporter):
         self.producer.stop_collecting(self.device.name)
 
         # update job results
-        #elf.task.results.update(self.task.get_summary_detail())
+        #self.device.task.results.update(
+        #            self.consumer.get_summary_detail(device = self.device.name))
 
         # Get AEreport results summary
         #self.job.results['summary'] = self.client.get_summary_test()
@@ -146,16 +146,4 @@ class PluginReporter(ContextReporter):
         # Stop jobexecution
         self.producer.stop_collecting_status(self.plugin.name)
 
-        # update job results
-        #self.plugin.results.update(self.plugin.get_summary_detail())
-
-        # Get AEreport results summary
-        #self.job.results['summary'] = self.client.get_summary_test()
-
-        # generate the report before suite context dies
-        #self.job.diags_report = self.client.generate_diagnostics_report()
-
         self.producer.cleanup_plugin(self.plugin.name)
-
-        # write diags report
-        #self.job.write_diags_report()

@@ -148,3 +148,23 @@ class DataConsumer(Consumer):
             testbed_status += status
         detail['testbed']['status'] = testbed_status
         return detail
+
+    def get_summary_detail(self, device = None):
+        dict_ =  self.consume_from_steam(device = device)
+        device_status = {}
+
+        for data in dict_:
+            dev = data.get('object')
+            status = data.get('content')
+
+            if dev not in device_status:
+                device_status[dev] = OK
+            device_status[dev] += status
+
+        result = {}
+        for dev, status in device_status.items():
+            content = str(status).lower()
+            r_ = getattr(result, content, 0) + 1
+            result.update({content: r_})
+
+        return result

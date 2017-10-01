@@ -38,14 +38,17 @@ class Consumer(object, metaclass = MetaClassFactory):
 
     def hourly_report(self, **kwargs):
         return self._report(hours = 1, **kwargs)
-
-    def final_report(self):
+    @property
+    def health_summary(self):
         return self._report()
 
     def _report(self, datetime_ = None, **kwargs):
         raise NotImplementedError
 
     def get_detail_results(self, **kwargs):
+        raise NotImplementedError
+
+    def get_summary_detail(self, **kwargs):
         raise NotImplementedError
 
 class Producer(object, metaclass = MetaClassFactory):

@@ -15,6 +15,7 @@ from ats.utils import sig_handlers
 from ats.utils.import_utils import import_from_name
 
 from .job import Job
+from .email import MailBot
 from .runinfo import RunInfo
 from .reporter import Reporter
 from .processor import Producer, Consumer
@@ -114,6 +115,7 @@ class GenieMonitorRuntime(object):
         self.reporter = None
         self._length = '1s'
         self.length = 1
+        self.mailbot = None
 
         self.connection = self.configuration.connection
         self.thresholds = self.configuration.thresholds
@@ -145,8 +147,10 @@ class GenieMonitorRuntime(object):
         
         return self.consumer.get_detail_results()
 
-    def _monitor(self, testbed_file = None, loglevel = None,
-             runinfo_dir = None, length = None, meta = False):
+    def _monitor(self, testbed_file = None, loglevel = None, no_mail = False,
+                 mailto = None, mail_subject = None,
+                 no_notify = False, notify_subject = None,
+                 runinfo_dir = None, length = None, meta = False):
         '''_monitor
         '''
         # parse core arguments
@@ -172,36 +176,52 @@ class GenieMonitorRuntime(object):
             raise ValueError('must provide a valid TESTBEDFILE to run')
 
 
-        # 1. runinfo
-        self.runinfo = RunInfo(runtime = self.runtime,
-                               runinfo_dir = runinfo_dir,
-                               **self.configuration.core.runinfo)
-        self.producer = Producer(runtime = self,
-                                 **self.configuration.core.producer)
-        self.consumer = Consumer(runtime = self,
-                                 **self.configuration.core.consumer)
-        # 2. reporter
-        self.reporter = Reporter(runtime = self,
-                                 consumer = self.consumer,
-                                 producer = self.producer,
-                                 **self.configuration.core.reporter)
+        # create core objects
+        # -------------------
+        # 1. mailer/reporter
+        self.mailbot = MailBot(runtime = self.runtime,
+                               from_addrs = self.env.user,
+                               to_addrs = mailto or self.env.user,
+                               subject = mail_subject,
+                               notify_subject = notify_subject,
+                               nomail = no_mail,
+                               nonotify = no_notify,
+                               **self.configuration.core.mailbot)
 
-        # 3. job
-        self.job = Job(testbed_file = testbed_file, runtime = self.runtime,
-                       **self.configuration.core.job)
+        # always email everything
+        # -----------------------
+        with self.mailbot:
+            # 2. runinfo
+            self.runinfo = RunInfo(runtime = self.runtime,
+                                   runinfo_dir = runinfo_dir,
+                                   **self.configuration.core.runinfo)
+            # 3. processor producer/consumer
+            self.producer = Producer(runtime = self,
+                                     **self.configuration.core.producer)
+            self.consumer = Consumer(runtime = self,
+                                     **self.configuration.core.consumer)
+            # 4. reporter
+            self.reporter = Reporter(runtime = self,
+                                     consumer = self.consumer,
+                                     producer = self.producer,
+                                     **self.configuration.core.reporter)
+
+            # 5. job
+            self.job = Job(testbed_file = testbed_file, runtime = self.runtime,
+                           **self.configuration.core.job)
 
 
-        # setup the job
-        # -------------
-        self.job.setup()
+            # setup the job
+            # -------------
+            self.job.setup()
 
-        # run the job
-        # -----------
-        self.job.run()
+            # run the job
+            # -----------
+            self.job.run()
 
-        # finalize the job
-        # ----------------
-        self.job.finalize()
+            # finalize the job
+            # ----------------
+            self.job.finalize()
 
         # cleanup the job
         # ---------------

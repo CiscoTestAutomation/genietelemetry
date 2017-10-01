@@ -102,7 +102,8 @@ class GenieMonitorParser(parser.ArgsPropagationParser):
         # build list of core component classes
         subsystems = [self.runtime.configuration,
                       self.runtime.configuration.core.runinfo['class'],
-                      self.runtime.configuration.core.reporter['class']]
+                      self.runtime.configuration.core.reporter['class'],
+                      self.runtime.configuration.core.mailbot['class']]
 
         subsystems += [p[3] for p in self.runtime.plugins if p[3].parser]
         return subsystems

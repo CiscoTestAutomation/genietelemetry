@@ -85,7 +85,7 @@ def import_thresholds(data):
 config_schema = {
     Optional("plugins"): Use(validate_plugins),
     Optional("core"): {
-        Or('runinfo', 'job', 'reporter', 'connection',
+        Or('runinfo', 'job', 'reporter', 'mailbot', 'connection',
            'consumer', 'producer'): {
             Optional('class'): Use(import_from_name),
             Any(): Any(),
