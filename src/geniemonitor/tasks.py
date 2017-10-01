@@ -51,24 +51,6 @@ class Device(object):
         if self.is_connected():
             self.device.disconnect()
 
-    def keep_alive(self, fallback = None, timeout = 5, timer = 0):
-
-        if timer % 5 > 0:
-            return True
-
-        try:
-            # send 'Enter' key every second to keep alive
-            self.device.execute('\x0D', timeout=timeout)
-
-        except (KeyboardInterrupt, SystemExit, Exception):
-
-            if callable(fallback):
-                fallback(*sys.exc_info())
-
-            return False
-
-        return True
-
 class TaskManager(object):
     '''TaskManager class
 
@@ -339,11 +321,6 @@ class Task(multiprocessing.Process):
                 while self.runtime.length > timer:
 
                     now = datetime.now()
-                    alive = dev.keep_alive(fallback = self.keep_alive_failed,
-                                           timeout = 5,
-                                           timer = timer)
-                    if not alive:
-                        continue
 
                     self.reporter.nop(now)
                     # execute plugin
@@ -368,11 +345,6 @@ class Task(multiprocessing.Process):
                                              context = { 'error': self.error }))
 
         return self.task_finished()
-
-    def keep_alive_failed(self, exc_type, exc_value, tb):
-        # keep_alive_failed
-        # report and try to reconnect for x amount of times
-        pass
 
     def task_finished(self):
 

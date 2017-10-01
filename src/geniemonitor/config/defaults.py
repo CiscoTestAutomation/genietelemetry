@@ -2,8 +2,12 @@
 # (removed file loading for simplicity)
 DEFAULT_CONFIGURATION = '''
 plugins:
-    crashdumps:
+    keepalive:
         interval: 30
+        enabled: True
+        module: geniemonitor.plugins.keepalive
+    crashdumps:
+        interval: 60
         enabled: True
         module: geniemonitor.plugins.crashdumps
 
