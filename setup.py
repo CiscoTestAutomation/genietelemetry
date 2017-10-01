@@ -21,6 +21,14 @@ def find_version(*paths):
         return version_match.group(1)
     raise RuntimeError("Unable to find version string.")
 
+def find_templates(*paths):
+    '''finds all template files'''
+    files = []
+    for (dirpath, dirnames, filenames) in os.walk(os.path.join(*paths)):
+        files.append((dirpath, [os.path.join(dirpath, f) for f in filenames]))
+
+    return files
+
 # compute version range
 # For example, range >= 3.0.0 < 3.1.0
 #
@@ -128,7 +136,7 @@ setup(
     # format:
     #   [('target', ['list', 'of', 'files'])]
     # where target is sys.prefix/<target>
-    data_files = [],
+    data_files = find_templates('template'),
     
     # non zip-safe (never tested it)
     zip_safe = False,
