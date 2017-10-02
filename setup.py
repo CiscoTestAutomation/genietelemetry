@@ -137,7 +137,7 @@ setup(
     # format:
     #   [('target', ['list', 'of', 'files'])]
     # where target is sys.prefix/<target>
-    data_files = find_templates('template'),
+    data_files = find_templates('templates'),
     
     # non zip-safe (never tested it)
     zip_safe = False,
