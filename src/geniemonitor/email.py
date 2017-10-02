@@ -42,7 +42,6 @@ Please investigate the traceback below before raising issue to pyats-support.
 --------------------------------------------------------------------------------
 
 pyATS Instance   : {runtime.env.prefix}
-Tcl-ATS Tree     : {runtime.env.ats}
 Python Version   : {runtime.env.python.name}-{runtime.env.python.version} \
 ({runtime.env.python.architecture})
 CLI Arguments    : {runtime.env.argv}

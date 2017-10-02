@@ -243,6 +243,9 @@ class PluginManager(object):
             list of discovered and loaded plugins
         '''
 
+        self._plugins = []
+        self._stacks = {}
+
         # sort plugin by order into list
         plugins = sorted(data.items())
 

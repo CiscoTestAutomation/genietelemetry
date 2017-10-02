@@ -116,6 +116,7 @@ setup(
                          'unicon',
                          'abstract',
                          'ascii_graph',
+                         'parsergen',
                         ],
 
     # any additional groups of dependencies.

@@ -15,10 +15,12 @@ def validate_plugins(data):
             assert type(config) is dict
 
             assert 'module' in config
+
             assert type(config['module']) is str
 
-            # by default all plugins are always enabled
+            # by default all plugins are always enabled and 30 seconds interval
             config.setdefault('enabled', True)
+            config.setdefault('interval', 30)
 
             # build the plugin arguments
             # If user given any arg not defined in the yaml file,

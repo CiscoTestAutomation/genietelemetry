@@ -1,12 +1,11 @@
 import os
 import sys
-import time
-import pathlib
+import copy
 import getpass
 import logging
 import weakref
 import platform
-import traceback
+import tempfile
 
 from ats.datastructures import AttrDict
 
@@ -147,8 +146,8 @@ class GenieMonitorRuntime(object):
         
         return self.consumer.get_detail_results()
 
-    def _monitor(self, testbed_file = None, loglevel = None, no_mail = False,
-                 mailto = None, mail_subject = None,
+    def _monitor(self, testbed_file = None, loglevel = None,
+                 no_mail = False, mailto = None, mail_subject = None,
                  no_notify = False, notify_subject = None,
                  runinfo_dir = None, length = None, meta = False):
         '''_monitor
@@ -174,7 +173,6 @@ class GenieMonitorRuntime(object):
         # ----------------------
         if not testbed_file:
             raise ValueError('must provide a valid TESTBEDFILE to run')
-
 
         # create core objects
         # -------------------
@@ -274,8 +272,9 @@ def main():
         sys.exit(1)
 
 
-def monitor(configuration = None, *args, **kwargs):
-    '''run api
+def monitor(runtime = None, configuration = None,
+            plugins = {}, *args, **kwargs):
+    '''monitor api
 
     Shortcut function to start a Monitor job, wait for it to finish, and
     return the result to the caller. This api avoids the overhead of having
@@ -291,7 +290,14 @@ def monitor(configuration = None, *args, **kwargs):
     -------
         the task's result code
     '''
-    default_runtime = GenieMonitorRuntime()
+    default_runtime = runtime or GenieMonitorRuntime()
+
     if configuration:
         default_runtime.configuration.load(configuration)
+
+    if plugins:
+        plugins = copy.deepcopy(plugins)
+        default_runtime.configuration.update_plugins(plugins)
+        default_runtime.plugins.load(default_runtime.configuration.plugins)
+
     return default_runtime.monitor(*args, **kwargs)

@@ -4,6 +4,7 @@ from ats.datastructures import AttrDict, classproperty
 
 from .loader import ConfigLoader
 from .defaults import DEFAULT_CONFIGURATION
+from .schema import validate_plugins
 from ats.utils.dicts import recursive_update
 
 # declare module as infra
@@ -63,3 +64,6 @@ class Configuration(object):
         recursive_update(self.plugins, config.get('plugins', {}))
         recursive_update(self.connection, self.core.get('connection', {}))
         recursive_update(self.thresholds, self.core.get('thresholds', {}))
+
+    def update_plugins(self, plugins = {}):
+        self.plugins = AttrDict(validate_plugins(plugins))
