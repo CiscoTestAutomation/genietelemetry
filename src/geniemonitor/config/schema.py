@@ -88,7 +88,7 @@ config_schema = {
     Optional("plugins"): Use(validate_plugins),
     Optional("core"): {
         Or('runinfo', 'job', 'reporter', 'mailbot', 'connection',
-           'consumer', 'producer'): {
+           'consumer', 'producer', 'switch'): {
             Optional('class'): Use(import_from_name),
             Any(): Any(),
         },

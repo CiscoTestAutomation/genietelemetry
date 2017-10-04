@@ -272,8 +272,8 @@ class MailBot(object, metaclass = MetaClassFactory):
         Overrides -mailto command-line argument. Can be used to modify mailto
         during runtime
         '''
-        if self.runtime.env.user not in list:
-            list.append(self.runtime.env.user)
+        # if self.runtime.env.user not in list:
+        #     list.append(self.runtime.env.user)
 
         # convert email addresses into Address objects
         self.to_addrs = list

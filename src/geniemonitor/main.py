@@ -17,13 +17,13 @@ from .job import Job
 from .email import MailBot
 from .runinfo import RunInfo
 from .reporter import Reporter
+from .switch import Switch
 from .processor import Producer, Consumer
 from .parser import GenieMonitorParser
 from .config.manager import Configuration
 from .plugins.manager import PluginManager
 from .tasks import TaskManager
 from .utils import filter_exception
-from .config.schema import import_threshold
 
 from ascii_graph import Pyasciigraph
 
@@ -39,8 +39,7 @@ logger = logging.getLogger(__name__)
 
 class GenieMonitorRuntime(object):
 
-    def __init__(self,
-                 configuration = None):
+    def __init__(self, configuration = None, uid = None):
         '''Built-in __init__
 
         Initializes GenieMonitor object with default values required for the
@@ -112,15 +111,16 @@ class GenieMonitorRuntime(object):
         self.job = None
         self.runinfo = None
         self.reporter = None
-        self._length = '1s'
-        self.length = 1
+
         self.mailbot = None
+        self.switch = None
 
         self.connection = self.configuration.connection
         self.thresholds = self.configuration.thresholds
 
         self.graph = Pyasciigraph()
-        self.show_meta = False
+        self.keep_alive = False
+        self.uid = uid
 
     def main(self, *args, **kwargs):
         '''run
@@ -149,7 +149,8 @@ class GenieMonitorRuntime(object):
     def _monitor(self, testbed_file = None, loglevel = None,
                  no_mail = False, mailto = None, mail_subject = None,
                  no_notify = False, notify_subject = None,
-                 runinfo_dir = None, length = None, meta = False):
+                 keep_alive = False, length = None,
+                 runinfo_dir = None, meta = False, uid = None):
         '''_monitor
         '''
         # parse core arguments
@@ -160,10 +161,6 @@ class GenieMonitorRuntime(object):
         # ----------------------
         testbed_file = testbed_file or args.testbed_file
         loglevel = loglevel or args.loglevel
-
-        self._length = length or args.length
-        self.length = import_threshold(self._length).seconds
-        self.show_meta = args.meta or meta
         
         # configure logging level
         # ------------------------------
@@ -185,6 +182,10 @@ class GenieMonitorRuntime(object):
                                nomail = no_mail,
                                nonotify = no_notify,
                                **self.configuration.core.mailbot)
+
+        self.switch = Switch(runtime = self.runtime,
+                             keep_alive = keep_alive, length = length,
+                             meta = meta, **self.configuration.core.switch)
 
         # always email everything
         # -----------------------
@@ -208,6 +209,7 @@ class GenieMonitorRuntime(object):
             self.job = Job(testbed_file = testbed_file, runtime = self.runtime,
                            **self.configuration.core.job)
 
+            self.uid = uid or args.uid or self.uid or self.job.name
 
             # setup the job
             # -------------
@@ -248,6 +250,33 @@ class GenieMonitorRuntime(object):
         '''
 
         return self.job.testbed if self.job else None
+
+    @property
+    def show_meta(self):
+        '''property: show_meta
+
+        shortcut redirect to switch.meta
+        '''
+
+        return self.switch.meta if self.switch else None
+
+    @property
+    def length(self):
+        '''property: show_meta
+
+        shortcut redirect to switch.length
+        '''
+
+        return self.switch.length if self.switch else 1
+
+    @property
+    def length_label(self):
+        '''property: show_meta
+
+        shortcut redirect to switch._length
+        '''
+
+        return self.switch._length if self.length != 1 else 'On Demand'
 
 def main():
     '''command line entry point

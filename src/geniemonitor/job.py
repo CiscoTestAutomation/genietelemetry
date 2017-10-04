@@ -206,10 +206,7 @@ class Job(object, metaclass = MetaClassFactory):
         5. run post-job plugins
         '''
         logger.info('Starting monitoring job for testbed: %s' % self.name)
-        if self.runtime.length != 1:
-            logger.info('Monitoring length: %s' % self.runtime._length)
-        else:
-            logger.info('Monitoring type: On Demand')
+        logger.info('Monitoring length: %s' % self.runtime.length_label)
         logger.info('-' * 80)
 
         # prepare plugins

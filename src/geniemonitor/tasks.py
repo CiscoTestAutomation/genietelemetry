@@ -337,13 +337,17 @@ class Task(multiprocessing.Process):
             sys.stdin = open('/dev/stdin')
 
         try:
+            if not self.runtime.switch.monitor(self.device):
+                logger.info("Monitoring Skipped on %s" % self.device.name)
+                return self.task_finished()
+
             with self.device as dev:
                 if not dev.is_connected():
                     self.result = ERRORED
                     return self.task_finished()
 
                 timer = 0
-                while self.runtime.length > timer:
+                while self.runtime.switch.on(dev, timer):
 
                     now = datetime.now()
 

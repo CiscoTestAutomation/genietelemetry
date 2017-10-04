@@ -177,6 +177,8 @@ class PluginManager(object):
         name, plugin_module, plugin_kwargs, _ = plugin
         
         logger.info(' - loading plugin %s' % name)
+
+        plugin_kwargs['module'] = plugin_module
         mod = getattr(plugin_module, '__abstract_pkg', None)
         if mod:
             module = Lookup.from_device(obj, packages={ name: mod })

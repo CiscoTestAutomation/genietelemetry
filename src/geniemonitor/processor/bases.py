@@ -30,14 +30,12 @@ class Consumer(object, metaclass = MetaClassFactory):
     def consume_from_steam(self, *args, **kwargs):
         raise NotImplementedError
 
-    def peek_datetime_range(self, datetime, delta):
-        raise NotImplementedError
-
     def minute_report(self, **kwargs):
         return self._report(minutes = 1, **kwargs)
 
     def hourly_report(self, **kwargs):
         return self._report(hours = 1, **kwargs)
+
     @property
     def health_summary(self):
         return self._report()

@@ -58,31 +58,12 @@ class GenieMonitorParser(parser.ArgsPropagationParser):
                           action = "store",
                           help = 'testbed file to be monitored')
 
-        monitor_grp = self.add_argument_group('Monitor')
-        monitor_grp.add_argument('-length',
-                                 action = "store",
-                                 default = '1s',
-                                 help = 'Specify monitor length, in XhYmZs '
-                                        'format,\nie: 5m20s, default to '
-                                        'on demand request')
-        monitor_grp.add_argument('-meta',
-                                 action = "store_true",
-                                 default = False,
-                                 help = 'Specify show plugin result meta')
-        '''
-        # webserver args
+        # uid args
         # ------------
-        self.add_argument('-webserver',
-                             action = "store_true",
-                             default = False, 
-                             help = 'enable webserver')
-        # webserver args
-        # ------------
-        self.add_argument('-db_enable',
-                             action = "store_true",
-                             default = False, 
-                             help = 'enable database')'''
-
+        self.add_argument('-uid',
+                          action = "store",
+                          default = None,
+                          help = 'Specify monitoring job uid')
         # modify titles
         self._optionals.title = 'Optional Arguments'
         self._positionals.title = 'Positional Arguments'
@@ -103,7 +84,8 @@ class GenieMonitorParser(parser.ArgsPropagationParser):
         subsystems = [self.runtime.configuration,
                       self.runtime.configuration.core.runinfo['class'],
                       self.runtime.configuration.core.reporter['class'],
-                      self.runtime.configuration.core.mailbot['class']]
+                      self.runtime.configuration.core.mailbot['class'],
+                      self.runtime.configuration.core.switch['class']]
 
         subsystems += [p[3] for p in self.runtime.plugins if p[3].parser]
         return subsystems

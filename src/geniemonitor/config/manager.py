@@ -1,4 +1,3 @@
-
 from ats.utils import parser as argparse
 from ats.datastructures import AttrDict, classproperty
 

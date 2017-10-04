@@ -94,7 +94,7 @@ class Notification(TextEmailReport):
 class BasePlugin(object):
     ''' Base class for all plugin'''
 
-    def __init__(self, runtime, interval = None):
+    def __init__(self, runtime, interval = None, module = None):
         '''__init__
 
         initializes basic information about a plugin
@@ -119,6 +119,7 @@ class BasePlugin(object):
         self.report = Notification(plugin = self)
         self.object = None
         self.status = OK
+        self.module = module
 
     @property
     def name(self):
@@ -252,6 +253,12 @@ class BasePlugin(object):
         if not method:
             # stage not defined, do nothing.
             return
+
+        if not self.runtime.switch.monitor(device = self.object,
+                                           plugin = self):
+            logger.info("Monitoring Skipped on Plugin %s" % self.name)
+            self.status = OK
+            return self.status
 
         reporter = obj.reporter.child(self)
         errors = None

@@ -24,6 +24,8 @@ core:
         class: geniemonitor.processor.DataProducer
     consumer:
         class: geniemonitor.processor.DataConsumer
+    switch:
+        class: geniemonitor.switch.Switch
     connection:
         class: unicon.Unicon
     thresholds:
