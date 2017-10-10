@@ -1,5 +1,5 @@
 '''
-GenieMonitor Traceback Plugin.
+GenieMonitor Traceback Check Plugin.
 '''
 
 # ATS
@@ -11,26 +11,26 @@ from geniemonitor.plugins.bases import BasePlugin
 
 class Plugin(BasePlugin):
 
-    __plugin_name__ = 'Traceback Plugin'
+    __plugin_name__ = 'Traceback Check Plugin'
 
     @classproperty
     def parser(cls):
         parser = argparse.ArgsPropagationParser(add_help = False)
-        parser.title = 'Traceback'
+        parser.title = 'Traceback Check'
         
         # include_pattern args
         # --------------------
         parser.add_argument('-include_pattern',
-                            action="store_true",
-                            default='Traceback',
+                            action="store",
+                            default=[],
                             help='Specify which patterns to include when '
                                  'checking tracebacks')
 
         # exclude_pattern args
         # --------------------
-        parser.add_argument('-include_pattern',
-                            action="store_true",
-                            default='Warning',
+        parser.add_argument('-exclude_pattern',
+                            action="store",
+                            default=[],
                             help='Specify which patterns to exclude when '
                                  'checking tracebacks')
 
@@ -38,7 +38,7 @@ class Plugin(BasePlugin):
         # --------
         parser.add_argument('-clean_up',
                             action="store_true",
-                            default=False,
+                            default=True,
                             help='Specify whether to clear all warnings and '
                                  'tracebacks after reporting error')
 
