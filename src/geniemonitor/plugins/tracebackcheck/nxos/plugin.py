@@ -31,8 +31,6 @@ class Plugin(BasePlugin):
         # Default keywords: 'Traceback', 'ERROR' & 'WARNING'
         default_include = ['Traceback', 'ERROR', 'WARNING']
 
-        # Increase timeout buffer incase of large output
-
         # Execute 'show logging logfile'
         output = device.execute('show logging logfile')
         if not output:
@@ -67,8 +65,6 @@ class Plugin(BasePlugin):
             except Exception as e:
                 logger.error("\nClear logging execution failed")
                 status_ += ERRORED
-
-        # Reset timeout buffer
 
         # Final status
         data = dict(object = device.name, status = status_, result = output)
