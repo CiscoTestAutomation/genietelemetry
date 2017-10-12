@@ -88,10 +88,12 @@ class Plugin(BasePlugin):
             matched_lines = []
             for line in output.splitlines():
                 if re.search(pattern, line.strip(), re.IGNORECASE):
+                    if 'patterns' not in matched_patterns_dict:
+                        matched_patterns_dict['patterns'] = {}
                     if pattern not in matched_patterns_dict:
-                        matched_patterns_dict[pattern] = {}
+                        matched_patterns_dict['patterns'][pattern] = {}
                     matched_lines.append(line)
-                    matched_patterns_dict[pattern] = matched_lines
+                    matched_patterns_dict['patterns'][pattern] = matched_lines
                     status_ += CRITICAL
                     logger.error("\nMatched pattern '{pattern}' in line:\n'{line}'".\
                                  format(pattern=pattern, line=line))
