@@ -15,7 +15,7 @@ from ats.datastructures import classproperty
 # GenieMonitor
 #from ..plugin import Plugin as BasePlugin
 from geniemonitor.plugins.bases import BasePlugin
-from geniemonitor.results import OK, WARNING, ERRORED, PARTIAL
+from geniemonitor.results import OK, WARNING, ERRORED, PARTIAL, CRITICAL
 
 # module logger
 logger = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ class Plugin(BasePlugin):
         # --------------------
         parser.add_argument('-include_pattern',
                             action="store",
-                            default=[],
+                            default='',
                             help='Specify which patterns to include when '
                                  'checking tracebacks')
 
@@ -42,15 +42,15 @@ class Plugin(BasePlugin):
         # --------------------
         parser.add_argument('-exclude_pattern',
                             action="store",
-                            default=[],
+                            default='',
                             help='Specify which patterns to exclude when '
                                  'checking tracebacks')
 
         # clean_up
         # --------
         parser.add_argument('-clean_up',
-                            action="store_true",
-                            default=True,
+                            action="store",
+                            default=False,
                             help='Specify whether to clear all warnings and '
                                  'tracebacks after reporting error')
 
@@ -65,7 +65,7 @@ class Plugin(BasePlugin):
 
         # Init
         status_= OK
-        traceback_found = False
+        matched_patterns_dict = {}
         # Default keywords
         default_include = ['Traceback', 'ERROR', 'WARNING']
 
@@ -76,24 +76,28 @@ class Plugin(BasePlugin):
 
         # Parse 'show logging logfile' output for keywords in include_pattern
         # Omit keywords specified in exclude_pattern
-        include = self.args.include_pattern + default_include
+        include = self.args.include_pattern.split(', ') + default_include
 
         # Final list of keywords to check
         for item in include:
-            if item in self.args.exclude_pattern:
+            if item in self.args.exclude_pattern.split(', '):
                 include.remove(item)
 
         # Parse each line for keywords
-        for line in output.splitlines():
-            for pattern in include:
+        for pattern in include:
+            matched_lines = []
+            for line in output.splitlines():
                 if re.search(pattern, line.strip(), re.IGNORECASE):
-                    traceback_found = True
-                    logger.error("\nFound pattern '{pattern}' in"
-                                 " 'show logging logfile' output".\
-                                 format(pattern=pattern))
+                    if pattern not in matched_patterns_dict:
+                        matched_patterns_dict[pattern] = {}
+                    matched_lines.append(line)
+                    matched_patterns_dict[pattern] = matched_lines
+                    status_ += CRITICAL
+                    logger.error("\nMatched pattern '{pattern}' in line:\n'{line}'".\
+                                 format(pattern=pattern, line=line))
 
         # Log message to user
-        if not traceback_found:
+        if not matched_patterns_dict:
             logger.info("\n\n***** No traceback patterns matched *****\n\n")
 
         # Clear logging (if user specified)
@@ -105,6 +109,6 @@ class Plugin(BasePlugin):
                 status_ += ERRORED
 
         # Final status
-        data = dict(object = device.name, status = status_, result = output)
+        data = dict(object = device.name, status = status_, result = matched_patterns_dict)
         self.generate_result_meta(now = execution_time, **data)
         return status_
