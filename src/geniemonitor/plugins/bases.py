@@ -270,11 +270,10 @@ class BasePlugin(object):
             result = None
             now = datetime.now()
             try:
-                # call it and pass in the first argument
-                if inspect.getargspec(method).args[1:]:
-                    result = method(obj, now)
-                else:
-                    result = method(now)
+                # call it and pass in the arguments
+                len_args = len(inspect.getargspec(method).args[1:])
+                args = [obj, now][:len_args]
+                result = method(*args)
 
             except Exception as e:
                 # handle the error!

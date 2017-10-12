@@ -30,8 +30,7 @@ PYTHON        = python
 TESTCMD       = python -m unittest discover tests
 DISTDIR       = $(BUILDDIR)/dist
 
-.PHONY: clean package distribute develop undevelop populate_dist_dir help\
-        docs pubdocs tests
+.PHONY: clean package distribute develop undevelop help docs tests
 
 help:
 	@echo "Please use 'make <target>' where <target> is one of"
@@ -106,6 +105,15 @@ distribute:
 	@test -d $(DISTDIR) || { echo "Nothing to distribute! Exiting..."; exit 1; }
 	@ssh -q $(PROD_USER) 'test -e $(PROD_PKGS)/$(PKG_NAME) || mkdir $(PROD_PKGS)/$(PKG_NAME)'
 	@scp $(DISTDIR)/* $(PROD_USER):$(PROD_PKGS)/$(PKG_NAME)/
+	@echo ""
+	@echo "Done."
+	@echo ""
+
+docs:
+	@echo ""
+	@echo "--------------------------------------------------------------------"
+	@echo "Redirecting make docs to ./docs"
+	@cd ./docs && make docs
 	@echo ""
 	@echo "Done."
 	@echo ""

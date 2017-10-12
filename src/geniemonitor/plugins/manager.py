@@ -193,8 +193,10 @@ class PluginManager(object):
                 raise
         else:
             module = plugin_module
-
-        plugin_cls = attrgetter('{}.Plugin'.format(name))(module)
+        try:
+            plugin_cls = attrgetter('{}.Plugin'.format(name))(module)
+        except AttributeError:
+            plugin_cls = attrgetter('Plugin')(module)
 
         return plugin_cls(**plugin_kwargs)
 
