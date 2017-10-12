@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import yaml
 import inspect
 import logging
 
@@ -188,9 +189,9 @@ class BasePlugin(object):
     @property
     def get_metas(self):
         metas = []
-        for data in self.results_meta.values():
-            for item in data:
-                metas.append(json.dumps(item, indent=2))
+        if self.runtime.show_meta:
+            metas.append(yaml.dump(dict(self.results_meta),
+                                   default_flow_style=False))
         return '\n\n'.join(metas)
 
     def has_errors(self, stage = None):

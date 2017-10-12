@@ -29,7 +29,7 @@ core:
     connection:
         class: unicon.Unicon
     thresholds:
-        OK: 372h
-        Warning: 352h
-        Critical: 348h
+        OK: 72h
+        Warning: 48h
+        Critical: 24h
 '''

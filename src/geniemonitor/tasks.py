@@ -337,34 +337,32 @@ class Task(multiprocessing.Process):
             sys.stdin = open('/dev/stdin')
 
         try:
-            if not self.runtime.switch.monitor(self.device):
-                logger.info("Monitoring Skipped on %s" % self.device.name)
-                return self.task_finished()
+            timer = 0
+            while self.runtime.switch.on(self.device, timer):
+                with self.device as dev:
+                    if not dev.is_connected():
+                        self.result = ERRORED
+                        return self.task_finished()
+                    while self.runtime.switch.on(dev, timer):
 
-            with self.device as dev:
-                if not dev.is_connected():
-                    self.result = ERRORED
-                    return self.task_finished()
+                        now = datetime.now()
 
-                timer = 0
-                while self.runtime.switch.on(dev, timer):
+                        self.reporter.nop(now)
+                        # execute plugin
+                        # --------
+                        self.runtime.plugins.run(dev, now = now,
+                                                 stage = PluginStage.execution)
 
-                    now = datetime.now()
-
-                    self.reporter.nop(now)
-                    # execute plugin
-                    # --------
-                    self.runtime.plugins.run(dev, now = now,
-                                             stage = PluginStage.execution)
-
-                    later = datetime.now()
-                    difference = later - now
-                    difference = difference.days * SECONDS_PER_DAY + \
+                        later = datetime.now()
+                        difference = later - now
+                        difference = difference.days * SECONDS_PER_DAY + \
                                                               difference.seconds
-                    timer += difference + SLEEP_INTERVAL
-                    time.sleep(SLEEP_INTERVAL)
+                        timer += difference + SLEEP_INTERVAL
+                        time.sleep(SLEEP_INTERVAL)
 
-        except (KeyboardInterrupt, SystemExit, Exception) as e:
+        except (KeyboardInterrupt, SystemExit):
+            pass
+        except Exception as e:
             # handle error
             self.error_handler(e)
             self.runtime.producer.push_to_steam(

@@ -181,7 +181,16 @@ class PluginManager(object):
         plugin_kwargs['module'] = plugin_module
         mod = getattr(plugin_module, '__abstract_pkg', None)
         if mod:
-            module = Lookup.from_device(obj, packages={ name: mod })
+            if not getattr(obj, 'os', None):
+                raise AttributeError('%s attribute [os] is missing in yaml'
+                                                                          % obj)
+            if not getattr(obj, 'custom', None): 
+                raise AttributeError('%s custom abstraction is missing in '
+                                     'yaml' % obj)
+            try:
+                module = Lookup.from_device(obj, packages={ name: mod })
+            except Exception:
+                raise
         else:
             module = plugin_module
 

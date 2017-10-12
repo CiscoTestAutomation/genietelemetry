@@ -1,3 +1,4 @@
+import yaml
 from .bases import Consumer
 from datetime import datetime, timedelta
 
@@ -71,7 +72,8 @@ class DataConsumer(Consumer):
             if context_:
                 for c in context_:
                     meta.append('plugin: %s'% context.get('plugin', None))
-                    meta.append('meta: %s'% str(c))
+                    meta.append('%s'% yaml.dump({'meta':c},
+                                   default_flow_style=False))
                     meta.append('=' * 80)
         status_groups = {}
 

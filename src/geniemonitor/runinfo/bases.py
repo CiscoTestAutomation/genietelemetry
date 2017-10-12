@@ -94,4 +94,5 @@ class RunInfo(object, metaclass = MetaClassFactory):
         """
         # setup runinfo folder
         # (should not pre-exist)
-        Path(self.runinfo_dir).mkdir(parents = True)
+        if not Path(self.runinfo_dir).exists():
+            Path(self.runinfo_dir).mkdir(parents = True)
