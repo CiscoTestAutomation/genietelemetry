@@ -11,6 +11,7 @@ from datetime import datetime
 # ATS
 from ats.utils import parser as argparse
 from ats.datastructures import classproperty
+from ats.log.utils import banner
 
 # GenieMonitor
 #from ..plugin import Plugin as BasePlugin
@@ -54,14 +55,18 @@ class Plugin(BasePlugin):
                             help='Specify whether to clear all warnings and '
                                  'tracebacks after reporting error')
 
+        # timeout
+        # -------
+        parser.add_argument('-timeout',
+                            action="store",
+                            default=300,
+                            help='Specify duration (in seconds) to wait before '
+                                 'timing out execution of a command')
+
         return parser
 
 
     def execution(self, device, execution_time):
-
-        # Check device is connected
-        if not device.is_connected():
-            return ERRORED
 
         # Init
         status_= OK
@@ -70,7 +75,7 @@ class Plugin(BasePlugin):
         default_include = ['Traceback', 'ERROR', 'WARNING']
 
         # Execute command to check for tracebacks - timeout set to 5 mins
-        output = device.execute(self.show_cmd, timeout=300)
+        output = device.execute(self.show_cmd, timeout=self.args.timeout)
         if not output:
             return ERRORED
 
@@ -95,12 +100,12 @@ class Plugin(BasePlugin):
                     matched_lines.append(line)
                     matched_patterns_dict['patterns'][pattern] = matched_lines
                     status_ += CRITICAL
-                    logger.error("\nMatched pattern '{pattern}' in line:\n'{line}'".\
-                                 format(pattern=pattern, line=line))
+                    logger.error(banner("\nMatched pattern '{pattern}' in line:\n'{line}'".\
+                                 format(pattern=pattern, line=line)))
 
         # Log message to user
         if not matched_patterns_dict:
-            logger.info("\n\n***** No traceback patterns matched *****\n\n")
+            logger.info(banner("\n\n***** No traceback patterns matched *****\n\n"))
 
         # Clear logging (if user specified)
         if self.args.clean_up:
@@ -111,6 +116,6 @@ class Plugin(BasePlugin):
                 status_ += ERRORED
 
         # Final status
-        data = dict(object = device.name, status = status_, result = matched_patterns_dict)
-        self.generate_result_meta(now = execution_time, **data)
+        data = dict(device = device.name, status = status_, traceback = matched_patterns_dict)
+        self.generate_result_meta(**data)
         return status_
