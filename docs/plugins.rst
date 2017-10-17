@@ -182,11 +182,10 @@ exception.
 Plugin Meta Data
 ----------------
 
-By default, plugin meta data is collected by
-``BasePlugin.generate_result_meta()`` method, which stores any python picklable
-value and display at notification or final report when ``-meta`` argument is
-used. Plugin developers may overwrite this method to develop custom meta data
-handling logic.
+By default, plugin meta data is collected through ``HealthStatus.meta`` method,
+which stores any python picklable value and display at notification or final
+report when ``-meta`` argument is used. Plugin developers may overwrite this
+method to develop custom meta data handling logic.
 
 
 Plugin Template

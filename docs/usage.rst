@@ -79,6 +79,8 @@ directly as part of the user PATH after activating your instance.
 
     Runinfo:
       -runinfo_dir          specify alternate runinfo directory
+      -archive_dir          specify alternate archive directory
+      -no_archive           disable archive creation
 
     Mailing:
       -no_mail              disable report email notifications
@@ -133,6 +135,8 @@ processed using python `argparse`_ module.
     ``-uid``, "unique id from upper systems identifying this run"
     ``-loglevel``, "specify the output log level for GenieMonitor"
     ``-runinfo_dir``, "specify alternative runtime info directory location"
+    ``-archive_dir``, "specify alternative archive info directory location"
+    ``-no_archive``, "flag, disables archive creation"
     ``-no_mail``, "flag, disables email notification at the end of run"
     ``-mailto``, "specify the list of email notification recipients."
     ``-mail_subject``, "email notification subject line."
@@ -248,6 +252,20 @@ processed using python `argparse`_ module.
 
         bash$ easypy /path/to/jobfile.py -runinfo_dir /my/runinfo/directory
 
+``-archive_dir``
+    Specifies an alternative location for ``easypy`` execution ``archive``
+    directory.
+
+    .. code-block:: bash
+
+        bash$ easypy /path/to/jobfile.py -archive_dir /my/archive/directory
+
+``-no_archive``
+    Flag, disables archive creation
+
+    .. code-block:: bash
+
+        bash$ easypy /path/to/jobfile.py -no_archive
 
 ``-meta``
     Flag, enables to show plugin meta data for notification and report.
