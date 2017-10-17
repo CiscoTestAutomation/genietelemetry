@@ -11,6 +11,7 @@ class PluginStage(Enum):
     pre_execution = 'pre_execution'
     execution = "execution"
     post_execution = 'post_execution'
+    finished = "finished"
 
     @property
     def is_pre(self):

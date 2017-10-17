@@ -1,4 +1,6 @@
+import json
 import logging
+from pathlib import Path
 from datetime import datetime
 
 from .bases import Producer
@@ -17,15 +19,21 @@ class DataProducer(Producer):
             return
         '''
         { datetime: datetime
-          object: device
-          content: health status
+          device: device
+          status: health status
           context: plugin meta data }'''
 
         datetime_ = data.get('datetime', datetime.now())
-
+        device = data.get('device', None)
         obj = dict(datetime = datetime_.isoformat(),
-                   object = data.get('object', None),
-                   content = data.get('content', ERRORED),
+                   device = device,
+                   status = data.get('status', ERRORED),
                    context = data.get('context', {}))
-
         self.runtime.context[datetime_] = obj
+
+        file = Path(self.runtime.runinfo.runinfo_dir)
+        file /= "Device.%s.meta.%s" % (device, datetime_.timestamp())
+        with open(str(file), "a+") as yaml_file:
+            json.dump(obj, yaml_file,
+                      default = lambda o: o.__dict__,
+                      indent = 4, sort_keys = True)

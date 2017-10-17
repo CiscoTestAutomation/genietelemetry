@@ -124,9 +124,8 @@ class Job(object, metaclass = MetaClassFactory):
         # ----------------
         self.runtime.reporter.stop()
 
-        # generate report
-        # ---------------
-        #self.report
+        # create the archive dir
+        self.runinfo.archive()
 
         # Close down the JobLog.
         self.tasklog_handler.close()

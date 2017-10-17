@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import yaml
 import inspect
 import logging
 
@@ -30,13 +31,9 @@ DEFAULT_CONTENT = OrderableDict()
 
 DEFAULT_CONTENT['Monitoring Notification'] = '''\
 pyATS Instance   : {plugin.runtime.env.prefix}
-Python Version   : {plugin.runtime.env.python.name}-\
-{plugin.runtime.env.python.version} ({plugin.runtime.env.python.architecture})
 CLI Arguments    : {plugin.runtime.env.argv}
 User             : {plugin.runtime.env.user}
 Host Server      : {plugin.runtime.env.host.name}
-Host OS Version  : {plugin.runtime.env.host.distro} \
-({plugin.runtime.env.host.architecture})
 
 Monitoring Information
     Testbed Name : {plugin.runtime.testbed.name}
@@ -47,9 +44,11 @@ Monitoring Information
     Status : {plugin.status}
 '''
 
-DEFAULT_CONTENT['Execution Meta'] = '{plugin.get_metas}'
+DEFAULT_CONTENT['Plugin Snapshot'] = '{plugin.get_snapshot}'
 
-DEFAULT_CONTENT['Traceback'] = '{plugin.get_errors}'
+DEFAULT_CONTENT['Status Meta'] = '{plugin.get_meta}'
+
+DEFAULT_CONTENT['Exception Traceback'] = '{plugin.get_errors}'
 
 class Notification(TextEmailReport):
     '''Notification class
@@ -109,10 +108,6 @@ class BasePlugin(object):
         # error caught while running this plugin
         # (multiprocessing aware/shared dictionary)
         self.errors = self.runtime.synchro.dict()
-
-        # result while running this plugin
-        # (multiprocessing aware/shared dictionary)
-        self.results_meta = self.runtime.synchro.dict()
 
         self.interval = interval
         self.last_execution = None
@@ -186,12 +181,20 @@ class BasePlugin(object):
         return '\n\n'.join(self.errors.values())
 
     @property
-    def get_metas(self):
+    def get_meta(self):
         metas = []
-        for data in self.results_meta.values():
-            for item in data:
-                metas.append(json.dumps(item, indent=2))
+        if self.runtime.show_meta:
+            metas.append(json.dumps(self.status.meta, indent = 4))
         return '\n\n'.join(metas)
+
+    @property
+    def get_snapshot(self):
+        snapshot = []
+        plugins = self.runtime.plugins.get_device_plugins(self.object)
+        for plugin in plugins:
+            name = plugin.name.ljust(50)
+            snapshot.append('{}[{}]'.format(name, str(plugin.status).upper()))
+        return '\n'.join(snapshot)
 
     def has_errors(self, stage = None):
         '''has_errors
@@ -269,12 +272,10 @@ class BasePlugin(object):
             result = None
             now = datetime.now()
             try:
-                # call it and pass in the first argument
-                if inspect.getargspec(method).args[1:]:
-                    result = method(obj, now)
-                else:
-                    result = method(now)
-
+                # call it and pass in the arguments
+                len_args = len(inspect.getargspec(method).args[1:])
+                args = [obj, now][:len_args]
+                result = method(*args)
             except Exception as e:
                 # handle the error!
                 self.error_handler(stage, e)
@@ -292,6 +293,7 @@ class BasePlugin(object):
 
             logger.debug('Finished running plugin %s: %s' % (repr(self), 
                                                              stage.name))
+
         self.status = result
         if result != OK:
             self.runtime.mailbot.send_notify(self)
@@ -299,15 +301,3 @@ class BasePlugin(object):
 
     def get_summary_detail(self):
         return {}
-
-    def generate_result_meta(self, now = None, status = None, **kwargs):
-        if not kwargs and not status:
-            return
-        if not now:
-            now = datetime.now()
-        if status is not None:
-            status = str(status)
-        kwargs.update({'datetime': now.isoformat(), 'status': status})
-        meta = self.results_meta.get(now, [])
-        meta += [kwargs]
-        self.results_meta.update({now: meta})

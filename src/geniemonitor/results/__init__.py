@@ -1,8 +1,6 @@
 # expose internal modules
 from .counter import StatusCounter
 from .status import HealthStatus
-from .context import HealthStatusContext, RootHealthStatusContext, \
-                     get_status_context, update_health_status
 
 # limited the # of exports
 # (do not export Null)

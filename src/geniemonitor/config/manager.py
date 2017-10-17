@@ -1,13 +1,18 @@
+import os, sys
 from ats.utils import parser as argparse
+from ats.utils.dicts import recursive_update
 from ats.datastructures import AttrDict, classproperty
 
 from .loader import ConfigLoader
-from .defaults import DEFAULT_CONFIGURATION
 from .schema import validate_plugins
-from ats.utils.dicts import recursive_update
+from .defaults import DEFAULT_CONFIGURATION
 
 # declare module as infra
 __genie_monitor_infra__ = True
+
+# static vars
+GENIEMONITOR_GLOBAL_CONFIG = os.path.join(sys.prefix,
+                                          'geniemonitor_config.yaml')
 
 class Configuration(object):
     '''Configuration
@@ -45,6 +50,12 @@ class Configuration(object):
 
         # start with the default configuration as basis
         self.update(self._loader.load(DEFAULT_CONFIGURATION))
+
+        # load the global configuration
+        # -----------------------------
+        if os.path.exists(GENIEMONITOR_GLOBAL_CONFIG):
+            # load the global instance level configuration file
+            self.update(self._loader.load(GENIEMONITOR_GLOBAL_CONFIG))
 
         # load dynamic runtime configuration
         # ----------------------------------

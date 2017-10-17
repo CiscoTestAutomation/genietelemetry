@@ -115,7 +115,6 @@ setup(
                          'ats.topology {}'.format(version_range),
                          'unicon',
                          'abstract',
-                         'ascii_graph',
                          'parsergen',
                         ],
 

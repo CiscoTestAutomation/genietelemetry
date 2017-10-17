@@ -33,8 +33,9 @@ class Switch(object, metaclass = MetaClassFactory):
                             action = "store",
                             default = '1s',
                             help = 'Specify monitor length, in XwYdZhPmQs '
-                                   'format,\nie: 5m20s, default to '
-                                   'on demand request')
+                                   'format,\nX Weeks, Y Days, Z Hours, '
+                                   'P Minutes, Q Seconds. \n'
+                                   'ie: 5m20s, default to on demand request')
 
         parser.add_argument('-keep_alive',
                             action = "store_true",

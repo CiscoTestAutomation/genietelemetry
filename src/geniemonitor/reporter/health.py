@@ -43,22 +43,11 @@ class HealthJobReporter(ContextReporter):
         self.minute_report_at = None
 
     def start(self):
-
-        self.producer.monitor_testbed(name = self.job.name)
-
-        self.producer.start_monitoring()
+        pass
 
     def stop(self, *args, **kwargs):
-        # stop all the open contexts of the child clients
-        self.producer.stop_open_contexts()
-
-        # Stop jobexecution
-        self.producer.stop_monitoring()
-
         # update job results
         self.job.results.update(self.consumer.get_summary_detail())
-
-        self.producer.release_testbed(self.job.name)
 
     def child(self, device):
         name = device.name
@@ -77,10 +66,10 @@ class DeviceHealthStatusReporter(ContextReporter):
         self.minute_report_at = None
 
     def start(self):
+        pass
 
-        self.producer.monitor_device(name = self.device.name)
-
-        self.producer.start_collecting(self.device.name)
+    def stop(self, *args, **kwargs):
+        pass
 
     def nop(self, now):
         delta = timedelta(minutes=1)
@@ -92,27 +81,6 @@ class DeviceHealthStatusReporter(ContextReporter):
             self.minute_report_at = now
             logger.info(self.consumer.minute_report(device = self.device.name,
                                                     datetime_ = now))
-
-    def stop(self, *args, **kwargs):
-
-        # Stop jobexecution
-        self.producer.stop_collecting(self.device.name)
-
-        # update job results
-        #self.device.task.results.update(
-        #            self.consumer.get_summary_detail(device = self.device.name))
-
-        # Get AEreport results summary
-        #self.job.results['summary'] = self.client.get_summary_test()
-
-        # generate the report before suite context dies
-        #self.job.diags_report = self.client.generate_diagnostics_report()
-
-        self.producer.release_device(self.device.name)
-
-        # write diags report
-        #self.job.write_diags_report()
-
     def child(self, plugin):
 
         name = plugin.name
@@ -129,21 +97,13 @@ class PluginReporter(ContextReporter):
         self.plugin = plugin
 
     def start(self):
-        self.producer.execute_plugin(name = self.plugin.name)
-
-        self.producer.start_collecting_status(self.plugin.name)
-
-    def report(self, object_, now, result, error = None):
-        context = self.plugin.results_meta.get(now, None)
-        self.producer.produce(result = result,
-                              object_ = object_.name,
-                              plugin = self.plugin.name,
-                              context = context,
-                              error = error)
+        pass
 
     def stop(self, *args, **kwargs):
+        pass
 
-        # Stop jobexecution
-        self.producer.stop_collecting_status(self.plugin.name)
-
-        self.producer.cleanup_plugin(self.plugin.name)
+    def report(self, device, now, result, error = None):
+        self.producer.produce(result = result,
+                              device = device.name,
+                              plugin = self.plugin.name,
+                              error = error)

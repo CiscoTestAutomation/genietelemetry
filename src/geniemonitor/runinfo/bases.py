@@ -1,5 +1,6 @@
 import os
 import time
+import shutil
 import logging
 
 from pathlib import Path
@@ -49,9 +50,20 @@ class RunInfo(object, metaclass = MetaClassFactory):
                             default = argparse.SUPPRESS,
                             help = 'specify alternate runinfo directory')
 
+        parser.add_argument('-archive_dir',
+                            type = str,
+                            metavar = '',
+                            default = argparse.SUPPRESS,
+                            help = 'specify alternate archive directory')
+
+        parser.add_argument('-no_archive',
+                            action = 'store_true',
+                            default = argparse.SUPPRESS,
+                            help = 'disable archive creation')
         return parser
 
-    def __init__(self, runtime, runinfo_dir = None):
+    def __init__(self, runtime, runinfo_dir = None,
+                 archive_dir = None, no_archive = False):
 
         # now
         timestamp = time.localtime()
@@ -59,7 +71,8 @@ class RunInfo(object, metaclass = MetaClassFactory):
         # standard default execution environment
         users_dir = Path(runtime.env.prefix, 'users')
         user_home = users_dir/runtime.env.user
-        user_runinfo = user_home/'monitor'
+        user_runinfo = user_home/'monitor_runinfo'
+        user_archive = user_home/'monitor_archive'
 
         # create users folder if missing
         # (users directory should also allow group usage)
@@ -70,10 +83,13 @@ class RunInfo(object, metaclass = MetaClassFactory):
         # create user's folder and structure if missing
         if not user_runinfo.exists():
             user_runinfo.mkdir(parents = True)
+            user_archive.mkdir(parents = True)
 
         # save input arguments
         self.runtime = runtime
         self.runinfo_dir = runinfo_dir
+        self.archive_dir = archive_dir
+        self.no_archive = no_archive
 
         # parse arguments into self
         # (overwrite any of the above)
@@ -81,11 +97,15 @@ class RunInfo(object, metaclass = MetaClassFactory):
 
         # set defaults & convert to pathlib.Path
         runinfo_dir = Path(self.runinfo_dir or user_runinfo)
-        runinfo_dir /= time.strftime(YY_MM, timestamp)
-        runinfo_dir /= time.strftime(DD_H_M_S, timestamp)
+        archive_dir = Path(self.archive_dir or user_archive)
+        archive_dir /= time.strftime(YY_MM, timestamp)
 
         # save in string format for compatiblity :\
         self.runinfo_dir = str(runinfo_dir)
+        self.archive_dir = str(archive_dir)
+
+        self.archive_file = None
+        self.uid = self.runtime.uid
 
     def create(self):
         """ create
@@ -94,4 +114,51 @@ class RunInfo(object, metaclass = MetaClassFactory):
         """
         # setup runinfo folder
         # (should not pre-exist)
-        Path(self.runinfo_dir).mkdir(parents = True)
+        self.uid = "{}.{}".format(self.runtime.uid, time.time())
+        runinfo_dir = Path(self.runinfo_dir)
+        runinfo_dir /= self.uid
+
+        if not runinfo_dir.exists():
+            runinfo_dir.mkdir(parents = True)
+
+        self.runinfo_dir = str(runinfo_dir)
+
+    def archive(self):
+        """ archive
+
+        creates the archive file with the information taken from runinfo
+        directory to the archive directory by using zip.
+        """
+
+        # Path form is easier to use
+        archive_dir = Path(self.archive_dir)
+
+        # create archive directory
+        # ------------------------
+        if not archive_dir.exists():
+            archive_dir.mkdir()
+
+        # creating archive
+        # ----------------
+        if self.no_archive:
+            logger.info("Skipping archive creation.")
+            logger.info('Logs can be found at: %s' % self.runinfo_dir)
+
+        else:
+            # compute target archive file name
+            archive_filename = '{uid}.zip'.format(uid = self.uid)
+            self.archive_file = str(archive_dir / archive_filename)
+            logger.info('Creating archive file: %s' % self.archive_file)
+
+            try:
+                # create zip-type archive
+                shutil.make_archive(*self.archive_file.rsplit('.', 1),
+                                    root_dir = str(self.runinfo_dir))
+
+            except Exception:
+                # force no-cleanup and at least leave us some history
+                # cannot upload if we didn't make a zip file
+                self.no_archive = True
+
+                # re-raise the exception
+                raise

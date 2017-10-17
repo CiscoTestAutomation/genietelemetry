@@ -1,6 +1,8 @@
+import json
 from .bases import Consumer
 from datetime import datetime, timedelta
 
+from ats.log.utils import banner
 from geniemonitor.results import ERRORED, OK, WARNING, CRITICAL, StatusCounter
 
 class DataConsumer(Consumer):
@@ -30,7 +32,7 @@ class DataConsumer(Consumer):
 
         to_return = []
         for t in time_range:
-            if not device or device == self.context[t].get('object', None):
+            if not device or device == self.context[t].get('device', None):
                 to_return.append(self.context[t])
         return to_return
 
@@ -43,19 +45,19 @@ class DataConsumer(Consumer):
 
         errors = []
         meta = []
-
         device_status = {}
         for data in dict_:
-            dev = data.get('object')
-            status = data.get('content')
+            dev = data.get('device')
+            status = data.get('status')
+            plugin_meta = status.meta
             if not device:
                 device_status.setdefault(dev, OK)
                 status += device_status[dev]
                 device_status[dev] = status
             else:
-                content = str(status).lower()
-                r_ = getattr(result, content, 0) + 1
-                result.update({content: r_})
+                status = str(status).lower()
+                r_ = getattr(result, status, 0) + 1
+                result.update({status: r_})
 
             context = data.get('context', {})
 
@@ -67,47 +69,34 @@ class DataConsumer(Consumer):
                 errors.append('-' * 80)
                 errors.append(error)
                 errors.append('-' * 80)
-            context_ = context.get('context', [])
-            if context_:
-                for c in context_:
-                    meta.append('plugin: %s'% context.get('plugin', None))
-                    meta.append('meta: %s'% str(c))
-                    meta.append('=' * 80)
+            if plugin_meta and self.runtime.show_meta:
+                meta.append('plugin: %s'% context.get('plugin', None))
+                meta.append('%s'% json.dumps(plugin_meta, indent = 4))
+                meta.append('-' * 80)
         status_groups = {}
 
         for dev, status in device_status.items():
-            content = str(status).lower()
-            r_ = getattr(result, content, 0) + 1
-            result.update({content: r_})
-            key = str(status).upper()
+            status = str(status).lower()
+            r_ = getattr(result, status, 0) + 1
+            result.update({status: r_})
+            key = status.upper()
             if key not in status_groups:
                 status_groups[key] = []
             status_groups[key].append(dev)
 
         if device_status:
-            graph = [(status, len(keys)) \
-                                    for status, keys in status_groups.items()]                
-            graph_ = self.runtime.graph.graph('Health Status by Group', graph)
-            report.extend([graph_[1]] + graph_ + [graph_[1]])
             for status, keys in status_groups.items():
                 if keys:
                     report.append('Group: %s' % status)
-                    report.append('=' * 80)
+                    report.append('-' * 80)
                     report.extend(keys)
-        else:
-            graph = [ (k.upper(), v) for k,v in result.items() ]
-            graph_ = self.runtime.graph.graph('Health Status for %s' % device,
-                                              graph)
-            report.extend([graph_[1]] + graph_ + [graph_[1]])
 
         if meta and self.runtime.show_meta:
-            report.append('Meta data:')
-            report.append('=' * 80)
+            report.append(banner('Meta data'))
             report.extend(meta)
 
         if errors:
-            report.append('Error Report:')
-            report.append('-' * 80)
+            report.append(banner('Error Report'))
             report.extend(errors)
 
         return '\n'.join(report)
@@ -121,8 +110,9 @@ class DataConsumer(Consumer):
                               'status': testbed_status }
         detail['devices'] = {}
         for data in dict_:
-            dev = data.get('object')
-            status = data.get('content')
+            dev = data.get('device')
+            status = data.get('status')
+            plugin_meta = status.meta or {}
 
             if dev not in detail['devices']:
                 detail['devices'][dev] = { 'name': dev,
@@ -140,10 +130,9 @@ class DataConsumer(Consumer):
             error = context.get('error', None)
             if error:
                 plugin['error'].append((timestamp, error))
-            context_ = context.get('context', [])
-            if context_ and self.runtime.show_meta:
-                for c in context_:
-                    plugin['context'].append((timestamp, c))
+            if plugin_meta and self.runtime.show_meta:
+                for ck,cv in plugin_meta.items():
+                    plugin['meta'].append((ck, cv))
                 
             testbed_status += status
         detail['testbed']['status'] = testbed_status
@@ -154,8 +143,8 @@ class DataConsumer(Consumer):
         device_status = {}
 
         for data in dict_:
-            dev = data.get('object')
-            status = data.get('content')
+            dev = data.get('device')
+            status = data.get('status')
 
             if dev not in device_status:
                 device_status[dev] = OK
@@ -163,8 +152,8 @@ class DataConsumer(Consumer):
 
         result = {}
         for dev, status in device_status.items():
-            content = str(status).lower()
-            r_ = getattr(result, content, 0) + 1
-            result.update({content: r_})
+            status = str(status).lower()
+            r_ = getattr(result, status, 0) + 1
+            result.update({status: r_})
 
         return result

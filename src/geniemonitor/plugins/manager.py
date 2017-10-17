@@ -3,9 +3,11 @@ import sys
 import copy
 import time
 import logging
-from datetime import timedelta
 
-from multiprocessing import Process
+from operator import attrgetter
+from datetime import datetime, timedelta
+
+from multiprocessing import Process, Queue
 
 from abstract.magic import Lookup
 
@@ -13,8 +15,7 @@ from .stages import PluginStage, Scope
 from .bases import BasePlugin
 from ..utils import unzip_and_import
 
-from operator import attrgetter
-
+from geniemonitor.results import ERRORED, OK, HealthStatus
 from ats.utils.import_utils import import_from_name
 
 # declare module as infra
@@ -22,6 +23,71 @@ __genie_monitor_infra__ = True
 
 # module logger
 logger = logging.getLogger(__name__)
+
+def pmqueuer(execution_list, plugin = None, stage = None):
+
+    if execution_list is None or not plugin:
+        return
+
+    if not stage:
+        stage = PluginStage.execution
+
+    execution_list.append([stage, plugin])
+
+def pmprocessor(execution_list, task, plugins):
+
+    while task.runtime.switch.on(task.device):
+        try:
+            task.device.connect()
+
+            if not execution_list:
+                continue
+
+            stage, plugin_name = execution_list.pop(0)
+            if stage == PluginStage.finished:
+                return
+
+            for plugin in plugins:
+                if plugin.name != plugin_name:
+                    continue
+                logger.info('Executing plugin : %s - interval [%s]s' % 
+                                                 (plugin.name, plugin.interval))
+                if not task.device.is_connected():
+                    plugin.status = HealthStatus(status = ERRORED)
+                    logger.info(' - Device Not Connected [ Skipping ]')
+                    continue
+                plugin.status = HealthStatus(status = OK)
+                try:
+                    # run the plugin
+                    plugin.run(obj = task.device, stage = stage)
+                except (KeyboardInterrupt, SystemExit):
+                    raise
+                except Exception as e:
+                    # handle error
+                    task.error_handler(e)
+                    task.runtime.producer.push_to_steam(
+                                        dict(datetime = datetime.now(),
+                                             object = task.device.name,
+                                             content = ERRORED,
+                                             plugin = plugin.name,
+                                             context = { 'error': task.error }))
+                    continue
+
+        except (KeyboardInterrupt, SystemExit):
+            # stop execution, clear up the list
+            while execution_list:
+                execution_list.pop(0)
+            return
+        except Exception as e:
+            # handle error
+            task.error_handler(e)
+            task.runtime.producer.push_to_steam(
+                                        dict(datetime = datetime.now(),
+                                             object = task.device.name,
+                                             content = ERRORED,
+                                             context = { 'error': task.error }))
+
+            continue
 
 
 class PluginManager(object):
@@ -103,6 +169,8 @@ class PluginManager(object):
         # execution stage -> run in order of definition
         plugins = self._stacks.get(obj.name, [])
         
+        queue = obj.task.plugin_executions
+
         # run plugin one by one
         for plugin in plugins:
             if not plugin.last_execution:
@@ -113,13 +181,8 @@ class PluginManager(object):
                     continue
                 plugin.last_execution = now
 
-            self.current = plugin
-
-            logger.info('Executing plugin : %s - interval [%s]s' % (plugin.name,
-                                                               plugin.interval))
-
-            # run the plugin
-            plugin.run(obj = obj, stage = stage)
+            # queue up plugin execution
+            pmqueuer(queue, plugin.name, stage)
 
 
     def prepare_plugins(self):
@@ -181,16 +244,31 @@ class PluginManager(object):
         plugin_kwargs['module'] = plugin_module
         mod = getattr(plugin_module, '__abstract_pkg', None)
         if mod:
-            module = Lookup.from_device(obj, packages={ name: mod })
+            if not getattr(obj, 'os', None):
+                raise AttributeError('%s attribute [os] is missing in yaml'
+                                                                          % obj)
+            if not getattr(obj, 'custom', None): 
+                raise AttributeError('%s custom abstraction is missing in '
+                                     'yaml' % obj)
+            try:
+                module = Lookup.from_device(obj, packages={ name: mod })
+            except Exception:
+                raise
         else:
             module = plugin_module
-
-        plugin_cls = attrgetter('{}.Plugin'.format(name))(module)
+        try:
+            plugin_cls = attrgetter('{}.Plugin'.format(name))(module)
+        except AttributeError:
+            plugin_cls = attrgetter('Plugin')(module)
 
         return plugin_cls(**plugin_kwargs)
 
+    def get_device_plugins(self, device = None):
+        if not device:
+            return []
+        return self._stacks.get(device.name, [])
 
-    def get_plugins(self, stage = None):        
+    def get_plugins(self, stage = None):
         if not stage:
             plugins = [item for sub in self._stacks.values() for item in sub]
         else:
