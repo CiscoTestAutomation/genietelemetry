@@ -73,7 +73,7 @@ class Plugin(BasePlugin):
         # Parse 'show logging logfile' output for keywords
         matched_lines = []
         for line in output.splitlines():
-            if match_patterns:
+            if match_patterns(line):
                 if 'matched_lines' not in matched_lines_dict:
                     matched_lines_dict['matched_lines'] = {}
                 matched_lines.append(line)
