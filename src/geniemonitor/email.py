@@ -1,6 +1,8 @@
 import sys
 import abc
 import logging
+from os import listdir
+from os.path import isfile, join
 
 from ats.utils.email import EmailMsg
 from ats.utils import parser as argparse
@@ -31,7 +33,7 @@ ERROR_BODY = '''\
 
 This may be caused by:
     - keyboard interrupts (ctrl+c)
-    - job file issues
+    - yaml file issues
     - unexpected exceptions from your plugins
 
 As a consequence:
@@ -42,12 +44,9 @@ Please investigate the traceback below before raising issue to pyats-support.
 --------------------------------------------------------------------------------
 
 pyATS Instance   : {runtime.env.prefix}
-Python Version   : {runtime.env.python.name}-{runtime.env.python.version} \
-({runtime.env.python.architecture})
 CLI Arguments    : {runtime.env.argv}
 User             : {runtime.env.user}
 Host Server      : {runtime.env.host.name}
-Host OS Version  : {runtime.env.host.distro} ({runtime.env.host.architecture})
 
 {traceback}
 '''
@@ -65,12 +64,9 @@ DEFAULT_CONTENT = OrderableDict()
 
 DEFAULT_CONTENT['Monitoring Report'] = '''\
 pyATS Instance   : {runtime.env.prefix}
-Python Version   : {runtime.env.python.name}-{runtime.env.python.version} \
-({runtime.env.python.architecture})
 CLI Arguments    : {runtime.env.argv}
 User             : {runtime.env.user}
 Host Server      : {runtime.env.host.name}
-Host OS Version  : {runtime.env.host.distro} ({runtime.env.host.architecture})
 
 Monitoring Information
     Testbed Name : {runtime.testbed.name}
@@ -235,6 +231,13 @@ class MailBot(object, metaclass = MetaClassFactory):
         # handle subject overwrite from command-line
         if self.subject:
             message.subject = self.subject
+
+        if self.runtime.runinfo:
+            path = self.runtime.runinfo.runinfo_dir
+            onlyfiles = [join(path, f) for f in listdir(path) \
+                                                       if isfile(join(path, f))]
+
+            message.attachments.extend(onlyfiles)
 
         if not self.nomail:
             # send the bloody email

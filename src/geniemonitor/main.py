@@ -25,8 +25,6 @@ from .plugins.manager import PluginManager
 from .tasks import TaskManager
 from .utils import filter_exception
 
-from ascii_graph import Pyasciigraph
-
 # easypy defaults to using fork
 multiprocessing = __import__('multiprocessing').get_context('fork')
 
@@ -118,7 +116,6 @@ class GenieMonitorRuntime(object):
         self.connection = self.configuration.connection
         self.thresholds = self.configuration.thresholds
 
-        self.graph = Pyasciigraph()
         self.keep_alive = False
         self.uid = uid
 

@@ -6,12 +6,12 @@ import logging
 import importlib
 import setproctitle
 from datetime import datetime
-
 from collections import OrderedDict
-
+from subprocess import PIPE, STDOUT
 from . import utils
-from .plugins.stages import PluginStage
 from .results import ERRORED, OK
+from .plugins.manager import pmprocessor
+from .plugins.stages import PluginStage
 
 from ats.topology import loader
 from ats.utils import sig_handlers
@@ -20,6 +20,8 @@ from ats.log import managed_handlers, TaskLogHandler
 
 # tasks are only done using fork
 multiprocessing = __import__('multiprocessing').get_context('fork')
+
+from multiprocessing import Process
 
 # declare module as infra
 __genie_monitor_infra__ = True
@@ -43,15 +45,21 @@ class Device(object):
     def __getattr__(self, item):
         return getattr(self.device, item)
 
-    def __enter__(self):
+    def connect(self):
         if not self.is_connected():
             self.device.connect(timeout=10)
 
+    def disconnect(self):
+        if self.is_connected():
+            self.device.disconnect()
+
+    def __enter__(self):
+
+        self.connect()
         return self
 
     def __exit__(self, exc_type, exc_value, exc_tb):
-        if self.is_connected():
-            self.device.disconnect()
+        self.disconnect()
 
 class TaskManager(object):
     '''TaskManager class
@@ -210,6 +218,8 @@ class Task(multiprocessing.Process):
         self.device = Device(device, self)
         self.name = device.name
 
+        self.plugin_executions = self.runtime.synchro.list()
+
         # store the reporter
         self.reporter = self.runtime.job.reporter.child(self.device)
 
@@ -310,9 +320,6 @@ class Task(multiprocessing.Process):
                                           (self.runtime.directory,
                                            self.device.name))
 
-        # enable tasklog forking
-        self.tasklog_handler.enableForked()
-
         logging.root.addHandler(self.tasklog_handler)
 
         # default to INFO
@@ -331,34 +338,34 @@ class Task(multiprocessing.Process):
         # set process title
         setproctitle.setproctitle('GenieMonitor task: %s' % self.name)
 
+        plugins = self.runtime.plugins.get_device_plugins(self.device)
         # workaround for enabling pdb under child process
         # also include special handling of -pdb argument of aetest (shit code)
         if self.kwargs.get('pdb', False) or '-pdb' in sys.argv:
             sys.stdin = open('/dev/stdin')
 
+        self.plugin_processor = Process(target = pmprocessor,
+                                        args = (self.plugin_executions,
+                                                self, plugins))
         try:
+            self.plugin_processor.start()
             timer = 0
             while self.runtime.switch.on(self.device, timer):
-                with self.device as dev:
-                    if not dev.is_connected():
-                        self.result = ERRORED
-                        return self.task_finished()
-                    while self.runtime.switch.on(dev, timer):
 
-                        now = datetime.now()
+                now = datetime.now()
 
-                        self.reporter.nop(now)
-                        # execute plugin
-                        # --------
-                        self.runtime.plugins.run(dev, now = now,
-                                                 stage = PluginStage.execution)
+                self.reporter.nop(now)
+                # execute plugin
+                # --------
+                self.runtime.plugins.run(self.device, now = now,
+                                         stage = PluginStage.execution)
+                time.sleep(SLEEP_INTERVAL)
+                timer += SLEEP_INTERVAL
 
-                        later = datetime.now()
-                        difference = later - now
-                        difference = difference.days * SECONDS_PER_DAY + \
-                                                              difference.seconds
-                        timer += difference + SLEEP_INTERVAL
-                        time.sleep(SLEEP_INTERVAL)
+            # wait for all queued plugin execution to finish
+            self.plugin_executions.append([PluginStage.finished, None])
+            while self.plugin_executions:
+                time.sleep(SLEEP_INTERVAL)
 
         except (KeyboardInterrupt, SystemExit):
             pass

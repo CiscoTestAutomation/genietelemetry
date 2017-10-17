@@ -1,5 +1,5 @@
 
-
+from .utils import massage_meta
 
 class HealthStatus(object):
     '''Health Status class
@@ -81,9 +81,6 @@ class HealthStatus(object):
     # mapping between result string and code
     __str_map__ = {v: k for k,v in __code_map__.items()}
 
-    # container for controlling object creation & uniqueness
-    __objects__ = {}
-
     @classmethod
     def from_str(cls, string):
         '''classmethod from_str
@@ -96,22 +93,7 @@ class HealthStatus(object):
 
         return cls(cls.__str_map__[string.lower()])
 
-    def __new__(cls, code):
-        '''built-in __new__
-
-        Returns the same HealthStatus object if the given code was already 
-        created somewhere.
-
-        Arguments:
-            code (int): code of new HealthStatus obj.
-        '''
-        if code in cls.__objects__:
-            return cls.__objects__[code]
-        else:
-            cls.__objects__[code] = super().__new__(cls)
-            return cls.__objects__[code]
-
-    def __init__(self, code):
+    def __init__(self, code = None, meta = {}, status = None):
         '''built-in __init__
 
         Inits internal variables: name and code
@@ -120,8 +102,18 @@ class HealthStatus(object):
             code (int): code of new HealthStatus obj.
         '''
 
-        self.code = code
-        self.name = self.__code_map__[code]
+        self.code = code or status.code if status else code
+        self.name = self.__code_map__[self.code]
+
+        self._meta = massage_meta(meta)
+
+    @property
+    def meta(self):
+        return self._meta
+
+    @meta.setter
+    def meta(self, value):
+        self._meta.update(massage_meta(value))
 
     def __bool__(self):
         '''built-in __bool__
@@ -129,13 +121,18 @@ class HealthStatus(object):
         supports bool() checking of result objects.
 
         Returns:
-            True for result object Normal and Null
+            True for result object OK
             False otherwise
         '''
-        if self.name == 'normal':
+        if self.name == 'ok':
             return True
         else:
             return False
+
+    def __eq__(self, other):
+        if not isinstance(other, HealthStatus):
+            return False
+        return self.code == other.code
 
     def __int__(self):
         '''built-in __int__
@@ -153,7 +150,11 @@ class HealthStatus(object):
             Failed + Errored
         '''
         rollup = self.__rollup__[self.name][other.name]
-        return HealthStatus(self.__str_map__[rollup])
+
+        meta = self.meta.copy()
+        meta.update(other.meta)
+
+        return HealthStatus(code = self.__str_map__[rollup], meta = meta)
 
     def __radd__(self, other):
         '''built-in __radd__
@@ -169,11 +170,16 @@ class HealthStatus(object):
             0 + Errored
         '''
 
+        meta = self.meta.copy()
+        meta.update(other.meta)
+
         if other is 0:
-            return self
+            return HealthStatus(code = self.code,
+                                meta = meta)
         else:
             rollup = self.__rollup__[other.name][self.name]
-            return HealthStatus(self.__str_map__[rollup])
+            return HealthStatus(code = self.__str_map__[rollup],
+                                meta = meta)
 
     def __str__(self):
         '''built-in __int__
@@ -186,7 +192,7 @@ class HealthStatus(object):
         return self.name.capitalize()
 
     def __getnewargs__(self):
-        return (self.code,)
+        return (self.code, {})
 
     def __lt__(self, other):
         return self.code < other.code
