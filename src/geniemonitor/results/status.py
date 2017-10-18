@@ -107,6 +107,13 @@ class HealthStatus(object):
 
         self._meta = massage_meta(meta)
 
+    def __call__(self, meta = {}):
+        '''built-in __call__
+
+        Returns a new health status instance with the provided meta
+        '''
+        return HealthStatus(code = self.code, meta = meta)
+
     @property
     def meta(self):
         return self._meta
