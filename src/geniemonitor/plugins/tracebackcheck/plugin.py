@@ -36,7 +36,6 @@ class Plugin(BasePlugin):
                             default='',
                             help='Specify logical expression for patterns to '
                                  ' include/exclude when checking tracebacks')
-
         # clean_up
         # --------
         parser.add_argument('-clean_up',
@@ -44,7 +43,6 @@ class Plugin(BasePlugin):
                             default=False,
                             help='Specify whether to clear all warnings and '
                                  'tracebacks after reporting error')
-
         # timeout
         # -------
         parser.add_argument('-timeout',
@@ -52,14 +50,13 @@ class Plugin(BasePlugin):
                             default=300,
                             help='Specify duration (in seconds) to wait before '
                                  'timing out execution of a command')
-
         return parser
 
 
     def execution(self, device, execution_time):
 
         # Init
-        status_= OK
+        status = OK
         matched_lines_dict = {}
 
         # Execute command to check for tracebacks - timeout set to 5 mins
@@ -71,20 +68,17 @@ class Plugin(BasePlugin):
         match_patterns = logic_str(self.args.logic_pattern)
 
         # Parse 'show logging logfile' output for keywords
-        matched_lines = []
+        matched_lines_dict['matched_lines'] = []
         for line in output.splitlines():
             if match_patterns(line):
-                if 'matched_lines' not in matched_lines_dict:
-                    matched_lines_dict['matched_lines'] = {}
-                matched_lines.append(line)
-                matched_lines_dict['matched_lines'] = matched_lines
-                status_ += CRITICAL
+                matched_lines_dict['matched_lines'].append(line)
+                status += CRITICAL
                 logger.error(banner("\nMatched pattern in line:\n'{line}'".\
                              format(line=line)))
 
         # Log message to user
-        if not matched_lines_dict:
-            logger.info(banner("\n\n***** No traceback patterns matched *****\n\n"))
+        if not matched_lines_dict['matched_lines']:
+            logger.info(banner("\n\n***** No patterns matched *****\n\n"))
 
         # Clear logging (if user specified)
         if self.args.clean_up:
@@ -92,9 +86,8 @@ class Plugin(BasePlugin):
                 device.execute(self.clear_cmd)
             except Exception as e:
                 logger.error("\nClear logging execution failed")
-                status_ += ERRORED
+                status += ERRORED
 
         # Final status
-        data = dict(device = device.name, status = status_, error_patterns = matched_lines_dict)
-        self.generate_result_meta(**data)
-        return status_
+        status._meta = matched_lines_dict
+        return status
