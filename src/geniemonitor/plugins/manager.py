@@ -34,7 +34,11 @@ def pmqueuer(execution_list, plugin = None, stage = None):
 
     execution_list.append([stage, plugin])
 
-def pmprocessor(execution_list, task, plugins):
+def pmprocessor(execution_list, task, plugins, pdb):
+
+    # workaround for enabling pdb under child process
+    if pdb:
+        sys.stdin = open('/dev/stdin')
 
     while task.runtime.switch.on(task.device):
         try:

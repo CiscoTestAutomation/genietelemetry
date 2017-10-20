@@ -341,12 +341,13 @@ class Task(multiprocessing.Process):
         plugins = self.runtime.plugins.get_device_plugins(self.device)
         # workaround for enabling pdb under child process
         # also include special handling of -pdb argument of aetest (shit code)
-        if self.kwargs.get('pdb', False) or '-pdb' in sys.argv:
+        should_pdb = self.kwargs.get('pdb', False) or '-pdb' in sys.argv
+        if should_pdb:
             sys.stdin = open('/dev/stdin')
 
         self.plugin_processor = Process(target = pmprocessor,
                                         args = (self.plugin_executions,
-                                                self, plugins))
+                                                self, plugins, should_pdb))
         try:
             self.plugin_processor.start()
             timer = 0
