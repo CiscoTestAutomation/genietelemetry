@@ -3,10 +3,8 @@ GenieMonitor Crashdumps Plugin for IOSXE
 '''
 
 # Python
-import time
+import re
 import logging
-import collections
-from datetime import datetime
 
 # ATS
 from ats.log.utils import banner
@@ -51,10 +49,7 @@ class Plugin(BasePlugin):
                 return ERRORED
 
             # 1613827  -rw-         56487348  Oct 17 2017 15:56:59 +17:00  PE1_RP_0_x86_64_crb_linux_iosd-universalk9-ms_15866_20171016-155604-PDT.core.gz
-            pattern = '(?P<number>(\d+)) +(?P<permissions>(\S+))'
-                      ' +(?P<filesize>(\d+)) +(?P<month>(\S+)) +(?P<date>(\d+))'
-                      ' +(?P<year>(\d+)) +(?P<time>(\S+)) +(?P<timezone>(\S+))'
-                      ' +(?P<core>(\S+))'
+            pattern = '(?P<number>(\d+)) +(?P<permissions>(\S+)) +(?P<filesize>(\d+)) +(?P<month>(\S+)) +(?P<date>(\d+)) +(?P<year>(\d+)) +(?P<time>(\S+)) +(?P<timezone>(\S+)) +(?P<core>(.*core\.gz))'
             for line in output.splitlines():
                 # Parse through output to collect core information (if any)
                 match = re.search(pattern, line, re.IGNORECASE)

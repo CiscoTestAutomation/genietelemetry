@@ -5,7 +5,6 @@ GenieMonitor Crashdumps Plugin for NXOS
 # Python
 import time
 import logging
-import collections
 from datetime import datetime
 
 # ATS
