@@ -85,6 +85,8 @@ class Plugin(BasePlugin):
             try:
                 device.execute(self.clear_cmd)
             except Exception as e:
+                # Handle exception
+                logger.warning(e)
                 logger.error("\nClear logging execution failed")
                 status += ERRORED
 
