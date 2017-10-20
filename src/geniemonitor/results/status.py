@@ -107,6 +107,13 @@ class HealthStatus(object):
 
         self._meta = massage_meta(meta)
 
+    def __call__(self, meta = {}):
+        '''built-in __call__
+
+        Returns a new health status instance with the provided meta
+        '''
+        return HealthStatus(code = self.code, meta = meta)
+
     @property
     def meta(self):
         return self._meta
@@ -149,6 +156,9 @@ class HealthStatus(object):
         Example:
             Failed + Errored
         '''
+        if not isinstance(other, HealthStatus):
+            other = HealthStatus(code = 0, meta = other or {})
+
         rollup = self.__rollup__[self.name][other.name]
 
         meta = self.meta.copy()
@@ -169,6 +179,8 @@ class HealthStatus(object):
         Example:
             0 + Errored
         '''
+        if not isinstance(other, HealthStatus):
+            other = HealthStatus(code = 0, meta = other or {})
 
         meta = self.meta.copy()
         meta.update(other.meta)
