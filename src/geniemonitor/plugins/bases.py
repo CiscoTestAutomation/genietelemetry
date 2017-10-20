@@ -10,7 +10,7 @@ from datetime import datetime
 from ats.log.utils import banner
 from ats.datastructures import OrderableDict, classproperty
 
-from geniemonitor.results import ERRORED, OK
+from geniemonitor.results import ERRORED, OK, HealthStatus
 from geniemonitor.email import TextEmailReport
 
 from .. import utils
@@ -289,6 +289,8 @@ class BasePlugin(object):
                         result = OK
                         reporter.report(obj, now, result)
                 else:
+                    if not isinstance(result, HealthStatus)
+                        result = HealthStatus(code = 0, meta = result)
                     reporter.report(obj, now, result, error = errors)
 
             logger.debug('Finished running plugin %s: %s' % (repr(self), 
