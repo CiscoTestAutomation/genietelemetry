@@ -8,6 +8,7 @@ from ats.datastructures import classproperty
 
 # GenieMonitor
 from geniemonitor.plugins.bases import BasePlugin
+from geniemonitor.results import OK, WARNING, ERRORED, PARTIAL, CRITICAL
 
 
 class Plugin(BasePlugin):
@@ -84,14 +85,13 @@ class Plugin(BasePlugin):
 
         # Init
         status = OK
-        upload_status = False
 
         # Execute command to check for cores
         status += self.check_and_upload_cores(device, execution_time)
 
         # User requested upload cores to server
-        if self.args.upload:
-            status_ += upload_to_server(self, device, self.core_list)
+        if self.args.upload and status == CRITICAL:
+            status += self.upload_to_server(device, self.core_list)
 
         # User requested clean up of cores
         if self.args.clean_up and status == CRITICAL:
