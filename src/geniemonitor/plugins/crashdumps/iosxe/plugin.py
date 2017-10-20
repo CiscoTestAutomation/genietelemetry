@@ -5,19 +5,22 @@ GenieMonitor Crashdumps Plugin for IOSXE
 # Python
 import time
 import logging
+import collections
 from datetime import datetime
-from collections import OrderedDict
 
 # ATS
 from ats.log.utils import banner
 
 # GenieMonitor
-from geniemonitor.plugins.bases import BasePlugin
+from ..plugin import Plugin as BasePlugin
 from geniemonitor.utils import is_hitting_threshold
-from geniemonitor.results import OK, WARNING, ERRORED, PARTIAL
+from geniemonitor.results import OK, WARNING, ERRORED, PARTIAL, CRITICAL
 
-# Parsergen
-from parsergen import oper_fill_tabular
+# Unicon
+from unicon.eal.dialogs import Statement, Dialog
+
+# module logger
+logger = logging.getLogger(__name__)
 
 
 class Plugin(BasePlugin):
@@ -25,39 +28,50 @@ class Plugin(BasePlugin):
     # List to hold cores
     core_list = []
 
-
     def check_and_upload_cores(self, device, execution_time):
 
         # Init
-        tempstatus = OK
+        status_ = OK
 
         # Execute command to check for cores
         for location in ['flash:/core', 'bootflash:/core', 'harddisk:/core']:
-            output = device.execute('dir {}'.format(location))
-            if not output:
+            try:
+                output = device.execute('dir {}'.format(location))
+            except Exception as e:
+                # Handle exception
+                logger.warning(e)
+                logger.warning("Location '{}' does not exist on device".format(location))
+                continue
+            
+            if 'Invalid input detected' in output:
+                logger.warning("Location '{}' does not exist on device".format(location))
+                continue
+            elif not output:
+                logger.error(banner("Unable to check for cores"))
                 return ERRORED
-            else:
-                # Parse through output to collect core information (if any)
-                pattern = 'core something'
-                for line in output.splitlines():
-                    if re.search(pattern, line, re.IGNORECASE):
-                        tempstatus += CRITICAL
-                        process = 'abc'
-                        tempstatus._meta = "Core dump generated for process '{}'".format(process)
-                        core_info = dict(module = row['Module'],
-                                         pid = row['PID'],
-                                         instance = row['Instance'],
-                                         process = row['Process-name'],
-                                         date = date.replace(" ", "_"))
-                        self.core_list.append(core_info)
-        return tempstatus
 
+            # 1613827  -rw-         56487348  Oct 17 2017 15:56:59 +17:00  PE1_RP_0_x86_64_crb_linux_iosd-universalk9-ms_15866_20171016-155604-PDT.core.gz
+            pattern = '(?P<number>(\d+)) +(?P<permissions>(\S+))'
+                      ' +(?P<filesize>(\d+)) +(?P<month>(\S+)) +(?P<date>(\d+))'
+                      ' +(?P<year>(\d+)) +(?P<time>(\S+)) +(?P<timezone>(\S+))'
+                      ' +(?P<core>(\S+))'
+            for line in output.splitlines():
+                # Parse through output to collect core information (if any)
+                match = re.search(pattern, line, re.IGNORECASE)
+                if match:
+                    core = match.groupdict()['core']
+                    status_ += CRITICAL
+                    status_.meta = "Core dump generated:\n'{}'".format(core)
+                    core_info = dict(location = location,
+                                     core = core)
+                    self.core_list.append(core_info)
+
+        return status_
 
     def upload_to_server(self, device, core_list):
 
         # Init
         status_= OK
-        successful = True
 
         # Get info
         protocol = self.args.upload_via or 'tftp'
@@ -70,91 +84,71 @@ class Plugin(BasePlugin):
         username = self.args.upload_username
         password = self.args.upload_password
 
-        # Set response
-        response = collections.OrderedDict()
-        response[r"Enter username:"]="econ_send {}\\\r ; exp_continue".format(username)
-        response[r"Password:"]="econ_send {}\\\r ; exp_continue".format(password)
+        # Create unicon dialog (for ftp)
+        dialog = Dialog([
+            Statement(pattern=r'Enter username:',
+                      action='sendline({})'.format(username),
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'Password:',
+                      action='sendline({})'.format(password),
+                      loop_continue=True,
+                      continue_timer=False),
+            ])
 
         # Upload each core found
-        for core in core_list:
-            cmd = self.get_upload_cmd(server = server, port = port,
-                                      dest = dest, **core)
+        for item in core_list:
+            cmd = self.get_upload_cmd(server = server, port = port, dest = dest, 
+                                      protocol = protocol, core = item['core'], 
+                                      location = item['location'])
             message = "Core dump upload attempt: {}".format(cmd)
             try:
-                result = device.execute(cmd, timeout = timeout, reply=response)
+                result = device.execute(cmd, timeout = timeout, reply=dialog)
                 if 'operation failed' in result:
-                    successful = False
-                    logger.warning(banner('Upload operation failed'))
+                    logger.error(banner('Core upload operation failed'))
                     status_ += ERRORED
                     status_.meta = "Failed: {}".format(message)
                 else:
+                    logger.info(banner('Core upload operation successful'))
                     status_.meta = "Successful: {}".format(message)
             except Exception as e:
                 # Handle exception
-                successful = False
                 logger.warning(e)
                 status_ += ERRORED
                 status_.meta = "Failed: {}".format(message)
 
         return status_
 
-
-    def get_upload_cmd(self, module, pid, instance, server, port, dest, 
-                       date, process, protocol):
+    def get_upload_cmd(self, server, port, dest, protocol, core, location):
         
-        # copy core://<module-number>/<process-id>[/instance-num]
-        #      tftp:[//server[:port]][/path] vrf management
-        path = '{dest}/core_{pid}_{process}_{date}_{time}'.format(
-                                                   dest = dest, pid = pid,
-                                                   process = process,
-                                                   date = date,
-                                                   time = time.time())
-
         if port:
             server = '{server}:{port}'.format(server = server, port = port)
 
-        if instance:
-            pid = '{pid}/{instance}'.format(pid = pid, instance = instance)
+        cmd = 'copy {location}:/{core} {protocol}://{server}/{dest}/{core}'
 
-        cmd = 'copy core://{module}/{pid} ' \
-              '{protocol}://{server}/{path} vrf management'
-
-        return cmd.format(module = module, pid = pid, protocol = protocol,
-                          server = server, path = path)
-
+        return cmd.format(location=location, core=core, protocol=protocol,
+                          server=server, dest=dest)
 
     def clear_cores(self, device):
 
-        # Init
-        status_ = OK
+        # Delete cores from the device
+        for item in core_list:
+            try:
+                cmd = 'delete {location}:/{core}'.format(
+                        core=item['core'],location=item['location'])
+                output = device.execute(cmd, timeout=300)
+                message = 'Successfully deleted {location}:/{core}'.format(
+                        core=item['core'],location=item['location'])
+                logger.info(banner(messsage))
+                status_ = OK
+                status_.meta = message
+            except Exception as e:
+                # Handle exception
+                logger.warning(e)
+                message = 'Unable to delete {location}:/{core}'.format(
+                            core=item['core'],location=item['location'])
+                logger.warning(message)
+                status_ += ERRORED
+                status_.meta = message
 
-        # Execute command to delete cores
-        try:
-            device.execute('clear cores')
-            status_.meta = "Cleared cores on device {}".format(device)
-        except Exception as e:
-            status_ += ERRORED
-            status_.meta = "Failed to clear cores on device {}".format(device)
-        
         return status_
-''' 
-GenieMonitor Crashdumps Plugin for IOSXE
-'''
-
-# Python
-import time
-import logging
-from datetime import datetime
-
-# ATS
-from ats.log.utils import banner
-
-# GenieMonitor
-from geniemonitor.plugins.bases import BasePlugin
-from geniemonitor.utils import is_hitting_threshold
-from geniemonitor.results import OK, WARNING, ERRORED, PARTIAL
-
-
-class Plugin(BasePlugin):
-
-    pass
