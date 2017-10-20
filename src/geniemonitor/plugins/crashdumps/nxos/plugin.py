@@ -156,7 +156,7 @@ class Plugin(BasePlugin):
             # Handle exception
             logger.warning(e)
             logger.error("Unable to clear cores on device")
-            status_ += ERRORED
+            status_ = ERRORED
             status_.meta = "Unable to clear cores on device"
 
         return status_

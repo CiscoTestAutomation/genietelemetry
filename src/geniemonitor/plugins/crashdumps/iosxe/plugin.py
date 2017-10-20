@@ -16,6 +16,7 @@ from geniemonitor.results import OK, WARNING, ERRORED, PARTIAL, CRITICAL
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
+from unicon.eal.utils import expect_log
 
 # module logger
 logger = logging.getLogger(__name__)
@@ -38,11 +39,11 @@ class Plugin(BasePlugin):
             except Exception as e:
                 # Handle exception
                 logger.warning(e)
-                logger.warning("Location '{}' does not exist on device".format(location))
+                logger.warning(banner("Location '{}' does not exist on device".format(location)))
                 continue
             
             if 'Invalid input detected' in output:
-                logger.warning("Location '{}' does not exist on device".format(location))
+                logger.warning(banner("Location '{}' does not exist on device".format(location)))
                 continue
             elif not output:
                 logger.error(banner("Unable to check for cores"))
@@ -61,6 +62,10 @@ class Plugin(BasePlugin):
                                      core = core)
                     self.core_list.append(core_info)
 
+            if not self.core_list:
+                logger.info(banner("No cores found!"))
+                status_.meta = "No cores found!"
+        
         return status_
 
     def upload_to_server(self, device, core_list):
@@ -80,19 +85,20 @@ class Plugin(BasePlugin):
         password = self.args.upload_password
 
         # Create unicon dialog (for ftp)
+        #expect_log(enable=True) ; # uncomment for debugging
         dialog = Dialog([
-            Statement(pattern=r'Enter username:',
-                      action='sendline({})'.format(username),
+            Statement(pattern=r'Address or name of remote host.*',
+                      action='sendline()',
                       loop_continue=True,
                       continue_timer=False),
-            Statement(pattern=r'Password:',
-                      action='sendline({})'.format(password),
+            Statement(pattern=r'Destination filename.*',
+                      action='sendline()',
                       loop_continue=True,
                       continue_timer=False),
             ])
 
         # Upload each core found
-        for item in core_list:
+        for item in self.core_list:
             cmd = self.get_upload_cmd(server = server, port = port, dest = dest, 
                                       protocol = protocol, core = item['core'], 
                                       location = item['location'])
@@ -119,31 +125,41 @@ class Plugin(BasePlugin):
         if port:
             server = '{server}:{port}'.format(server = server, port = port)
 
-        cmd = 'copy {location}:/{core} {protocol}://{server}/{dest}/{core}'
+        cmd = 'copy {location}/{core} {protocol}://{server}/{dest}/{core}'
 
         return cmd.format(location=location, core=core, protocol=protocol,
                           server=server, dest=dest)
 
     def clear_cores(self, device):
 
+        # Create dialog for response
+        dialog = Dialog([
+            Statement(pattern=r'Delete.*',
+                      action='sendline()',
+                      loop_continue=True,
+                      continue_timer=False),
+            ])
+
         # Delete cores from the device
-        for item in core_list:
+        for item in self.core_list:
             try:
-                cmd = 'delete {location}:/{core}'.format(
+                # Execute delete command for this core
+                cmd = 'delete {location}/{core}'.format(
                         core=item['core'],location=item['location'])
-                output = device.execute(cmd, timeout=300)
-                message = 'Successfully deleted {location}:/{core}'.format(
-                        core=item['core'],location=item['location'])
-                logger.info(banner(messsage))
+                output = device.execute(cmd, timeout=300, reply=dialog)
+                # Log to user
+                message = 'Successfully deleted {location}/{core}'.format(
+                            core=item['core'],location=item['location'])
+                logger.info(banner(message))
                 status_ = OK
                 status_.meta = message
             except Exception as e:
                 # Handle exception
                 logger.warning(e)
-                message = 'Unable to delete {location}:/{core}'.format(
+                message = 'Unable to delete {location}/{core}'.format(
                             core=item['core'],location=item['location'])
-                logger.warning(message)
-                status_ += ERRORED
+                logger.error(banner(message))
+                status_ = ERRORED
                 status_.meta = message
 
         return status_
