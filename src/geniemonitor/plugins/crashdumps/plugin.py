@@ -36,7 +36,7 @@ class Plugin(BasePlugin):
         # ----------
         parser.add_argument('-upload_via',
                             action="store",
-                            default='ftp',
+                            default='tftp',
                             help = 'Specify upload protocol\ndefault to TFTP')
         # upload_server
         # -------------
