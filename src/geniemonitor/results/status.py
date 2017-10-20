@@ -156,6 +156,9 @@ class HealthStatus(object):
         Example:
             Failed + Errored
         '''
+        if not isinstance(other, HealthStatus):
+            other = HealthStatus(code = 0, meta = other or {})
+
         rollup = self.__rollup__[self.name][other.name]
 
         meta = self.meta.copy()
@@ -176,6 +179,8 @@ class HealthStatus(object):
         Example:
             0 + Errored
         '''
+        if not isinstance(other, HealthStatus):
+            other = HealthStatus(code = 0, meta = other or {})
 
         meta = self.meta.copy()
         meta.update(other.meta)
