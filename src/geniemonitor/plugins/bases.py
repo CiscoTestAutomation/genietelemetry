@@ -289,7 +289,7 @@ class BasePlugin(object):
                         result = OK
                         reporter.report(obj, now, result)
                 else:
-                    if not isinstance(result, HealthStatus)
+                    if not isinstance(result, HealthStatus):
                         result = HealthStatus(code = 0, meta = result)
                     reporter.report(obj, now, result, error = errors)
 
