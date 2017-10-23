@@ -147,7 +147,7 @@ class GenieMonitorRuntime(object):
                  no_mail = False, mailto = None, mail_subject = None,
                  no_notify = False, notify_subject = None,
                  keep_alive = False, length = None,
-                 runinfo_dir = None, meta = False, uid = None):
+                 runinfo_dir = None, no_meta = False, uid = None):
         '''_monitor
         '''
         # parse core arguments
@@ -180,9 +180,9 @@ class GenieMonitorRuntime(object):
                                nonotify = no_notify,
                                **self.configuration.core.mailbot)
 
-        self.switch = Switch(runtime = self.runtime,
-                             keep_alive = keep_alive, length = length,
-                             meta = meta, **self.configuration.core.switch)
+        self.switch = Switch(runtime = self.runtime, keep_alive = keep_alive,
+                             length = length, no_meta = no_meta,
+                             **self.configuration.core.switch)
 
         # always email everything
         # -----------------------
