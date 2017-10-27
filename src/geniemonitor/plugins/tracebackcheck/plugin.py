@@ -35,7 +35,8 @@ class Plugin(BasePlugin):
                             action="store",
                             default='',
                             help='Specify logical expression for patterns to '
-                                 ' include/exclude when checking tracebacks')
+                                 'include/exclude when checking tracebacks '
+                                 'following PyATS logic format')
         # clean_up
         # --------
         parser.add_argument('-clean_up',
