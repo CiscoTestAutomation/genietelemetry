@@ -188,15 +188,15 @@ report when ``-meta`` argument is used. Plugin developers may overwrite this
 method to develop custom meta data handling logic.
 
 
-Plugin Template
----------------
-Plugin Template can be found at template folder after installation
+Plugin Execution
+----------------
+Plugin Templates can be found in the template folder after installation
 
 .. code-block:: bash
 
     $VIRTUAL_ENV/templates/geniemonitor/
 
-Steps for testing your plugin:
+Steps for executing your plugin:
 
     - Compress your plugin package or file into zip file
 
@@ -234,14 +234,35 @@ Steps for testing your plugin:
                 enabled: True
                 module: /ws/tony-stark/pyats/template/plugin.zip
 
-    - Execution geniemonitor for on-demand monitoring:
+        core:
+            job:
+                class: geniemonitor.job.Job
+            reporter:
+                class: geniemonitor.reporter.HealthReporter
+            runinfo:
+                class: geniemonitor.runinfo.RunInfo
+            mailbot:
+                class: geniemonitor.email.MailBot
+            producer:
+                class: geniemonitor.processor.DataProducer
+            consumer:
+                class: geniemonitor.processor.DataConsumer
+            connection:
+                class: unicon.Unicon
+            thresholds:
+                OK: 272h
+                Warning: 252h
+                Critical: 248h
+
+    - Execute geniemonitor for on-demand monitoring:
 
     .. code-block:: bash
 
         geniemonitor -testbed_file /path/to/testbed.yaml
                      -configuration /path/to/config.yaml
+                     -plugin_arg1 "abc"
 
-You would see these information showing up in the log.
+You should see the following lines show up in the log.
 
 .. code-block:: bash
 
@@ -254,9 +275,10 @@ You would see these information showing up in the log.
      - unpacked plugin file : /ws/tony-stark/pyats/template/plugin.zip
      - imported module : plugin
     ----------------------------------------------------------------------------
-    initializing plugins for Javis
+    initializing plugins for Jarvis
      - loading plugin crashdumps
      - loading plugin plugin
+    Starting monitoring on device_1
 
 
 Abstraction Plugin Package
@@ -280,3 +302,26 @@ Decorator as it is the root of abstraction in GenieMonitor.
        |-- iosxr                    <-- Token
        |   |-- __init__.py          <-- Token declaration
        |   `-- plugin.py            <-- Plugin core logic implementation
+
+
+Default Plugins
+---------------
+Once development for your plugin is completed, it can be added to the "default"
+list of plugins that run everytime Geniemonitor is executed. The keepalive
+plugin is an example of a default plugin.
+
+To add your plugin to the default list, simply add your information to the
+src/geniemonitor/config/defaults.py file
+
+.. code-block:: bash
+
+    DEFAULT_CONFIGURATION = '''
+        plugins:
+            keepalive:
+                interval: 30
+                enabled: True
+                module: geniemonitor.plugins.keepalive
+            mynewplugin:
+                interval: 60
+                enabled: True
+                module: geniemonitor.plugins.mynewplugin
