@@ -24,10 +24,10 @@ class Switch(object, metaclass = MetaClassFactory):
         parser = argparse.ArgsPropagationParser(add_help = False)
         parser.title = 'Monitor'
         
-        parser.add_argument('-meta',
+        parser.add_argument('-no_meta',
                                  action = "store_true",
                                  default = False,
-                                 help = 'Specify show plugin result meta')
+                                 help = 'Specify to hide plugin result meta')
 
         parser.add_argument('-length',
                             action = "store",
@@ -44,7 +44,7 @@ class Switch(object, metaclass = MetaClassFactory):
                                    'Stop with Ctrl + C')
         return parser
 
-    def __init__(self, runtime, length = None, meta = False,
+    def __init__(self, runtime, length = None, no_meta = False,
                  keep_alive = False):
 
         # save input arguments
@@ -59,7 +59,7 @@ class Switch(object, metaclass = MetaClassFactory):
         threshold = import_threshold(self._length)
         self.length = threshold.days * SECONDS_PER_DAY + threshold.seconds
 
-        self.meta = meta or self.meta
+        self.meta = not (no_meta or self.no_meta)
 
         self.keep_alive = keep_alive or self.keep_alive
 

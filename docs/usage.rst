@@ -47,7 +47,7 @@ directly as part of the user PATH after activating your instance.
     usage: geniemonitor [-h] [-testbed_file TESTBEDFILE] [-uid UID] [-loglevel]
                         [-configuration FILE] [-runinfo_dir] [-no_mail]
                         [-no_notify] [-mailto] [-mail_subject] [-notify_subject]
-                        [-meta] [-length LENGTH] [-keep_alive] [-upload]
+                        [-no_meta] [-length LENGTH] [-keep_alive] [-upload]
                         [-clean_up] [-upload_via UPLOAD_VIA]
                         [-upload_server UPLOAD_SERVER]
                         [-upload_port UPLOAD_PORT]
@@ -90,7 +90,7 @@ directly as part of the user PATH after activating your instance.
       -notify_subject       notification email subject header
 
     Monitor:
-      -meta                 Specify show plugin result meta
+      -no_meta              Specify to hide plugin result meta
       -length LENGTH        Specify monitor length, in XwYdZhPmQs format,
                             X Weeks, Y Days, Z Hours, P Minutes, Q Seconds.
                             ie: 5m20s, default to on demand request
@@ -143,7 +143,7 @@ processed using python `argparse`_ module.
     ``-no_notify``, "flag, disable notification on abnormal device health staus
     by each plugin."
     ``-notify_subject``, "notification email subject header."
-    ``-meta``, "flag, enable to show plugin meta data."
+    ``-no_meta``, "flag, enable to hide plugin meta data."
     ``-length``, "specify the monitoring length"
     ``-keep_alive``, "flag, enable indefinite testbed monitoring, stop with
     Ctrl + C"
@@ -267,12 +267,12 @@ processed using python `argparse`_ module.
 
         bash$ easypy /path/to/jobfile.py -no_archive
 
-``-meta``
-    Flag, enables to show plugin meta data for notification and report.
+``-no_meta``
+    Flag, enables to hide plugin meta data for notification and report.
 
     .. code-block:: bash
 
-        bash$ geniemonitor -testbed_file /path/to/testbed.yaml -meta
+        bash$ geniemonitor -testbed_file /path/to/testbed.yaml -no_meta
 
 ``-length``
     Specify the monitoring length, in XwYdZhPmQs format.
