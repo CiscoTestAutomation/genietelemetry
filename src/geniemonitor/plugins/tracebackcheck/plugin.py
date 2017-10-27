@@ -62,7 +62,7 @@ class Plugin(BasePlugin):
         # Execute command to check for tracebacks - timeout set to 5 mins
         output = device.execute(self.show_cmd, timeout=self.args.timeout)
         if not output:
-            return ERRORED
+            return ERRORED('No output from {cmd}'.format(cmd=self.show_cmd))
 
         # Logic pattern
         match_patterns = logic_str(self.args.logic_pattern)
@@ -72,24 +72,30 @@ class Plugin(BasePlugin):
         for line in output.splitlines():
             if match_patterns(line):
                 matched_lines_dict['matched_lines'].append(line)
-                status += CRITICAL
-                logger.error(banner("\nMatched pattern in line:\n'{line}'".\
-                             format(line=line)))
+                message = "Matched pattern in line: '{line}'".format(line=line)
+                status += CRITICAL(message)
+                status += CRITICAL(matched_lines_dict)
+                logger.error(banner(message))
 
         # Log message to user
         if not matched_lines_dict['matched_lines']:
-            logger.info(banner("\n\n***** No patterns matched *****\n\n"))
+            message = "***** No patterns matched *****"
+            status += OK(message)
+            logger.info(banner(message))
 
         # Clear logging (if user specified)
         if self.args.clean_up:
             try:
                 device.execute(self.clear_cmd)
+                message = "Successfully cleared logging"
+                status += OK(message)
+                logger.info(banner(message))
             except Exception as e:
                 # Handle exception
                 logger.warning(e)
-                logger.error("\nClear logging execution failed")
-                status += ERRORED
+                message = "Clear logging execution failed"
+                logger.error(message)
+                status += ERRORED(message)
 
         # Final status
-        status._meta = matched_lines_dict
         return status
