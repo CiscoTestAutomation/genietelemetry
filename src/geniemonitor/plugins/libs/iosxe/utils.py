@@ -7,8 +7,6 @@ import logging
 from ats.log.utils import banner
 
 # GenieMonitor
-from ..plugin import Plugin as BasePlugin
-from geniemonitor.utils import is_hitting_threshold
 from geniemonitor.results import OK, WARNING, ERRORED, PARTIAL, CRITICAL
 
 # Unicon
@@ -19,7 +17,7 @@ from unicon.eal.utils import expect_log
 logger = logging.getLogger(__name__)
 
 
-def check_cores(self, device, execution_time):
+def check_cores(device):
 
     # Init
     status = OK
@@ -47,23 +45,24 @@ def check_cores(self, device, execution_time):
 
         for line in output.splitlines():
             # Parse through output to collect core information (if any)
-            if re.search(core_pattern, line, re.IGNORECASE) or
+            if re.search(core_pattern, line, re.IGNORECASE) or \
                re.search(crashinfo_pattern, line, re.IGNORECASE):
                 core = match.groupdict()['core']
                 status += CRITICAL
                 status.meta = "Core dump generated:\n'{}'".format(core)
                 core_info = dict(location = location,
                                  core = core)
-                self.core_list.append(core_info)
+                core_list.append(core_info)
 
-        if not self.core_list:
-            logger.info(banner("No cores found!"))
-            status.meta = "No cores found!"
+        if not core_list:
+            message = "No cores found!"
+            logger.info(banner(message))
+            status += OK(message)
     
     return status
 
 
-def upload_to_server(self, device, core_list):
+def upload_to_server(device, core_list):
 
     # Init
     status= OK
@@ -120,7 +119,7 @@ def upload_to_server(self, device, core_list):
     return status
 
 
-def get_upload_cmd(self, server, port, dest, protocol, core, location):
+def get_upload_cmd(server, port, dest, protocol, core, location):
     
     if port:
         server = '{server}:{port}'.format(server = server, port = port)
@@ -131,7 +130,7 @@ def get_upload_cmd(self, server, port, dest, protocol, core, location):
                       server=server, dest=dest)
 
 
-def clear_cores(self, device):
+def clear_cores(device):
 
     # Create dialog for response
     dialog = Dialog([

@@ -9,9 +9,10 @@ from ats.datastructures import classproperty
 # GenieMonitor
 from geniemonitor.plugins.bases import BasePlugin
 from geniemonitor.results import OK, WARNING, ERRORED, PARTIAL, CRITICAL
-from geniemonitor.plugins.utils import check_cores, upload_to_server,\
-                                           clear_cores
+from geniemonitor.plugins import libs
 
+# Abstract
+from abstract import Lookup
 
 class Plugin(BasePlugin):
 
@@ -70,7 +71,7 @@ class Plugin(BasePlugin):
         # -----------
         parser.add_argument('-destination',
                             action="store",
-                            default=None,
+                            default="/",
                             help = "Specify destination folder at remote "
                                    "server\ndefault to '/'")
         # timeout
@@ -87,12 +88,13 @@ class Plugin(BasePlugin):
 
         # Init
         status = OK
+        lookup = Lookup.from_device(device)
 
         # List to hold cores
         self.core_list = []
 
         # Execute command to check for cores
-        status += check_cores(device, execution_time)
+        status += lookup.libs.utils.check_cores(device, self.core_list)
 
         # User requested upload cores to server
         if self.args.upload and status == CRITICAL:
@@ -103,11 +105,11 @@ class Plugin(BasePlugin):
                       'password': self.args.password, 
                       'destination': self.args.destination,
                       'timeout': self.args.timeout}
-            status += upload_to_server(device, **kwargs)
+            status += lookup.libs.utils.upload_to_server(device, self.core_list, **kwargs)
 
         # User requested clean up of cores
         if self.args.clean_up and status == CRITICAL:
-            status += clear_cores(device)
+            status += lookup.libs.utils.clear_cores(device)
 
         # Final status
         return status

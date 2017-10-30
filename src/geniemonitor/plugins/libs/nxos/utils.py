@@ -8,7 +8,6 @@ from datetime import datetime
 from ats.log.utils import banner
 
 # GenieMonitor
-from geniemonitor.utils import is_hitting_threshold
 from geniemonitor.results import OK, WARNING, ERRORED, PARTIAL, CRITICAL
 
 # Parsergen
@@ -21,7 +20,7 @@ from unicon.eal.dialogs import Statement, Dialog
 logger = logging.getLogger(__name__)
 
 
-def check_cores(device, execution_time):
+def check_cores(device, core_list):
 
     # Init
     status = OK
@@ -33,9 +32,9 @@ def check_cores(device, execution_time):
                                show_command = 'show cores vdc-all',
                                header_fields = header, index = [5])
     if not output.entries:
-        logger.info(banner("No cores found!"))
-        status.meta = "No cores found!"
-        return status
+        meta_info = "No cores found!"
+        logger.info(banner(meta_info))
+        return OK(meta_info)
     
     # Parse through output to collect core information (if any)
     for k in sorted(output.entries.keys(), reverse=True):
@@ -44,8 +43,6 @@ def check_cores(device, execution_time):
         if not date:
             continue
         date_ = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
-        tempstatus = is_hitting_threshold(self.runtime,
-                                          execution_time, date_)
 
         # Save core info
         core_info = dict(module = row['Module'],
@@ -53,12 +50,11 @@ def check_cores(device, execution_time):
                          instance = row['Instance'],
                          process = row['Process-name'],
                          date = date.replace(" ", "_"))
-        self.core_list.append(core_info)
+        core_list.append(core_info)
 
-        message = "Core dump generated for process '{}' at {}".format(row['Process-name'], date_)
-        logger.error(banner(message))
-        status += CRITICAL
-        status.meta = message
+        meta_info = "Core dump generated for process '{}' at {}".format(row['Process-name'], date_)
+        logger.error(banner(meta_info))
+        status += CRITICAL(meta_info)
 
     return status
 
@@ -69,20 +65,19 @@ def upload_to_server(device, core_list, **kwargs):
     status= OK
 
     # Get info
-    info = servers.get(protocol, {})
-    servers = getattr(self.runtime.testbed, 'servers', {})
+    port = kwargs['port']
+    server = kwargs['server']
+    timeout = kwargs['timeout']
+    destination = kwargs['destination']
+    protocol = kwargs['protocol']
     username = kwargs['username']
     password = kwargs['password']
-    protocol = kwargs['protocol']
-    server = kwargs['server'] or info.get('address', None)
-    port = kwargs['port'] or info.get('port', None)
-    dest = kwargs['destination'] or info.get('path', '/')
-    timeout = kwargs['timeout'] or 300
 
     # Check values are not None
-    if username is None or password is None or server is None or dest is None:
-        return ERRORED('Unable to upload core to server. '
-                       'Parameters for upload not provided by user.')
+    for item in [protocol, server, destination, username, password]:
+        if item is None:
+            meta_info = "Unable to upload core dump - parameters not provided"
+            return ERRORED(meta_info)
 
     # Create unicon dialog (for ftp)
     dialog = Dialog([
@@ -98,23 +93,24 @@ def upload_to_server(device, core_list, **kwargs):
 
     # Upload each core found
     for core in core_list:
-        cmd = self.get_upload_cmd(server = server, port = port,
-                                  dest = dest, protocol = protocol, **core)
+        cmd = get_upload_cmd(server = server, port = port,
+                                  dest = destination, protocol = protocol,
+                                  **core)
         message = "Core dump upload attempt: {}".format(cmd)
         try:
             result = device.execute(cmd, timeout = timeout, reply=dialog)
             if 'operation failed' in result:
-                logger.error(banner('Core upload operation failed'))
-                status += ERRORED
-                status.meta = "Failed: {}".format(message)
+                meta_info = "Core upload operation failed: {}".format(message)
+                logger.error(banner(meta_info))
+                status += ERRORED(meta_info)
             else:
-                logger.info(banner('Core upload operation successful'))
-                status.meta = "Successful: {}".format(message)
+                meta_info = "Core upload operation passed: {}".format(message)
+                logger.info(banner(meta_info))
+                status += OK(meta_info)
         except Exception as e:
             # Handle exception
             logger.warning(e)
-            status += ERRORED
-            status.meta = "Failed: {}".format(message)
+            status += ERRORED("Failed: {}".format(message))
 
     return status
 
@@ -147,14 +143,14 @@ def clear_cores(device):
     # Execute command to delete cores
     try:
         device.execute('clear cores')
-        logger.info(banner("Successfully cleared cores on device"))
-        status = OK
-        status.meta = "Successfully cleared cores on device"
+        meta_info = "Successfully cleared cores on device"
+        logger.info(banner(meta_info))
+        status = OK(meta_info)
     except Exception as e:
         # Handle exception
         logger.warning(e)
-        logger.error("Unable to clear cores on device")
-        status = ERRORED
-        status.meta = "Unable to clear cores on device"
+        meta_info = "Unable to clear cores on device"
+        logger.error(meta_info)
+        status = ERRORED(meta_info)
 
     return status
