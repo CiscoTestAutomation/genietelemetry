@@ -9,6 +9,8 @@ from ats.datastructures import classproperty
 # GenieMonitor
 from geniemonitor.plugins.bases import BasePlugin
 from geniemonitor.results import OK, WARNING, ERRORED, PARTIAL, CRITICAL
+from geniemonitor.plugins.utils import check_cores, upload_to_server,\
+                                           clear_cores
 
 
 class Plugin(BasePlugin):
@@ -32,48 +34,48 @@ class Plugin(BasePlugin):
                             action="store",
                             default=False,
                             help='Specify whether clear core after upload')
-        # upload_via
-        # ----------
-        parser.add_argument('-upload_via',
+        # protocol
+        # --------
+        parser.add_argument('-protocol',
                             action="store",
                             default='tftp',
                             help = 'Specify upload protocol\ndefault to TFTP')
-        # upload_server
-        # -------------
-        parser.add_argument('-upload_server',
+        # server
+        # ------
+        parser.add_argument('-server',
                             action="store",
                             default=None,
                             help = 'Specify upload Server\ndefault uses '
                                    'servers information from yaml file')
-        # upload_port
-        # -----------
-        parser.add_argument('-upload_port',
+        # port
+        # ----
+        parser.add_argument('-port',
                             action="store",
                             default=None,
                             help = 'Specify upload Port\ndefault uses '
                                    'servers information from yaml file')
-        # upload_username
-        # ---------------
-        parser.add_argument('-upload_username',
+        # username
+        # --------
+        parser.add_argument('-username',
                             action="store",
                             default=None,
                             help = 'Specify upload username credentials')
-        # upload_password
-        # ---------------
-        parser.add_argument('-upload_password',
+        # password
+        # --------
+        parser.add_argument('-password',
                             action="store",
                             default=None,
                             help = 'Specify upload password credentials')
-        # upload_folder
-        # -------------
-        parser.add_argument('-upload_folder',
+        # destination
+        # -----------
+        parser.add_argument('-destination',
                             action="store",
                             default=None,
                             help = "Specify destination folder at remote "
                                    "server\ndefault to '/'")
-        # upload_timeout
-        # --------------
-        parser.add_argument('-upload_timeout',
+        # timeout
+        # -------
+        parser.add_argument('-timeout',
                             action="store",
                             default=300,
                             help = "Specify upload timeout value\ndefault "
@@ -86,16 +88,26 @@ class Plugin(BasePlugin):
         # Init
         status = OK
 
+        # List to hold cores
+        self.core_list = []
+
         # Execute command to check for cores
-        status += self.check_and_upload_cores(device, execution_time)
+        status += check_cores(device, execution_time)
 
         # User requested upload cores to server
         if self.args.upload and status == CRITICAL:
-            status += self.upload_to_server(device, self.core_list)
+            kwargs = {'protocol': self.args.protocol, 
+                      'server': self.args.server, 
+                      'port': self.args.port, 
+                      'username': self.args.username,
+                      'password': self.args.password, 
+                      'destination': self.args.destination,
+                      'timeout': self.args.timeout}
+            status += upload_to_server(device, **kwargs)
 
         # User requested clean up of cores
         if self.args.clean_up and status == CRITICAL:
-            status += self.clear_cores(device)
+            status += clear_cores(device)
 
         # Final status
         return status
