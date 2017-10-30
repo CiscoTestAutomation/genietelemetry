@@ -27,11 +27,11 @@ logger = logging.getLogger(__name__)
 
 class Plugin(BasePlugin):
 
-    # List to hold cores
-    core_list = []
-
     def check_and_upload_cores(self, device, execution_time):
 
+        # List to hold cores
+        self.core_list = []
+        
         # Init
         status_ = OK
 
@@ -86,6 +86,11 @@ class Plugin(BasePlugin):
         port = self.args.upload_port or info.get('port', None)
         dest = self.args.upload_folder or info.get('path', '/')
         timeout = self.args.upload_timeout or 300
+
+        # Check values are not None
+        if username is None or password is None or server is None or dest is None:
+            return ERRORED('Unable to upload core to server. '
+                           'Parameters for upload not provided by user')
 
         # Create unicon dialog (for ftp)
         dialog = Dialog([
