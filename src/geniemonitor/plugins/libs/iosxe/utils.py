@@ -17,13 +17,13 @@ from unicon.eal.utils import expect_log
 logger = logging.getLogger(__name__)
 
 
-def check_cores(device):
+def check_cores(device, core_list):
 
     # Init
     status = OK
 
     # Execute command to check for cores
-    for location in ['flash:/core', 'bootflash:/core', 'harddisk:/core', 'crashinfo:']:
+    for location in ['flash:/core', 'bootflash:/core', 'crashinfo:']:
         try:
             output = device.execute('dir {}'.format(location))
         except Exception as e:
@@ -36,8 +36,9 @@ def check_cores(device):
             logger.warning(banner("Location '{}' does not exist on device".format(location)))
             continue
         elif not output:
-            logger.error(banner("Unable to check for cores"))
-            return ERRORED
+            meta_info = "Unable to check for cores"
+            logger.error(banner(meta_info))
+            return ERRORED(meta_info)
 
         # 1613827  -rw-         56487348  Oct 17 2017 15:56:59 +17:00  PE1_RP_0_x86_64_crb_linux_iosd-universalk9-ms_15866_20171016-155604-PDT.core.gz
         core_pattern = '(?P<number>(\d+)) +(?P<permissions>(\S+)) +(?P<filesize>(\d+)) +(?P<month>(\S+)) +(?P<date>(\d+)) +(?P<year>(\d+)) +(?P<time>(\S+)) +(?P<timezone>(\S+)) +(?P<core>(.*core\.gz))'
@@ -45,43 +46,44 @@ def check_cores(device):
 
         for line in output.splitlines():
             # Parse through output to collect core information (if any)
-            if re.search(core_pattern, line, re.IGNORECASE) or \
-               re.search(crashinfo_pattern, line, re.IGNORECASE):
+            match = re.search(core_pattern, line, re.IGNORECASE) or \
+                    re.search(crashinfo_pattern, line, re.IGNORECASE)
+            if match:
                 core = match.groupdict()['core']
-                status += CRITICAL
-                status.meta = "Core dump generated:\n'{}'".format(core)
+                meta_info = "Core dump generated:\n'{}'".format(core)
+                logger.error(banner(meta_info))
+                status += CRITICAL(meta_info)
                 core_info = dict(location = location,
                                  core = core)
                 core_list.append(core_info)
 
         if not core_list:
-            message = "No cores found!"
-            logger.info(banner(message))
-            status += OK(message)
+            meta_info = "No cores found!"
+            logger.info(banner(meta_info))
+            status += OK(meta_info)
     
     return status
 
 
-def upload_to_server(device, core_list):
+def upload_to_server(device, core_list, **kwargs):
 
     # Init
     status= OK
 
     # Get info
-    protocol = self.args.upload_via or 'tftp'
-    servers = getattr(self.runtime.testbed, 'servers', {})
-    info = servers.get(protocol, {})
-    server = self.args.upload_server or info.get('address', None)
-    port = self.args.upload_port or info.get('port', None)
-    dest = self.args.upload_folder or info.get('path', '/')
-    timeout = self.args.upload_timeout or 300
-    username = self.args.upload_username
-    password = self.args.upload_password
+    port = kwargs['port']
+    server = kwargs['server']
+    timeout = kwargs['timeout']
+    destination = kwargs['destination']
+    protocol = kwargs['protocol']
+    username = kwargs['username']
+    password = kwargs['password']
 
     # Check values are not None
-    if username is None or password is None or server is None or dest is None:
-        return ERRORED('Unable to upload core to server. '
-                       'Parameters for upload not provided by user')
+    for item in [protocol, server, destination, username, password]:
+        if item is None:
+            meta_info = "Unable to upload core dump - parameters not provided"
+            return ERRORED(meta_info)
 
     # Create unicon dialog (for ftp)
     dialog = Dialog([
@@ -96,25 +98,25 @@ def upload_to_server(device, core_list):
         ])
 
     # Upload each core found
-    for item in self.core_list:
-        cmd = self.get_upload_cmd(server = server, port = port, dest = dest, 
-                                  protocol = protocol, core = item['core'], 
-                                  location = item['location'])
+    for item in core_list:
+        cmd = get_upload_cmd(server = server, port = port, dest = destination, 
+                             protocol = protocol, core = item['core'], 
+                             location = item['location'])
         message = "Core dump upload attempt: {}".format(cmd)
         try:
             result = device.execute(cmd, timeout = timeout, reply=dialog)
             if 'operation failed' in result:
-                logger.error(banner('Core upload operation failed'))
-                status += ERRORED
-                status.meta = "Failed: {}".format(message)
+                meta_info = "Core upload operation failed: {}".format(message)
+                logger.error(banner(meta_info))
+                status += ERRORED(meta_info)
             else:
-                logger.info(banner('Core upload operation successful'))
-                status.meta = "Successful: {}".format(message)
+                meta_info = "Core upload operation passed: {}".format(message)
+                logger.info(banner(meta_info))
+                status += OK(meta_info)
         except Exception as e:
             # Handle exception
             logger.warning(e)
-            status += ERRORED
-            status.meta = "Failed: {}".format(message)
+            status += ERRORED("Failed: {}".format(message))
 
     return status
 
@@ -130,7 +132,7 @@ def get_upload_cmd(server, port, dest, protocol, core, location):
                       server=server, dest=dest)
 
 
-def clear_cores(device):
+def clear_cores(device, core_list):
 
     # Create dialog for response
     dialog = Dialog([
@@ -141,25 +143,21 @@ def clear_cores(device):
         ])
 
     # Delete cores from the device
-    for item in self.core_list:
+    for item in core_list:
         try:
             # Execute delete command for this core
             cmd = 'delete {location}/{core}'.format(
                     core=item['core'],location=item['location'])
             output = device.execute(cmd, timeout=300, reply=dialog)
             # Log to user
-            message = 'Successfully deleted {location}/{core}'.format(
+            meta_info = 'Successfully deleted {location}/{core}'.format(
                         core=item['core'],location=item['location'])
-            logger.info(banner(message))
-            status = OK
-            status.meta = message
+            logger.info(banner(meta_info))
+            return OK(meta_info)
         except Exception as e:
             # Handle exception
             logger.warning(e)
-            message = 'Unable to delete {location}/{core}'.format(
+            meta_info = 'Unable to delete {location}/{core}'.format(
                         core=item['core'],location=item['location'])
-            logger.error(banner(message))
-            status = ERRORED
-            status.meta = message
-
-    return status
+            logger.error(banner(meta_info))
+            return ERRORED(meta_info)

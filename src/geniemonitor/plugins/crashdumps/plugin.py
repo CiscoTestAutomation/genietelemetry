@@ -109,7 +109,7 @@ class Plugin(BasePlugin):
 
         # User requested clean up of cores
         if self.args.clean_up and status == CRITICAL:
-            status += lookup.libs.utils.clear_cores(device)
+            status += lookup.libs.utils.clear_cores(device, self.core_list)
 
         # Final status
         return status

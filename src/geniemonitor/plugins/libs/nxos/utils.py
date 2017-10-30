@@ -138,7 +138,7 @@ def get_upload_cmd(module, pid, instance, server, port, dest, date, process, pro
                       server = server, path = path)
 
 
-def clear_cores(device):
+def clear_cores(device, core_list):
 
     # Execute command to delete cores
     try:
