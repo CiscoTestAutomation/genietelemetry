@@ -33,10 +33,11 @@ class Plugin(BasePlugin):
         # -------------
         parser.add_argument('-logic_pattern',
                             action="store",
-                            default='',
+                            default="And('Traceback')",
                             help='Specify logical expression for patterns to '
                                  'include/exclude when checking tracebacks '
-                                 'following PyATS logic format')
+                                 'following PyATS logic format. Default pattern'
+                                 'is to check for Tracebacks.')
         # clean_up
         # --------
         parser.add_argument('-clean_up',
