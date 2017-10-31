@@ -17,7 +17,7 @@ from unicon.eal.utils import expect_log
 logger = logging.getLogger(__name__)
 
 
-def check_cores(device):
+def check_cores(device, core_list):
 
     # Init
     status = OK
@@ -36,33 +36,39 @@ def check_cores(device):
             logger.warning(banner("Location '{}' does not exist on device".format(location)))
             continue
         elif not output:
-            logger.error(banner("Unable to check for cores"))
-            return ERRORED
+            meta_info = "Unable to check for cores"
+            logger.error(banner(meta_info))
+            return ERRORED(meta_info)
 
         # 24 -rwxr--r-- 1 18225345 Oct 23 05:15 ipv6_rib_9498.by.11.20170624-014425.xr-vm_node0_RP0_CPU0.237a0.core.gz
-        pattern = '(?P<number>(\d+)) +(?P<permissions>(\S+)) +(?P<other_number>(\d+)) +(?P<filesize>(\d+)) +(?P<month>(\S+)) +(?P<date>(\d+)) +(?P<time>(\S+)) +(?P<core>(.*core\.gz))'
+        pattern1 = '(?P<number>(\d+)) +(?P<permissions>(\S+)) +(?P<other_number>(\d+)) +(?P<filesize>(\d+)) +(?P<month>(\S+)) +(?P<date>(\d+)) +(?P<time>(\S+)) +(?P<core>(.*core\.gz))'
+        # 12089255    -rwx  23596201    Tue Oct 31 05:16:50 2017  ospf_14495.by.6.20171026-060000.xr-vm_node0_RP0_CPU0.328f3.core.gz
+        pattern2 = '(?P<number>(\d+)) +(?P<permissions>(\S+)) +(?P<filesize>(\d+)) +(?P<day>(\S+)) +(?P<month>(\S+)) +(?P<date>(\d+)) +(?P<time>(\S+)) +(?P<year>(\d+)) +(?P<core>(.*core\.gz))'
         for line in output.splitlines():
             # Parse through output to collect core information (if any)
-            match = re.search(pattern, line, re.IGNORECASE)
+            match = re.search(pattern1, line, re.IGNORECASE) or \
+                    re.search(pattern2, line, re.IGNORECASE)
             if match:
                 core = match.groupdict()['core']
-                status += CRITICAL
-                status.meta = "Core dump generated:\n'{}'".format(core)
+                meta_info = "Core dump generated:\n'{}'".format(core)
+                logger.error(banner(meta_info))
+                status += CRITICAL(meta_info)
                 core_info = dict(location = location,
                                  core = core)
                 core_list.append(core_info)
 
         if not core_list:
-            logger.info(banner("No cores found!"))
-            status.meta = "No cores found!"
-    
+            meta_info = "No cores found at location: {}".format(location)
+            logger.info(banner(meta_info))
+            status += OK(meta_info)
+
     return status
 
 
-def upload_to_server(device, core_list):
+def upload_to_server(device, core_list, **kwargs):
 
     # Init
-    status= OK
+    status = OK
 
     # Get info
     protocol = self.args.upload_via or 'tftp'
@@ -97,25 +103,25 @@ def upload_to_server(device, core_list):
         ])
 
     # Upload each core found
-    for item in self.core_list:
-        cmd = self.get_upload_cmd(server = server, port = port, dest = dest, 
-                                  protocol = protocol, core = item['core'], 
-                                  location = item['location'])
+    for item in core_list:
+        cmd = get_upload_cmd(server = server, port = port, dest = destination, 
+                             protocol = protocol, core = item['core'], 
+                             location = item['location'])
         message = "Core dump upload attempt: {}".format(cmd)
         try:
             result = device.execute(cmd, timeout = timeout, reply=dialog)
-            if 'operation failed' in result:
-                logger.error(banner('Core upload operation failed'))
-                status += ERRORED
-                status.meta = "Failed: {}".format(message)
+            if 'operation failed' in result or 'Error' in result:
+                meta_info = "Core upload operation failed: {}".format(message)
+                logger.error(banner(meta_info))
+                status += ERRORED(meta_info)
             else:
-                logger.info(banner('Core upload operation successful'))
-                status.meta = "Successful: {}".format(message)
+                meta_info = "Core upload operation passed: {}".format(message)
+                logger.info(banner(meta_info))
+                status += OK(meta_info)
         except Exception as e:
             # Handle exception
             logger.warning(e)
-            status += ERRORED
-            status.meta = "Failed: {}".format(message)
+            status += ERRORED("Failed: {}".format(message))
 
     return status
 
@@ -131,7 +137,7 @@ def get_upload_cmd(server, port, dest, protocol, core, location):
                       server=server, dest=dest)
 
 
-def clear_cores(device):
+def clear_cores(device, core_list):
 
     # Create dialog for response
     dialog = Dialog([
@@ -142,25 +148,21 @@ def clear_cores(device):
         ])
 
     # Delete cores from the device
-    for item in self.core_list:
+    for item in core_list:
         try:
             # Execute delete command for this core
             cmd = 'delete {location}/{core}'.format(
                     core=item['core'],location=item['location'])
             output = device.execute(cmd, timeout=300, reply=dialog)
             # Log to user
-            message = 'Successfully deleted {location}/{core}'.format(
+            meta_info = 'Successfully deleted {location}/{core}'.format(
                         core=item['core'],location=item['location'])
-            logger.info(banner(message))
-            status = OK
-            status.meta = message
+            logger.info(banner(meta_info))
+            return OK(meta_info)
         except Exception as e:
             # Handle exception
             logger.warning(e)
-            message = 'Unable to delete {location}/{core}'.format(
+            meta_info = 'Unable to delete {location}/{core}'.format(
                         core=item['core'],location=item['location'])
-            logger.error(banner(message))
-            status = ERRORED
-            status.meta = message
-
-    return status
+            logger.error(banner(meta_info))
+            return ERRORED(meta_info)

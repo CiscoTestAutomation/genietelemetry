@@ -42,7 +42,7 @@ def check_cores(device, core_list):
 
         # 1613827  -rw-         56487348  Oct 17 2017 15:56:59 +17:00  PE1_RP_0_x86_64_crb_linux_iosd-universalk9-ms_15866_20171016-155604-PDT.core.gz
         core_pattern = '(?P<number>(\d+)) +(?P<permissions>(\S+)) +(?P<filesize>(\d+)) +(?P<month>(\S+)) +(?P<date>(\d+)) +(?P<year>(\d+)) +(?P<time>(\S+)) +(?P<timezone>(\S+)) +(?P<core>(.*core\.gz))'
-        crashinfo_pattern = '(?P<number>(\d+)) +(?P<permissions>(\S+)) +(?P<filesize>(\d+)) +(?P<month>(\S+)) +(?P<date>(\d+)) +(?P<year>(\d+)) +(?P<time>(\S+)) +(?P<timezone>(\S+)) +(?P<core>(.*crashinfo))'
+        crashinfo_pattern = '(?P<number>(\d+)) +(?P<permissions>(\S+)) +(?P<filesize>(\d+)) +(?P<month>(\S+)) +(?P<date>(\d+)) +(?P<year>(\d+)) +(?P<time>(\S+)) +(?P<timezone>(\S+)) +(?P<core>(crashinfo.*))'
 
         for line in output.splitlines():
             # Parse through output to collect core information (if any)
@@ -58,7 +58,7 @@ def check_cores(device, core_list):
                 core_list.append(core_info)
 
         if not core_list:
-            meta_info = "No cores found!"
+            meta_info = "No cores found at location: {}".format(location)
             logger.info(banner(meta_info))
             status += OK(meta_info)
     
@@ -105,7 +105,7 @@ def upload_to_server(device, core_list, **kwargs):
         message = "Core dump upload attempt: {}".format(cmd)
         try:
             result = device.execute(cmd, timeout = timeout, reply=dialog)
-            if 'operation failed' in result:
+            if 'operation failed' in result or 'Error' in result:
                 meta_info = "Core upload operation failed: {}".format(message)
                 logger.error(banner(meta_info))
                 status += ERRORED(meta_info)
