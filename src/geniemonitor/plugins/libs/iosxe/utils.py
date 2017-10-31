@@ -23,7 +23,7 @@ def check_cores(device, core_list):
     status = OK
 
     # Execute command to check for cores
-    for location in ['flash:/core', 'bootflash:/core', 'crashinfo:']:
+    for location in ['flash:/core', 'bootflash:/core', 'harddisk:/core', 'crashinfo:']:
         try:
             output = device.execute('dir {}'.format(location))
         except Exception as e:
