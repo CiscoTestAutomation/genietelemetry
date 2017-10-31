@@ -10,12 +10,23 @@ GenieMonitor
 
 Installation
 ------------
-GenieMonitor is hosted on pyATS pypi server. You can install it inside of your
-pyATS instance by using command.
+``Geniemonitor`` package is hosted on the pyATS pypi server. 
+
+``Geniemonitor`` package can be installed in two parts. First install the core 
+package via pip.
 
 .. code-block:: bash
 
     bash$ pip install geniemonitor
+
+The user-contributed libraries are downloadable via Git. Execute this command
+under your `projects` directory in your pyATS virtual environment `$VIRTUAL_ENV`.
+
+.. code-block:: bash
+
+    cd $VIRTUAL_ENV/projects
+    git clone ssh://git@bitbucket-eng-sjc1.cisco.com:7999/pyats-proj/geniemonitor_libs.git
+
 
 GenieMonitor Launcher
 ---------------------
@@ -336,3 +347,11 @@ Example Testbed File
             custom:
                 abstraction:
                   order: [os]
+
+.. hint::
+
+    Please remember to include `unicon`_ and `abstraction`_ order in your testbed
+    YAML file as shown in the example above.
+    
+    .. _unicon: http://wwwin-pyats.cisco.com/cisco-shared/unicon/latest/
+    .. _abstraction: http://wwwin-pyats.cisco.com/cisco-shared/abstract/html/
