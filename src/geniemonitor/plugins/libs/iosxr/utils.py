@@ -21,7 +21,7 @@ def check_cores(device, core_list):
 
     # Init
     status = OK
-
+    
     # Execute command to check for cores
     for location in ['disk0:', 'disk0:core', 'harddisk:']:
         try:
@@ -44,6 +44,7 @@ def check_cores(device, core_list):
         pattern1 = '(?P<number>(\d+)) +(?P<permissions>(\S+)) +(?P<other_number>(\d+)) +(?P<filesize>(\d+)) +(?P<month>(\S+)) +(?P<date>(\d+)) +(?P<time>(\S+)) +(?P<core>(.*core\.gz))'
         # 12089255    -rwx  23596201    Tue Oct 31 05:16:50 2017  ospf_14495.by.6.20171026-060000.xr-vm_node0_RP0_CPU0.328f3.core.gz
         pattern2 = '(?P<number>(\d+)) +(?P<permissions>(\S+)) +(?P<filesize>(\d+)) +(?P<day>(\S+)) +(?P<month>(\S+)) +(?P<date>(\d+)) +(?P<time>(\S+)) +(?P<year>(\d+)) +(?P<core>(.*core\.gz))'
+
         for line in output.splitlines():
             # Parse through output to collect core information (if any)
             match = re.search(pattern1, line, re.IGNORECASE) or \
@@ -68,23 +69,22 @@ def check_cores(device, core_list):
 def upload_to_server(device, core_list, **kwargs):
 
     # Init
-    status = OK
+    status= OK
 
     # Get info
-    protocol = self.args.upload_via or 'tftp'
-    servers = getattr(self.runtime.testbed, 'servers', {})
-    info = servers.get(protocol, {})
-    server = self.args.upload_server or info.get('address', None)
-    port = self.args.upload_port or info.get('port', None)
-    dest = self.args.upload_folder or info.get('path', '/')
-    timeout = self.args.upload_timeout or 300
-    username = self.args.upload_username
-    password = self.args.upload_password
+    port = kwargs['port']
+    server = kwargs['server']
+    timeout = kwargs['timeout']
+    destination = kwargs['destination']
+    protocol = kwargs['protocol']
+    username = kwargs['username']
+    password = kwargs['password']
 
     # Check values are not None
-    if username is None or password is None or server is None or dest is None:
-        return ERRORED('Unable to upload core to server. '
-                       'Parameters for upload not provided by user')
+    for item in [protocol, server, destination, username, password]:
+        if item is None:
+            meta_info = "Unable to upload core dump - parameters not provided"
+            return ERRORED(meta_info)
 
     # Create unicon dialog (for ftp)
     dialog = Dialog([
