@@ -10,6 +10,10 @@ plugins:
         interval: 60
         enabled: True
         module: geniemonitor.plugins.crashdumps
+    tracebackcheck:
+        interval: 60
+        enabled: True
+        module: geniemonitor.plugins.tracebackcheck
 
 core:
     job:

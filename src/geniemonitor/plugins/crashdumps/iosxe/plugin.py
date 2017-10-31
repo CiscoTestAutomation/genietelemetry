@@ -1,5 +1,5 @@
 ''' 
-GenieMonitor Crashdumps Plugin for NXOS
+GenieMonitor Crashdumps Plugin for IOSXE
 '''
 
 # GenieMonitor
