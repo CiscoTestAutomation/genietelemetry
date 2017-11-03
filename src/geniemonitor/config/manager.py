@@ -43,7 +43,7 @@ class Configuration(object):
         self.plugins = AttrDict()
         self.connection = AttrDict()
         self.thresholds = AttrDict()
-
+        self.processors = AttrDict()
         self._loader = ConfigLoader()
         
     def load(self, config = None):
@@ -72,6 +72,7 @@ class Configuration(object):
     def update(self, config):
         recursive_update(self.core, config.get('core', {}))
         recursive_update(self.plugins, config.get('plugins', {}))
+        recursive_update(self.processors, config.get('processors', {}))
         recursive_update(self.connection, self.core.get('connection', {}))
         recursive_update(self.thresholds, self.core.get('thresholds', {}))
 

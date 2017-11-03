@@ -12,5 +12,6 @@ GenieMonitor.
    usage
    plugins
    results
+   harness
 
 .. sectionauthor:: Wei Chen <weiche3@cisco.com>

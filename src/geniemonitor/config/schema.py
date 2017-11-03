@@ -101,4 +101,5 @@ config_schema = {
         },
         Optional("thresholds"): Use(import_thresholds),
     },
+    Any(): Any(),
 }
