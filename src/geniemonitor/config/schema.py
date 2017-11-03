@@ -22,6 +22,12 @@ def validate_plugins(data):
             config.setdefault('enabled', True)
             config.setdefault('interval', 30)
 
+            # build plugin device filter
+            config.setdefault('devices', [])
+            devices = config.pop('devices', [])
+            if not isinstance(devices, list):
+                devices = [ devices ]
+
             # build the plugin arguments
             # If user given any arg not defined in the yaml file,
             # it is passes as kwargs to the __init__ of the plugins
@@ -41,6 +47,7 @@ def validate_plugins(data):
                 config['module'] = import_from_name(module)
                 config['basecls'] = import_from_name('%s.Plugin' % module)
             config['kwargs'] = kwargs
+            config['devices'] = devices
 
     except Exception as e:
         raise SchemaError("Invalid geniemonitor_config.yaml input for "

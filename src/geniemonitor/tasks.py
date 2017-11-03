@@ -339,6 +339,12 @@ class Task(multiprocessing.Process):
         setproctitle.setproctitle('GenieMonitor task: %s' % self.name)
 
         plugins = self.runtime.plugins.get_device_plugins(self.device)
+        # found no plugin, finishing task
+        if not plugins:
+            logger.warning("No monitoring plugin detected for %s" %
+                                                               self.device.name)
+            return self.task_finished()
+
         # workaround for enabling pdb under child process
         # also include special handling of -pdb argument of aetest (shit code)
         should_pdb = self.kwargs.get('pdb', False) or '-pdb' in sys.argv

@@ -115,6 +115,9 @@ class PluginManager(object):
         # list of plugin instances
         self._stacks = {}
 
+        # list of plugin device filter
+        self._plugin_device_filter = {}
+
 
     def __iter__(self):
         '''PluginManager iterator
@@ -220,6 +223,14 @@ class PluginManager(object):
         argv = copy.copy(sys.argv[1:])
 
         for plugin in plugins:
+
+            plugin_name = plugin[0]
+            devices = self._plugin_device_filter.get(plugin_name, [])
+            # if devices filter exists, skip such device is not included, skip
+            if devices and name not in devices:
+                logger.info('Skipping plugin %s for device %s' % (plugin_name,
+                                                                  name))
+                continue
 
             plugin = self.load_plugin(obj, plugin)
 
@@ -357,5 +368,7 @@ class PluginManager(object):
 
             # store plugin in order
             self._plugins.append(plugin)
+
+            self._plugin_device_filter[name] = config.get('devices', [])
 
         logger.debug('Instantiated the following plugins: %s' % plugins)

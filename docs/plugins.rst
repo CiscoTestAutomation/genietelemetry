@@ -157,9 +157,34 @@ instance or the file path can be provided with ``-configuration`` parameter.
 
           interval: 30              # defines the interval of execution of
                                     # plugins, in seconds only.
+          devices: []               # device filter list: if not defined, the
+                                    # plugin will be applied to all devices,
+                                    # otherwise, only the included devices will
+                                    # be applied.
 
 And ``geniemonitor`` automatically discovers, loads your plugin, and runs its
 actions as part of its standard execution stage.
+
+
+Plugin Device Filter
+--------------------
+
+By default, plugin will be applied to all devices within the testbed. User can
+fine tuning the devices filter by supplying a devices list in the configuration
+file. Monitoring plugin will only executed on devices that is in the inclusive
+list.
+
+The following example indicates plugin HelloWorldPlugin only be executed on
+device with name `Tonystark-sjc`.
+
+.. code-block:: bash
+    
+    plugins:
+        HelloWorldPlugin:
+          enabled: True
+          module: module.where.plugin.is.defined
+          interval: 30 
+          devices: [Tonystark-sjc]
 
 
 Plugin Errors
