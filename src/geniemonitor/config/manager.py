@@ -77,4 +77,4 @@ class Configuration(object):
         recursive_update(self.thresholds, self.core.get('thresholds', {}))
 
     def update_plugins(self, plugins = {}):
-        self.plugins = AttrDict(validate_plugins(plugins))
+        self.plugins = AttrDict(plugins)

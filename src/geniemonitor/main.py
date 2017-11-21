@@ -118,6 +118,7 @@ class GenieMonitorRuntime(object):
 
         self.keep_alive = False
         self.uid = uid
+        self.pdb = False
 
     def main(self, *args, **kwargs):
         '''run
@@ -146,7 +147,7 @@ class GenieMonitorRuntime(object):
     def _monitor(self, testbed_file = None, loglevel = None,
                  no_mail = False, mailto = None, mail_subject = None,
                  no_notify = False, notify_subject = None,
-                 keep_alive = False, length = None,
+                 keep_alive = False, length = None, pdb = False,
                  runinfo_dir = None, no_meta = False, uid = None):
         '''_monitor
         '''
@@ -167,6 +168,8 @@ class GenieMonitorRuntime(object):
         # ----------------------
         if not testbed_file:
             raise ValueError('must provide a valid TESTBEDFILE to run')
+
+        self.pdb = pdb or '-pdb' in sys.argv
 
         # create core objects
         # -------------------
@@ -322,8 +325,8 @@ def monitor(runtime = None, configuration = None,
         default_runtime.configuration.load(configuration)
 
     if plugins:
-        plugins = copy.deepcopy(plugins)
-        default_runtime.configuration.update_plugins(plugins)
+        monitor_plugins = plugins.copy()
+        default_runtime.configuration.update_plugins(monitor_plugins)
         default_runtime.plugins.load(default_runtime.configuration.plugins)
 
     return default_runtime.monitor(*args, **kwargs)

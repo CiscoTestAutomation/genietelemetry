@@ -1,3 +1,4 @@
+import sys
 
 from ats.utils import parser as argparse
 from ats.easypy.plugins.bases import BasePlugin
@@ -27,8 +28,14 @@ class Procesor(object):
                 pass
 
             @aetest.test
+            def Hello_with_Direct_Call(self):
+                monitor = GenieMonitorRunner.processor_pre()
+                status = monitor.result['testbed']['status']
+                logger.info('monitoring result %s ' % status)
+
+            @aetest.test
             def Hello_with_Context_Manager(self):
-                with GenieMonitorRunner.processor_pre() as processor:
+                with GenieMonitorRunner.processor_pre as processor:
                     status = processor.result['testbed']['status']
                     logger.info('monitoring result %s ' % status)
 
@@ -40,18 +47,21 @@ class Procesor(object):
 
     """
 
-    def __init__(self, runner, plugins = {}):
+    def __init__(self, runner, pdb = False, plugins = {}):
         self.runner = runner
         self.plugins = plugins
         self.result = None
+        self.pdb = pdb
 
     def __call__(self):
         '''dunder __call__ method
 
-            This method is to be automatically invoked by AEtest Harness
+            This method is to be automatically invoked by AEtest Harness if it's
+            defined as pre/post/exception processor for AEtest.
 
         '''
-        return self.execute()
+        self.execute()
+        return self
 
     def __enter__(self):
         # kick off an on-demand monitoring
@@ -67,15 +77,14 @@ class Procesor(object):
         return True if not exception else False
 
     def _get_exception_or_none(self):
-
         if not self.result:
             return 'No monitor result was provided.'
 
         status = self.result.get('testbed', {}).get('status', 'errored')
-        if status != 'ok':
+        if str(status) != 'ok':
             return 'Testbed status apparently to be %s' % status
 
-        devices = self.result.get('devices', {}):
+        devices = self.result.get('devices', {})
         if not devices:
             return
 
@@ -97,14 +106,16 @@ class Procesor(object):
             raise Exception('GenieMonitorRunner instance is missing')
 
         self.plugins = plugins or self.plugins or {}
-
         # kick off an on-demand monitoring
-        self.result = monitor(runtime = self.runner.geniemonitor_runtime,
+        self.result = monitor(runtime = GenieMonitorRuntime(
+                                   configuration = self.runner.args.geniemonitor
+                                   ),
                               plugins = self.plugins,
                               testbed_file = self.runner.testbed_file,
-                              no_mail = self.runner.args.geniemonitor_no_email)
+                              no_mail = self.runner.args.geniemonitor_no_mail,
+                              pdb = self.pdb)
 
-        exception = self._get_exception_or_none():
+        exception = self._get_exception_or_none()
         if exception:
             raise Exception(exception)
 
@@ -161,6 +172,7 @@ class GenieMonitorRunner(BasePlugin):
                                                       default = False)
 
     def pre_task(self, task):
+
         # looks for geniemonitor configuration file and testbed instance
         if not self.args.geniemonitor or not task.runtime.testbed:
             return
@@ -182,6 +194,7 @@ class GenieMonitorRunner(BasePlugin):
         if isinstance(self.processor_cls, str):
             self.processor_cls = import_from_name(self.processor_cls)
 
+        pdb = task.kwargs.get('pdb', False) or '-pdb' in sys.argv
         # load plugin list into processor and associate it with Runner class
         for processor_name, plugin_list in processors.items():
             monitor_plugins = {}
@@ -189,5 +202,7 @@ class GenieMonitorRunner(BasePlugin):
                 if plugin_name in plugin_list:
                     monitor_plugins.update({plugin_name : plugin_config})
             # initialize processor
-            processor = self.processor_cls(self, plugins = monitor_plugins)
+            processor = self.processor_cls(self,
+                                           pdb = pdb,
+                                           plugins = monitor_plugins)
             setattr(self.__class__, processor_name, processor)
