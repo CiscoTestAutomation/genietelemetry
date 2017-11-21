@@ -47,11 +47,12 @@ class Procesor(object):
 
     """
 
-    def __init__(self, runner, pdb = False, plugins = {}):
+    def __init__(self, runner, pdb = False, runinfo_dir = None, plugins = {}):
         self.runner = runner
         self.plugins = plugins
         self.result = None
         self.pdb = pdb
+        self.runinfo_dir = runinfo_dir
 
     def __call__(self):
         '''dunder __call__ method
@@ -82,7 +83,7 @@ class Procesor(object):
 
         status = self.result.get('testbed', {}).get('status', 'errored')
         if str(status) != 'ok':
-            return 'Testbed status apparently to be %s' % status
+            return "The testbed status is in '%s' state" % status
 
         devices = self.result.get('devices', {})
         if not devices:
@@ -113,7 +114,8 @@ class Procesor(object):
                               plugins = self.plugins,
                               testbed_file = self.runner.testbed_file,
                               no_mail = self.runner.args.geniemonitor_no_mail,
-                              pdb = self.pdb)
+                              pdb = self.pdb,
+                              runinfo_dir = self.runinfo_dir)
 
         exception = self._get_exception_or_none()
         if exception:
@@ -194,7 +196,11 @@ class GenieMonitorRunner(BasePlugin):
         if isinstance(self.processor_cls, str):
             self.processor_cls = import_from_name(self.processor_cls)
 
+        # get runinfo_dir information
+        runinfo_dir = task.runtime.runinfo.runinfo_dir
+        # get pdb information
         pdb = task.kwargs.get('pdb', False) or '-pdb' in sys.argv
+
         # load plugin list into processor and associate it with Runner class
         for processor_name, plugin_list in processors.items():
             monitor_plugins = {}
@@ -204,5 +210,6 @@ class GenieMonitorRunner(BasePlugin):
             # initialize processor
             processor = self.processor_cls(self,
                                            pdb = pdb,
+                                           runinfo_dir = runinfo_dir,
                                            plugins = monitor_plugins)
             setattr(self.__class__, processor_name, processor)
