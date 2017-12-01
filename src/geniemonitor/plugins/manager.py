@@ -276,7 +276,7 @@ class PluginManager(object):
         except AttributeError:
             plugin_cls = attrgetter('Plugin')(module)
 
-        return plugin_cls(**plugin_kwargs)
+        return plugin_cls(runtime = self._runtime, **plugin_kwargs)
 
     def get_device_plugins(self, device = None):
         if not device:
@@ -360,9 +360,6 @@ class PluginManager(object):
 
             # get the plugin basecls
             base_cls = config.get('basecls', None)
-
-            # add runtime argument
-            plugin_kwargs.setdefault('runtime', self._runtime)
 
             plugin = (name, plugin_module, plugin_kwargs, base_cls)
 

@@ -346,8 +346,9 @@ class Task(multiprocessing.Process):
             return self.task_finished()
 
         # workaround for enabling pdb under child process
-        # also include special handling of -pdb argument of aetest (shit code)
-        should_pdb = self.kwargs.get('pdb', False) or '-pdb' in sys.argv
+        # also include special handling of -pdb argument of aetest
+        should_pdb = self.runtime.pdb or self.kwargs.get('pdb', False)
+
         if should_pdb:
             sys.stdin = open('/dev/stdin')
 
