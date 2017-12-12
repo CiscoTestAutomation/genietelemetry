@@ -5,15 +5,15 @@ plugins:
     keepalive:
         interval: 30
         enabled: True
-        module: geniemonitor.plugins.keepalive
+        module: geniemonitor_libs.plugins.keepalive
     crashdumps:
         interval: 60
         enabled: True
-        module: geniemonitor.plugins.crashdumps
+        module: geniemonitor_libs.plugins.crashdumps
     tracebackcheck:
         interval: 60
         enabled: True
-        module: geniemonitor.plugins.tracebackcheck
+        module: geniemonitor_libs.plugins.tracebackcheck
 
 core:
     job:
