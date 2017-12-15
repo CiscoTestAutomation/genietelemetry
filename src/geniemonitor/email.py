@@ -1,3 +1,4 @@
+import os
 import sys
 import abc
 import logging
@@ -238,6 +239,11 @@ class MailBot(object, metaclass = MetaClassFactory):
                                                        if isfile(join(path, f))]
 
             message.attachments.extend(onlyfiles)
+            for filename in onlyfiles:
+                with open(filename, 'r') as file:
+                    content = file.read()
+                message.body+='\n'.join((banner(os.path.basename(filename)),
+                                         content))
 
         if not self.nomail:
             # send the bloody email
