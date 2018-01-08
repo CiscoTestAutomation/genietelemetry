@@ -58,7 +58,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'GenieMonitor'
+project = 'Telemetry'
 copyright = '%s, ASG, Cisco Internal Confidential' % datetime.now().year
 
 # The version info for the project you're documenting, acts as replacement for
@@ -128,10 +128,10 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = 'GenieMonitor Documentation'
+html_title = 'Telemetry Documentation'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-html_short_title = 'GenieMonitor User Guide'
+html_short_title = 'Telemetry User Guide'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
@@ -208,7 +208,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
- ('index', 'pyATS.tex', 'GenieMonitor Documentation',
+ ('index', 'pyATS.tex', 'Telemetry Documentation',
   'ASG Team', 'manual'),
 ]
 
@@ -238,7 +238,7 @@ latex_domain_indices = True
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'pyats', 'GenieMonitor Documentation',
+    ('index', 'pyats', 'Telemetry Documentation',
      ['ATS Team'], 1)
 ]
 
@@ -252,7 +252,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'pyATS', 'GenieMonitor Documentation',
+  ('index', 'pyATS', 'Telemetry Documentation',
    'ATS Team', 'One line description of project.',
    'Miscellaneous'),
 ]

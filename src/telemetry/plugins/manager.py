@@ -15,11 +15,11 @@ from .stages import PluginStage, Scope
 from .bases import BasePlugin
 from ..utils import unzip_and_import
 
-from geniemonitor.results import ERRORED, OK, HealthStatus
+from telemetry.results import ERRORED, OK, HealthStatus
 from ats.utils.import_utils import import_from_name
 
 # declare module as infra
-__genie_monitor_infra__ = True
+__telemetry_infra__ = True
 
 # module logger
 logger = logging.getLogger(__name__)

@@ -24,7 +24,7 @@ multiprocessing = __import__('multiprocessing').get_context('fork')
 from multiprocessing import Process
 
 # declare module as infra
-__genie_monitor_infra__ = True
+__telemetry_infra__ = True
 
 # module logger
 logger = logging.getLogger(__name__)
@@ -305,7 +305,7 @@ class Task(multiprocessing.Process):
         3. wrap up.
         '''
 
-        self.module_logger = logging.getLogger('geniemonitor')
+        self.module_logger = logging.getLogger('telemetry')
         self.task_handler = TaskLogHandler(self.runtime.job.joblog)
 
         self.module_logger.addHandler(self.task_handler)
@@ -336,7 +336,7 @@ class Task(multiprocessing.Process):
         logger.info("Starting monitoring on %s" % self.device.name)
 
         # set process title
-        setproctitle.setproctitle('GenieMonitor task: %s' % self.name)
+        setproctitle.setproctitle('Telemetry task: %s' % self.name)
 
         plugins = self.runtime.plugins.get_device_plugins(self.device)
         # found no plugin, finishing task

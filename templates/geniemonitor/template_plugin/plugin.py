@@ -1,12 +1,12 @@
 '''
-GenieMonitor Plugin Template.
+Telemetry Plugin Template.
 '''
 
 from ats.utils import parser as argparse
 from ats.datastructures import classproperty
 
-# GenieMonitor
-from geniemonitor.plugins.bases import BasePlugin
+# Telemetry
+from telemetry.plugins.bases import BasePlugin
 
 class Plugin(BasePlugin):
 

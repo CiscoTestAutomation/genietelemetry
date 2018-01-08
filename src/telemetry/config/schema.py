@@ -50,7 +50,7 @@ def validate_plugins(data):
             config['devices'] = devices
 
     except Exception as e:
-        raise SchemaError("Invalid geniemonitor_config.yaml input for "
+        raise SchemaError("Invalid telemetry_config.yaml input for "
                           "plugins") from e
     return data
 
@@ -87,7 +87,7 @@ def import_thresholds(data):
             raise SchemaError("Invalid threshold order %s " % data)
 
     except Exception as e:
-        raise SchemaError("Invalid geniemonitor_config.yaml input for "
+        raise SchemaError("Invalid telemetry_config.yaml input for "
                           "thresholds") from e
     return data
 

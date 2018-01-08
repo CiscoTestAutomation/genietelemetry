@@ -1,6 +1,6 @@
 '''Parser Module
 
-Module to handle all command-line parsing functionality/behavior of genieMonitor
+Module to handle all command-line parsing functionality/behavior of telemetry
 
 (standardization of how parsing at the command line is done, consolidate logic)
 '''
@@ -13,11 +13,11 @@ from gettext import gettext
 import re as re
 
 # declare module as infra
-__genie_monitor_infra__ = True
+__telemetry_infra__ = True
 
 
 CLI_DESCRIPTION = '''\
-GenieMonitor command line arguments.
+Telemetry command line arguments.
 
 Example
 -------
@@ -26,7 +26,7 @@ Example
 --------------------------------------------------------------------------------
 '''
 
-class GenieMonitorParser(parser.ArgsPropagationParser):
+class TelemetryParser(parser.ArgsPropagationParser):
         
 
     def __init__(self, runtime):
@@ -38,7 +38,7 @@ class GenieMonitorParser(parser.ArgsPropagationParser):
         self.runtime = runtime
                          
         # customize internals
-        self.formatter_class = GenieMonitorParserFormatter
+        self.formatter_class = TelemetryParserFormatter
         self.prog = os.path.basename(sys.argv[0])
         self.description = CLI_DESCRIPTION % {'prog': self.prog}
         self.epilog = None
@@ -76,7 +76,7 @@ class GenieMonitorParser(parser.ArgsPropagationParser):
                                         'WARNING', 'INFO', 'DEBUG'),
                              metavar = '',
                              default = logging.INFO,
-                             help = 'geniemonitor logging level\n'
+                             help = 'telemetry logging level\n'
                                     'eg: -loglevel="INFO"')
 
     def _get_subsystems(self):
@@ -175,7 +175,7 @@ class GenieMonitorParser(parser.ArgsPropagationParser):
         return formatter.format_help()
 
 
-class GenieMonitorParserFormatter(parser.RawTextHelpFormatter):
+class TelemetryParserFormatter(parser.RawTextHelpFormatter):
 
     def _format_usage(self, usage, actions, groups, prefix):
         '''_format_usage
@@ -184,7 +184,7 @@ class GenieMonitorParserFormatter(parser.RawTextHelpFormatter):
         positional arguments now show up before optional arguments in the usage
         text.
 
-        This is needed as GenieMonitor parser is a multiple stack/stage parser.
+        This is needed as Telemetry parser is a multiple stack/stage parser.
 
         '''
         

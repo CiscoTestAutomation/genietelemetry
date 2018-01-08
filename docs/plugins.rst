@@ -3,28 +3,28 @@
 Plugin System
 =============
 
-``geniemonitor`` is designed around a modular plugin-based architecture. The end
+``telemetry`` is designed around a modular plugin-based architecture. The end
 goal is to allow maximum developer configurability & extendability without
 sacrificing overall structure, flow and code-base integrity.
 
 .. note::
 
-    GenieMonitor plugins are not for the faint of heart: it is intended for
-    advanced developers to provide optional *pluggable* ``geniemonitor``
+    Telemetry plugins are not for the faint of heart: it is intended for
+    advanced developers to provide optional *pluggable* ``telemetry``
     features for other developers to use.
 
 
 Concept & Rules
 ---------------
 
-Plugins offers *optional* functionalities that may be added to ``geniemonitor``.
+Plugins offers *optional* functionalities that may be added to ``telemetry``.
 Each plugin must be configured first via a configuration YAML file before they
 can be loaded, instantiated and executed.
 
 All plugins must obey the following rules of development:
 
 - plugins may be configured globally (for all runs in this pyATS instance) by
-  creating a  ``geniemonitor_config.yaml`` in the root pyATS installation
+  creating a  ``telemetry_config.yaml`` in the root pyATS installation
   folder.
 
 - plugins may be configured locally (for this run only) by passing in a config
@@ -32,23 +32,23 @@ All plugins must obey the following rules of development:
 
 - plugins shall be independent from all other plugins.
 
-- plugins must inherit from ``geniemonitor.plugins.bases.BasePlugin`` class
+- plugins must inherit from ``telemetry.plugins.bases.BasePlugin`` class
 
 - plugins may contain its own argument parser. Such parsers shall follow the
-  :ref:`geniemonitor_argument_propagation` scheme, and shall not contain
+  :ref:`telemetry_argument_propagation` scheme, and shall not contain
   positional arguments.
 
-- plugins may modify ``geniemonitor.runtime`` attributes, but is it the
+- plugins may modify ``telemetry.runtime`` attributes, but is it the
   responbility of the plugin owner to diagnose and support any failures due to
   such changes.
 
-- plugin developers are expected to read and understand ``geniemonitor`` source
+- plugin developers are expected to read and understand ``telemetry`` source
   code. It is mostly not possible to develop useful plugins by simply reading
   this document.
 
 There is only one stage where plugins may run its actions.
 
-.. csv-table:: GenieMonitor Plugin Stages
+.. csv-table:: Telemetry Plugin Stages
     :header: Stage, Description
 
     ``execution``, "core plugin execution logic"
@@ -59,7 +59,7 @@ Plugins are run in the designated interval in the configuration yaml file.
 Creating Plugins
 ----------------
 
-To create a plugin, simply subclass ``geniemonitor.plugins.bases.BasePlugin``
+To create a plugin, simply subclass ``telemetry.plugins.bases.BasePlugin``
 class and define the stages where your plugin needs to run.
 
 .. code-block:: python
@@ -73,7 +73,7 @@ class and define the stages where your plugin needs to run.
     import argparse
     import datetime
 
-    from geniemonitor.plugins.bases import BasePlugin
+    from telemetry.plugins.bases import BasePlugin
 
     logger = logging.getLogger(__name__)
 
@@ -130,8 +130,8 @@ class and define the stages where your plugin needs to run.
 
 
 After defining a plugin class, it needs to be configured in order to run. The
-``geniemonitor`` plugin manager automatically reads plugin configurations from a
-YAML file, ``geniemonitor_config.yaml``, located under top level folder of pyats
+``telemetry`` plugin manager automatically reads plugin configurations from a
+YAML file, ``telemetry_config.yaml``, located under top level folder of pyats
 instance or the file path can be provided with ``-configuration`` parameter.
 
 .. code-block:: yaml
@@ -139,7 +139,7 @@ instance or the file path can be provided with ``-configuration`` parameter.
     # Example
     # -------
     #
-    #   example geniemonitor configuration file for plugins
+    #   example telemetry configuration file for plugins
 
     plugins:                   # top level key for plugins
 
@@ -162,7 +162,7 @@ instance or the file path can be provided with ``-configuration`` parameter.
                                     # otherwise, only the included devices will
                                     # be applied.
 
-And ``geniemonitor`` automatically discovers, loads your plugin, and runs its
+And ``telemetry`` automatically discovers, loads your plugin, and runs its
 actions as part of its standard execution stage.
 
 
@@ -190,7 +190,7 @@ device with name `Tonystark-sjc`.
 Plugin Errors
 -------------
 
-Because plugins are a fundamental building block of ``geniemonitor``, any
+Because plugins are a fundamental building block of ``telemetry``, any
 unhandled exceptions raised from plugin actions result in catastrophic failures:
 make **double sure** that your plugin is well tested and robust against all
 possible environments and outcomes.
@@ -219,7 +219,7 @@ Plugin Templates can be found in the template folder after installation
 
 .. code-block:: bash
 
-    $VIRTUAL_ENV/templates/geniemonitor/
+    $VIRTUAL_ENV/templates/telemetry/
 
 Steps for executing your plugin:
 
@@ -261,17 +261,17 @@ Steps for executing your plugin:
 
         core:
             job:
-                class: geniemonitor.job.Job
+                class: telemetry.job.Job
             reporter:
-                class: geniemonitor.reporter.HealthReporter
+                class: telemetry.reporter.HealthReporter
             runinfo:
-                class: geniemonitor.runinfo.RunInfo
+                class: telemetry.runinfo.RunInfo
             mailbot:
-                class: geniemonitor.email.MailBot
+                class: telemetry.email.MailBot
             producer:
-                class: geniemonitor.processor.DataProducer
+                class: telemetry.processor.DataProducer
             consumer:
-                class: geniemonitor.processor.DataConsumer
+                class: telemetry.processor.DataConsumer
             connection:
                 class: unicon.Unicon
             thresholds:
@@ -279,11 +279,11 @@ Steps for executing your plugin:
                 Warning: 252h
                 Critical: 248h
 
-    - Execute geniemonitor for on-demand monitoring:
+    - Execute telemetry for on-demand monitoring:
 
     .. code-block:: bash
 
-        geniemonitor -testbed_file /path/to/testbed.yaml
+        telemetry -testbed_file /path/to/testbed.yaml
                      -configuration /path/to/config.yaml
                      -plugin_arg1 "abc"
 
@@ -309,7 +309,7 @@ You should see the following lines show up in the log.
 Abstraction Plugin Package
 --------------------------
 First make sure you have read pyATS abstract_, especially the section on Lookup
-Decorator as it is the root of abstraction in GenieMonitor.
+Decorator as it is the root of abstraction in Telemetry.
 
 .. _abstract: http://wwwin-pyats.cisco.com/cisco-shared/abstract/html/
 
@@ -332,11 +332,11 @@ Decorator as it is the root of abstraction in GenieMonitor.
 Default Plugins
 ---------------
 Once development for your plugin is completed, it can be added to the "default"
-list of plugins that run everytime Geniemonitor is executed. The keepalive
+list of plugins that run everytime telemetry is executed. The keepalive
 plugin is an example of a default plugin.
 
 To add your plugin to the default list, simply add your information to the
-src/geniemonitor/config/defaults.py file
+src/telemetry/config/defaults.py file
 
 .. code-block:: bash
 
@@ -345,8 +345,8 @@ src/geniemonitor/config/defaults.py file
             keepalive:
                 interval: 30
                 enabled: True
-                module: geniemonitor.plugins.keepalive
+                module: telemetry.plugins.keepalive
             mynewplugin:
                 interval: 60
                 enabled: True
-                module: geniemonitor.plugins.mynewplugin
+                module: telemetry.plugins.mynewplugin

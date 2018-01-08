@@ -5,11 +5,11 @@ import zipfile
 import traceback
 
 from datetime import datetime, timedelta
-from geniemonitor.results import OK, WARNING, CRITICAL
+from telemetry.results import OK, WARNING, CRITICAL
 from ats.utils.import_utils import import_from_name
 
 # declare module as infra
-__genie_monitor_infra__ = True
+__telemetry_infra__ = True
 
 # module logger
 logger = logging.getLogger(__name__)
@@ -17,23 +17,23 @@ logger = logging.getLogger(__name__)
 def filter_exception(exc_type, exc_value, tb):
     '''filter_exception
 
-    Filters an exception's traceback stack and removes GenieMonitor stack frames
+    Filters an exception's traceback stack and removes Telemetry stack frames
     from it to make it more apparent that the error came from a script. Should
     be only used on user-script errors, and must not be used when an error is
-    caught from ats.genie_monitor infra itself.
+    caught from ats.telemetry infra itself.
 
-    Any frame with __genie_monitor_infra__ flag set is considered genieMonitor
+    Any frame with __telemetry_infra__ flag set is considered telemetry
     infra stack.
 
     Returns
     -------
-        properly formatted exception message with stack trace, with genieMonitor
+        properly formatted exception message with stack trace, with telemetry
         stacks removed
 
     '''
 
-    # Skip GenieMonitor traceback levels
-    while tb and tb.tb_frame.f_globals.get('__genie_monitor_infra__', False):
+    # Skip Telemetry traceback levels
+    while tb and tb.tb_frame.f_globals.get('__telemetry_infra__', False):
         tb = tb.tb_next
 
     # return the formatted exception

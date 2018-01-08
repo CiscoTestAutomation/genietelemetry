@@ -1,6 +1,6 @@
 #! /bin/env python
 
-'''Setup file for GenieMonitor
+'''Setup file for Telemetry
 
 See: 
     https://packaging.python.org/en/latest/distributing.html
@@ -35,18 +35,18 @@ def find_templates(*paths):
 # This allows for compatible bug fixes on core dependent packages to roll out
 # without forcing a kleenex re-package, but also ensures that newer and
 # potentially incompatible packages are not picked up as well.
-version = find_version('src', 'geniemonitor', '__init__.py')
+version = find_version('src', 'telemetry', '__init__.py')
 req_ver = version.split('.')
 version_range = '>= %s.%s.0, < %s.%s.0' % (3, 0, 4, 0)
 
 
 # launch setup
 setup(
-    name = 'geniemonitor',
+    name = 'telemetry',
     version = version,
 
     # descriptions
-    description = 'GenieMonitor: Testbed Health Status Monitoring Service',
+    description = 'Telemetry: Testbed Health Status Monitoring Service',
     long_description = read('DESCRIPTION.rst'),
 
     # the project's main homepage.
@@ -101,7 +101,7 @@ setup(
 
     # console entry point
     entry_points = { 
-        'console_scripts': ['geniemonitor = geniemonitor:main'],
+        'console_scripts': ['telemetry = telemetry:main'],
     },
 
     # package dependencies

@@ -2,17 +2,17 @@
 
 .. _harness:
 
-GenieMonitor and pyATS/Genie
+Telemetry and pyATS/Genie
 ============================
 
-This guide will cover the basics of how to integrate GenieMonitor with
+This guide will cover the basics of how to integrate Telemetry with
 pyATS/Genie.
 
 
 Introduction
 ------------
 
-In order to integrate GenieMonitor with pyATS/Genie, a GenieMonitorRunner plugin
+In order to integrate Telemetry with pyATS/Genie, a TelemetryRunner plugin
 needs to be added to easypy through easypy config file.
 
 .. code-block:: yaml
@@ -23,9 +23,9 @@ needs to be added to easypy through easypy config file.
     #   Easypy config file
 
     plugins:
-        GenieMonitorRunner:
+        TelemetryRunner:
           enabled: True
-          module: geniemonitor.runner
+          module: telemetry.runner
           order: 1.0
 
 The file can be stored at pyATS $VIRTUAL_ENV as easypy_config.yaml, or called as
@@ -35,7 +35,7 @@ part of easypy command.
 
     easypy your_easypy_job.py -configuration /path/to/easypy/config.yaml
 
-The processor definition should be append to your geniemonitor config yaml file.
+The processor definition should be append to your telemetry config yaml file.
 The supported schema is as following:
 
 .. code-block:: yaml
@@ -49,16 +49,16 @@ The supported schema is as following:
     blinded to the testbed.
 
 To call the processor inside of your testscript.
-You should always import GenieMonitorRunner and calls the defined processor.
+You should always import TelemetryRunner and calls the defined processor.
 
 .. code-block:: python
 
     from ats import aetest
-    from geniemonitor.runner import GenieMonitorRunner
+    from telemetry.runner import TelemetryRunner
 
     class HelloWorldTestcase(aetest.Testcase):
 
-        @aetest.processors.pre(GenieMonitorRunner.processor_pre)
+        @aetest.processors.pre(TelemetryRunner.processor_pre)
         @aetest.test
         def Hello(self):
             pass

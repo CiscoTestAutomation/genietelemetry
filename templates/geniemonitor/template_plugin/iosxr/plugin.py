@@ -1,11 +1,11 @@
 ''' 
-GenieMonitor Template Plugin for IOS-XR.
+Telemetry Template Plugin for IOS-XR.
 '''
 import logging
 
-# GenieMonitor
+# Telemetry
 from ..plugin import Plugin as BasePlugin
-from geniemonitor.results import OK, ERRORED, HealthStatus
+from telemetry.results import OK, ERRORED, HealthStatus
 
 # module logger
 logger = logging.getLogger(__name__)

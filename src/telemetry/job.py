@@ -21,7 +21,7 @@ from .results import StatusCounter
 from .email import TextEmailReport, PLUGIN_ERROR_SUBJECT
 
 # declare module as infra
-__genie_monitor_infra__ = True
+__telemetry_infra__ = True
 
 # module logger
 logger = logging.getLogger(__name__)

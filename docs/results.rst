@@ -1,11 +1,11 @@
 .. highlightlang:: python
 
-.. _geniemonitor_result_objects:
+.. _telemetry_result_objects:
 
 Health Status Objects
 =====================
 
-This guide will cover the basics of how GenieMonitor health status work: the
+This guide will cover the basics of how Telemetry health status work: the
 different types of status, their corresponding code, and how they roll up
 together.
 
@@ -21,9 +21,9 @@ following types ``OK``, ``WARNING``, ``CRITICAL``, ``PARTIAL`` or ``ERRORED``.
     # Example
     # -------
     #
-    #   GenieMonitor health status objects
+    #   Telemetry health status objects
 
-    from geniemonitor.results import OK, CRITICAL
+    from telemetry.results import OK, CRITICAL
 
     # rolling up OK + CRITICAL yields CRITICAL
     OK + CRITICAL
@@ -32,7 +32,7 @@ following types ``OK``, ``WARNING``, ``CRITICAL``, ``PARTIAL`` or ``ERRORED``.
 HealthStatus Objects
 --------------------
 
-HealthStatus in GenieMonitor are represented by 5 unique instances of
+HealthStatus in Telemetry are represented by 5 unique instances of
 ``HealthStatus`` `singleton`_ objects, each corresponding to a unique health
 status type.
 
@@ -75,12 +75,12 @@ used directly. As simple as:
     #   importing health status objects
 
     # import each health status object individually
-    from geniemonitor.results import (OK, WARNING, CRITICAL, PARTIAL, ERRORED)
+    from telemetry.results import (OK, WARNING, CRITICAL, PARTIAL, ERRORED)
 
     # or you can also import them altogether using * wildcard
     # the module has code that specifically limits this to be the same as
     # the localized import statement above
-    from geniemonitor.results import *
+    from telemetry.results import *
 
 All status singleton objects are instances of ``HealthStatus`` class, e,g:
 
@@ -98,11 +98,11 @@ All status singleton objects are instances of ``HealthStatus`` class, e,g:
 
     # let's import the base class HealthStatus
     # (all results objects are instances of HealthStatus class)
-    from geniemonitor.results import HealthStatus
+    from telemetry.results import HealthStatus
 
     # result objects are instances of HealthStatus
     type(OK)
-    # <class 'geniemonitor.results.status.HealthStatus'>
+    # <class 'telemetry.results.status.HealthStatus'>
 
     # and demonstrate these are singletons
     # eg - Passed (code 1) is created via TestResult(1)
@@ -139,10 +139,10 @@ name
     # Example
     # -------
     #
-    #    using GenieMonitor status objects
+    #    using Telemetry status objects
 
     # import all of them
-    from geniemonitor.results import OK, CRITICAL
+    from telemetry.results import OK, CRITICAL
 
     # getting the status equivalent code
     OK.code
@@ -177,7 +177,7 @@ objects is as simple as adding them together using the Python ``+`` operator.
     #   rolling multiple status objects
 
     # import all status codes
-    from geniemonitor.results import (OK, WARNING, CRITICAL, PARTIAL, ERRORED)
+    from telemetry.results import (OK, WARNING, CRITICAL, PARTIAL, ERRORED)
 
     # roll up some status together
     OK + WARNING
@@ -269,7 +269,7 @@ roll-ups:
     #   performing multiple rollups
 
     # import all status codes
-    from geniemonitor.results import (OK, WARNING, CRITICAL, PARTIAL, ERRORED)
+    from telemetry.results import (OK, WARNING, CRITICAL, PARTIAL, ERRORED)
 
     # consider this
     OK + WARNING + CRITICAL + PARTIAL

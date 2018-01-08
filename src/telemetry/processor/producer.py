@@ -4,10 +4,10 @@ from pathlib import Path
 from datetime import datetime
 
 from .bases import Producer
-from geniemonitor.results import ERRORED
+from telemetry.results import ERRORED
 
 # declare module as infra
-__genie_monitor_infra__ = True
+__telemetry_infra__ = True
 
 logger = logging.getLogger(__name__)
 

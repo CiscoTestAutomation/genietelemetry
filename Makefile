@@ -1,5 +1,5 @@
 ###############################################################################
-#                            geniemonitor Internal Makefile
+#                            telemetry Internal Makefile
 #
 # Author:
 #
@@ -13,7 +13,7 @@
 #   October 2017
 #
 # About This File:
-#   This script will build the geniemointor package for distribution in PyPI
+#   This script will build the telemetry package for distribution in PyPI
 #   server
 #
 # Requirements:
@@ -22,7 +22,7 @@
 ###############################################################################
 
 # Variables
-PKG_NAME      = geniemonitor
+PKG_NAME      = telemetry
 BUILDDIR      = $(shell pwd)/__build__
 PROD_USER     = pyadm@pyats-ci
 PROD_PKGS     = /auto/pyats/packages/cisco-shared
