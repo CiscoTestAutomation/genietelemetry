@@ -124,7 +124,7 @@ class DataConsumer(Consumer):
             context = data.get('context', {})
             plugin = context.get('plugin', None)
             if plugin not in detail['devices'][dev]['plugins']:
-                device['plugins'][plugin] = { 'context': [], 'error': [] }
+                device['plugins'][plugin] = { 'meta': [], 'error': [] }
             plugin = device['plugins'][plugin]
             timestamp = data.get('datetime')
             error = context.get('error', None)
