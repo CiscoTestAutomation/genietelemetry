@@ -3,6 +3,7 @@ import sys
 from ats.utils import parser as argparse
 from ats.easypy.plugins.bases import BasePlugin
 from ats.utils.import_utils import import_from_name
+from ats.log import managed_handlers
 
 from .main import monitor, TelemetryRuntime
 
@@ -82,8 +83,8 @@ class Procesor(object):
             return 'No monitor result was provided.'
 
         status = self.result.get('testbed', {}).get('status', 'errored')
-        if str(status) != 'ok':
-            return "The testbed status is in '%s' state" % status
+        if str(status) != 'errored':
+            return
 
         devices = self.result.get('devices', {})
         if not devices:
@@ -107,6 +108,10 @@ class Procesor(object):
             raise Exception('TelemetryRunner instance is missing')
 
         self.plugins = plugins or self.plugins or {}
+
+        self.tasklog_handler = managed_handlers.tasklog
+        self.current_log_file = managed_handlers.tasklog.logfile
+
         # kick off an on-demand monitoring
         self.result = monitor(runtime = TelemetryRuntime(
                                    configuration = self.runner.args.telemetry
@@ -116,6 +121,8 @@ class Procesor(object):
                               no_mail = self.runner.args.telemetry_no_mail,
                               pdb = self.pdb,
                               runinfo_dir = self.runinfo_dir)
+
+        self.tasklog_handler.changeFile(self.current_log_file)
 
         exception = self._get_exception_or_none()
         if exception:
