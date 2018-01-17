@@ -236,7 +236,7 @@ class MailBot(object, metaclass = MetaClassFactory):
         if self.runtime.runinfo:
             path = self.runtime.runinfo.runinfo_dir
             onlyfiles = [join(path, f) for f in listdir(path) \
-                                                       if isfile(join(path, f))]
+                            if path is not 'plugins' and isfile(join(path, f))]
 
             message.attachments.extend(onlyfiles)
             for filename in onlyfiles:

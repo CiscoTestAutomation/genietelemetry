@@ -44,7 +44,7 @@ def unzip_and_import(directory_name, input_file):
     if extension not in ('.zip', '.whl', '.plugin'):
         raise SchemaError("Invalid plugin file extension for %s" % input_file)
 
-    working_path = os.path.join(directory_name, name)
+    working_path = os.path.join(directory_name, 'plugins', name)
     # unzip it
     with zipfile.ZipFile(input_file,"r") as zip_ref:
         zip_ref.extractall(working_path)
