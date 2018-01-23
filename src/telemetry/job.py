@@ -103,12 +103,6 @@ class Job(object, metaclass = MetaClassFactory):
         self.joblog = os.path.join(self.runinfo.runinfo_dir, 
                                    'MonitorLog.{name}'.format(name = self.name))
 
-        self.tasklog_handler = managed_handlers.tasklog
-
-        self.tasklog_handler.changeFile(self.joblog)
-
-        logging.root.addHandler(self.tasklog_handler)
-
         # start the reporter
         # ------------------
         self.runtime.reporter.start()
@@ -127,9 +121,6 @@ class Job(object, metaclass = MetaClassFactory):
         # create the archive dir
         self.runinfo.archive()
 
-        # Close down the JobLog.
-        self.tasklog_handler.close()
-        logging.root.removeHandler(self.tasklog_handler)
 
     def cleanup(self):
         '''Cleanup job environment
@@ -155,6 +146,13 @@ class Job(object, metaclass = MetaClassFactory):
         # terminate all foster childs first before killing our own childs
         goners, livings = psutil.wait_procs(foster_childs, timeout = 1)
         for children in livings:
+
+            # avoid killing the 'telnet' process as it will affect all the device
+            # related operations after the plugins run - not the case of
+            # running telemetry as a standalone
+            if children.name() == 'telnet':
+                continue
+
             logger.debug('terminating child process: %s' % children.name())
             try:
                 children.terminate()

@@ -397,10 +397,7 @@ class Task(multiprocessing.Process):
         self.reporter.stop()
 
         self.tasklog_handler.disableForked()
-        logging.root.removeHandler(self.tasklog_handler)
 
-        self.task_handler.close()
-        self.module_logger.removeHandler(self.task_handler)
         self.module_logger.removeHandler(managed_handlers.screen)
 
         return self.result
