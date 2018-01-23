@@ -316,9 +316,15 @@ class Task(multiprocessing.Process):
         self.module_logger.propagate = False
 
         self.tasklog_handler = managed_handlers.tasklog
+        # In case if device name has '/' which will cause issues while creating
+        # the monitoring directory on the server
+        if '/' in self.device.name:
+            modified_device_name = self.device.name.replace('/', '_')
+        else:
+            modified_device_name = self.device.name
         self.tasklog_handler.changeFile('%s/Device.%s' % 
                                           (self.runtime.directory,
-                                           self.device.name))
+                                           modified_device_name))
 
         logging.root.addHandler(self.tasklog_handler)
 
