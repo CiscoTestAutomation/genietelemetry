@@ -8,7 +8,7 @@ import logging
 import argparse
 import datetime
 
-from telemetry.plugins.bases import BasePlugin
+from genietelemetry.plugins.bases import BasePlugin
 
 logger = logging.getLogger(__name__)
 

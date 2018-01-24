@@ -5,44 +5,44 @@ from ats.easypy.plugins.bases import BasePlugin
 from ats.utils.import_utils import import_from_name
 from ats.log import managed_handlers
 
-from .main import monitor, TelemetryRuntime
+from .main import monitor, GenieTelemetryRuntime
 
 class Procesor(object):
-    """Telemetry Processor
+    """GenieTelemetry Processor
 
     This context manager based Processor class designed to allow user to invoke
-    list of Telemetry plugin from their pyATS test script.
+    list of GenieTelemetry plugin from their pyATS test script.
 
     Example:
 
         import logging
         from ats import aetest
-        from telemetry.runner import TelemetryRunner
+        from genietelemetry.runner import GenieTelemetryRunner
 
         logger = logging.getLogger(__name__)
 
         class HelloWorldTestcase(aetest.Testcase):
 
-            @aetest.processors.pre(TelemetryRunner.processor_pre)
+            @aetest.processors.pre(GenieTelemetryRunner.processor_pre)
             @aetest.test
             def Hello(self):
                 pass
 
             @aetest.test
             def Hello_with_Direct_Call(self):
-                monitor = TelemetryRunner.processor_pre()
+                monitor = GenieTelemetryRunner.processor_pre()
                 status = monitor.result['testbed']['status']
                 logger.info('monitoring result %s ' % status)
 
             @aetest.test
             def Hello_with_Context_Manager(self):
-                with TelemetryRunner.processor_pre as processor:
+                with GenieTelemetryRunner.processor_pre as processor:
                     status = processor.result['testbed']['status']
                     logger.info('monitoring result %s ' % status)
 
             @aetest.test
             def Hello_From_Execution(self):
-                result = TelemetryRunner.processor_pre.execute():
+                result = GenieTelemetryRunner.processor_pre.execute():
                 status = result['testbed']['status']
                 logger.info('monitoring result %s ' % status)
 
@@ -72,7 +72,7 @@ class Procesor(object):
         return self
 
     def __exit__(self, ex_type, exc_value, tb):
-        # re-raise the exception if there is any exception from telemetry
+        # re-raise the exception if there is any exception from genietelemetry
         # or context manager call
         exception = exc_value or self._get_exception_or_none()
 
@@ -105,7 +105,7 @@ class Procesor(object):
 
         self.runner = runner or self.runner
         if not self.runner:
-            raise Exception('TelemetryRunner instance is missing')
+            raise Exception('GenieTelemetryRunner instance is missing')
 
         self.plugins = plugins or self.plugins or {}
 
@@ -113,12 +113,12 @@ class Procesor(object):
         self.current_log_file = managed_handlers.tasklog.logfile
 
         # kick off an on-demand monitoring
-        self.result = monitor(runtime = TelemetryRuntime(
-                                   configuration = self.runner.args.telemetry
+        self.result = monitor(runtime = GenieTelemetryRuntime(
+                                   configuration = self.runner.args.genietelemetry
                                    ),
                               plugins = self.plugins,
                               testbed_file = self.runner.testbed_file,
-                              no_mail = self.runner.args.telemetry_no_mail,
+                              no_mail = self.runner.args.genietelemetry_no_mail,
                               pdb = self.pdb,
                               runinfo_dir = self.runinfo_dir)
 
@@ -131,10 +131,10 @@ class Procesor(object):
         return self.result
 
 
-class TelemetryRunner(BasePlugin):
-    '''base TelemetryRunner Plugin
+class GenieTelemetryRunner(BasePlugin):
+    '''base GenieTelemetryRunner Plugin
 
-    Loads Telemetry Configuration file and populate pre/post processors for
+    Loads GenieTelemetry Configuration file and populate pre/post processors for
     Easypy Job.
 
     Example:
@@ -142,13 +142,13 @@ class TelemetryRunner(BasePlugin):
         # Easypy config file
 
         plugins:
-            TelemetryRunner:
+            GenieTelemetryRunner:
               enabled: True
-              module: telemetry.runner
+              module: genietelemetry.runner
               order: 1.0
 
 
-        # Telemetry configuration file
+        # GenieTelemetry configuration file
 
         plugin:
             <your plugin name>:
@@ -163,35 +163,35 @@ class TelemetryRunner(BasePlugin):
         # easypy command
 
         bash$> easypy job.py -configuration /path/to/easypy/config.yaml
-                             --telemetry /path/to/telemetry/config.yaml
-                             --telemetry_processor <python.import.path>
-                             --telemetry_no_mail
+                             --genietelemetry /path/to/genietelemetry/config.yaml
+                             --genietelemetry_processor <python.import.path>
+                             --genietelemetry_no_mail
 
     '''
 
-    name = 'TelemetryRunner'
+    name = 'GenieTelemetryRunner'
     parser = argparse.ArgumentParser(add_help = False)
 
-    runner_grp = parser.add_argument_group('Telemetry Runner')
+    runner_grp = parser.add_argument_group('GenieTelemetry Runner')
 
-    runner_grp.add_argument('--telemetry', action = 'store', default = None)
-    runner_grp.add_argument('--telemetry_processor', action = 'store',
+    runner_grp.add_argument('--genietelemetry', action = 'store', default = None)
+    runner_grp.add_argument('--genietelemetry_processor', action = 'store',
                                                         default = Procesor)
-    runner_grp.add_argument('--telemetry_no_mail', action = 'store_true',
+    runner_grp.add_argument('--genietelemetry_no_mail', action = 'store_true',
                                                       default = False)
 
     def pre_task(self, task):
 
-        # looks for telemetry configuration file and testbed instance
-        if not self.args.telemetry or not task.runtime.testbed:
+        # looks for genietelemetry configuration file and testbed instance
+        if not self.args.genietelemetry or not task.runtime.testbed:
             return
 
-        # initialize TelemetryRuntime
-        self.telemetry_runtime = TelemetryRuntime(
-                                         configuration = self.args.telemetry)
+        # initialize GenieTelemetryRuntime
+        self.genietelemetry_runtime = GenieTelemetryRuntime(
+                                         configuration = self.args.genietelemetry)
 
-        plugins = self.telemetry_runtime.configuration.plugins
-        processors = self.telemetry_runtime.configuration.processors
+        plugins = self.genietelemetry_runtime.configuration.plugins
+        processors = self.genietelemetry_runtime.configuration.processors
 
         # looks for testbed file, list of plugins and list of processors
         self.testbed_file = task.runtime.job.testbed_file
@@ -199,7 +199,7 @@ class TelemetryRunner(BasePlugin):
             return
 
         # load processor class if customized
-        self.processor_cls = self.args.telemetry_processor
+        self.processor_cls = self.args.genietelemetry_processor
         if isinstance(self.processor_cls, str):
             self.processor_cls = import_from_name(self.processor_cls)
 

@@ -10,15 +10,15 @@ from datetime import datetime
 from ats.log.utils import banner
 from ats.datastructures import OrderableDict, classproperty
 
-from telemetry.results import ERRORED, OK, HealthStatus
-from telemetry.email import TextEmailReport
+from genietelemetry.results import ERRORED, OK, HealthStatus
+from genietelemetry.email import TextEmailReport
 
 from .. import utils
 
 from .stages import PluginStage, Scope
 
 # declare module as infra
-__telemetry_infra__ = True
+__genietelemetry_infra__ = True
 
 logger = logging.getLogger(__name__)
 

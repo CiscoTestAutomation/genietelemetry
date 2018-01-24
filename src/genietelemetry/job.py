@@ -21,7 +21,7 @@ from .results import StatusCounter
 from .email import TextEmailReport, PLUGIN_ERROR_SUBJECT
 
 # declare module as infra
-__telemetry_infra__ = True
+__genietelemetry_infra__ = True
 
 # module logger
 logger = logging.getLogger(__name__)
@@ -149,7 +149,7 @@ class Job(object, metaclass = MetaClassFactory):
 
             # avoid killing the 'telnet' process as it will affect all the device
             # related operations after the plugins run - not the case of
-            # running telemetry as a standalone
+            # running genietelemetry as a standalone
             if children.name() == 'telnet':
                 continue
 

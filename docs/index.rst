@@ -1,9 +1,9 @@
-Telemetry User Guide
-=======================
+GenieTelemetry User Guide
+=========================
 
-Welcome to Telemetry - Testbed Health Status Monitoring Tool user guide! Here
-you will find all there is to know about the development details of
-Telemetry.
+Welcome to GenieTelemetry - Testbed Health Status Monitoring Tool user guide!
+Here you will find all there is to know about the development details of
+GenieTelemetry.
 
 
 .. toctree::

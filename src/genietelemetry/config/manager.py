@@ -8,16 +8,16 @@ from .schema import validate_plugins
 from .defaults import DEFAULT_CONFIGURATION
 
 # declare module as infra
-__telemetry_infra__ = True
+__genietelemetry_infra__ = True
 
 # static vars
-telemetry_GLOBAL_CONFIG = os.path.join(sys.prefix,
-                                          'telemetry_config.yaml')
+genietelemetry_GLOBAL_CONFIG = os.path.join(sys.prefix,
+                                          'genietelemetry_config.yaml')
 
 class Configuration(object):
     '''Configuration
 
-    Telemetry configuration object. Core concept that allows easypy to load 
+    GenieTelemetry configuration object. Core concept that allows easypy to load 
     configuration for user plugins, and as well allows core components to 
     be swapped with different subclasses.
 
@@ -53,9 +53,9 @@ class Configuration(object):
 
         # load the global configuration
         # -----------------------------
-        if os.path.exists(telemetry_GLOBAL_CONFIG):
+        if os.path.exists(genietelemetry_GLOBAL_CONFIG):
             # load the global instance level configuration file
-            self.update(self._loader.load(telemetry_GLOBAL_CONFIG))
+            self.update(self._loader.load(genietelemetry_GLOBAL_CONFIG))
 
         # load dynamic runtime configuration
         # ----------------------------------
