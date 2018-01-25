@@ -1,23 +1,23 @@
 .. _usage:
 
 ============
-Telemetry
-============
+GenieTelemetry
+==============
 
     1. Installation
-    2. Telemetry Launcher
+    2. GenieTelemetry Launcher
     3. Standard Arguments
 
 Installation
 ------------
-``telemetry`` package is hosted on the pyATS pypi server. 
+``genietelemetry`` package is hosted on the pyATS pypi server. 
 
-``telemetry`` package can be installed in two parts. First install the core 
+``genietelemetry`` package can be installed in two parts. First install the core 
 package via pip.
 
 .. code-block:: bash
 
-    bash$ pip install telemetry
+    bash$ pip install genietelemetry
 
 The user-contributed libraries are downloadable via Git. Execute this command
 under your `projects` directory in your pyATS virtual environment `$VIRTUAL_ENV`.
@@ -25,14 +25,14 @@ under your `projects` directory in your pyATS virtual environment `$VIRTUAL_ENV`
 .. code-block:: bash
 
     cd $VIRTUAL_ENV/projects
-    git clone ssh://git@bitbucket-eng-sjc1.cisco.com:7999/pyats-proj/telemetry_libs.git
+    git clone ssh://git@bitbucket-eng-sjc1.cisco.com:7999/pyats-proj/genietelemetry_libs.git
 
 
-Telemetry Launcher
----------------------
-Telemetry comes with its own launcher: the ``telemetry`` executable. This
-launcher is installed into your pyATS instance automatically, and is accessible
-directly as part of the user PATH after activating your instance.
+GenieTelemetry Launcher
+-----------------------
+GenieTelemetry comes with its own launcher: the ``genietelemetry`` executable.
+This launcher is installed into your pyATS instance automatically, and is
+accessible directly as part of the user PATH after activating your instance.
 
 .. code-block:: bash
 
@@ -46,30 +46,30 @@ directly as part of the user PATH after activating your instance.
     LD_LIBRARY_PATH=/auto/ttsw/ActiveTcl/8.4.19/lib:/usr/X11R6/lib
     --------------------------------------------------------------------
 
-    # telemetry is now part of your path
-    (pyats) [tony@jarvis:pyats]$ which telemetry
-    /ws/tony-stark/pyats/bin/telemetry
+    # genietelemetry is now part of your path
+    (pyats) [tony@jarvis:pyats]$ which genietelemetry
+    /ws/tony-stark/pyats/bin/genietelemetry
 
-``telemetry`` comes natively with built-in help information:
+``genietelemetry`` comes natively with built-in help information:
 
 .. code-block:: bash
 
-    [tony@jarvis:~]$ telemetry -h
-    usage: telemetry [-h] [-testbed_file TESTBEDFILE] [-uid UID] [-loglevel]
-                        [-configuration FILE] [-runinfo_dir] [-no_mail]
-                        [-no_notify] [-mailto] [-mail_subject] [-notify_subject]
-                        [-no_meta] [-length LENGTH] [-keep_alive] [-upload]
-                        [-clean_up] [-upload_via UPLOAD_VIA]
-                        [-upload_server UPLOAD_SERVER]
-                        [-upload_port UPLOAD_PORT]
-                        [-upload_folder UPLOAD_FOLDER]
-                        [-upload_timeout UPLOAD_TIMEOUT]
+    [tony@jarvis:~]$ genietelemetry -h
+    usage: genietelemetry [-h] [-testbed_file TESTBEDFILE] [-uid UID] [-loglevel]
+                          [-configuration FILE] [-runinfo_dir] [-no_mail]
+                          [-no_notify] [-mailto] [-mail_subject] [-notify_subject]
+                          [-no_meta] [-length LENGTH] [-keep_alive] [-upload]
+                          [-clean_up] [-upload_via UPLOAD_VIA]
+                          [-upload_server UPLOAD_SERVER]
+                          [-upload_port UPLOAD_PORT]
+                          [-upload_folder UPLOAD_FOLDER]
+                          [-upload_timeout UPLOAD_TIMEOUT]
 
-    Telemetry command line arguments.
+    GenieTelemetry command line arguments.
 
     Example
     -------
-      telemetry -testbed_file /path/to/testbed.yaml
+      genietelemetry -testbed_file /path/to/testbed.yaml
 
     ----------------------------------------------------------------------------
 
@@ -82,7 +82,7 @@ directly as part of the user PATH after activating your instance.
       -h, -help             show this help message and exit
 
     Logging:
-      -loglevel             telemetry logging level
+      -loglevel             genietelemetry logging level
                             eg: -loglevel="INFO"
 
     Configuration:
@@ -129,14 +129,14 @@ directly as part of the user PATH after activating your instance.
 
 Standard Arguments
 ------------------
-``telemetry`` accepts a number of standard arguments that can be used to
+``genietelemetry`` accepts a number of standard arguments that can be used to
 influence and/or change monitoring behaviors. All arguments are constructed and
 processed using python `argparse`_ module.
 
 
 .. _argparse: https://docs.python.org/3/library/argparse.html
 
-.. csv-table:: Telemetry Standard Arguments
+.. csv-table:: GenieTelemetry Standard Arguments
     :header: Argument, Description
     :widths: 30, 70
 
@@ -144,7 +144,7 @@ processed using python `argparse`_ module.
     to monitor with."
     ``-configuration``, "configuration yaml file for plugins and settings"
     ``-uid``, "unique id from upper systems identifying this run"
-    ``-loglevel``, "specify the output log level for Telemetry"
+    ``-loglevel``, "specify the output log level for GenieTelemetry"
     ``-runinfo_dir``, "specify alternative runtime info directory location"
     ``-archive_dir``, "specify alternative archive info directory location"
     ``-no_archive``, "flag, disables archive creation"
@@ -161,7 +161,7 @@ processed using python `argparse`_ module.
 
 .. tip::
 
-    ``telemetry`` standardizes on single-dash ``-`` style arguments.
+    ``genietelemetry`` standardizes on single-dash ``-`` style arguments.
 
 
 ``-help``
@@ -169,25 +169,25 @@ processed using python `argparse`_ module.
 
     .. code-block:: bash
 
-        bash$ telemetry -help
+        bash$ genietelemetry -help
 
 ``testbed_file``
     Mandatory argument. Specifies the full path/name to the testbed yaml to
-    monitor with. Refer to :ref:`telemetry_testbed` for more details.
+    monitor with. Refer to :ref:`genietelemetry_testbed` for more details.
 
     .. code-block:: bash
 
-        bash$ telemetry -testbed_file /path/to/testbed.yaml
+        bash$ genietelemetry -testbed_file /path/to/testbed.yaml
 
 ``-configuration``
     optional argument, used to provide the YAML plugin configuration file. Use
-    this if you want to configure your Telemetry to run certain plugins in
+    this if you want to configure your GenieTelemetry to run certain plugins in
     custom orders for this particular run.
 
     .. code-block:: bash
 
-        bash$ telemetry -testbed_file /path/to/testbed.yaml
-                           -configuration /path/to/config.yaml
+        bash$ genietelemetry -testbed_file /path/to/testbed.yaml
+                             -configuration /path/to/config.yaml
 
 ``-uid``
     optional argument. Allows upstream executor to pass down a unique identifier
@@ -195,18 +195,18 @@ processed using python `argparse`_ module.
 
     .. code-block:: bash
 
-        bash$ telemetry -testbed_file /path/to/testbed.yaml
+        bash$ genietelemetry -testbed_file /path/to/testbed.yaml
                            -uid "this_is_an_example"
 
 ``-loglevel``
-    Specifies the logging level for Telemetry. Use this to increase or
-    decrease Telemetry module's log output level for debugging purposes. May
-    be specified in UPPERCASE or lowercase.
+    Specifies the logging level for GenieTelemetry. Use this to increase or
+    decrease GenieTelemetry module's log output level for debugging purposes.
+    May be specified in UPPERCASE or lowercase.
 
     .. code-block:: bash
 
-        bash$ telemetry -testbed_file /path/to/testbed.yaml -loglevel INFO
-        bash$ telemetry -testbed_file /path/to/testbed.yaml -loglevel DEBUG
+        bash$ genietelemetry -testbed_file /path/to/testbed.yaml -loglevel INFO
+        bash$ genietelemetry -testbed_file /path/to/testbed.yaml -loglevel DEBUG
 
 .. _log level: https://docs.python.org/3/howto/logging.html#logging-levels
 
@@ -215,7 +215,7 @@ processed using python `argparse`_ module.
 
     .. code-block:: bash
 
-        bash$ telemetry -testbed_file /path/to/testbed.yaml -no_mail
+        bash$ genietelemetry -testbed_file /path/to/testbed.yaml -no_mail
 
 ``-mailto``
     Provides a list of recipients that receive email notification at the
@@ -225,8 +225,8 @@ processed using python `argparse`_ module.
 
     .. code-block:: bash
 
-        bash$ telemetry -testbed_file /path/to/testbed.yaml
-                           -mailto "chambers, psp, crobbins@cisco.com"
+        bash$ genietelemetry -testbed_file /path/to/testbed.yaml
+                             -mailto "chambers, psp, crobbins@cisco.com"
 
 ``-mail_subject``
     When specified, replaces the default email notification subject line.
@@ -235,8 +235,8 @@ processed using python `argparse`_ module.
 
     .. code-block:: bash
 
-        bash$ telemetry -testbed_file /path/to/testbed.yaml
-                           -mail_subject "legen -wait-for-it- dary. Legendary!"
+        bash$ genietelemetry -testbed_file /path/to/testbed.yaml
+                             -mail_subject "legen -wait-for-it- dary. Legendary!"
 
 ``-no_notify``
     Flag, disables notification on abnormal device health staus detected from
@@ -244,7 +244,7 @@ processed using python `argparse`_ module.
 
     .. code-block:: bash
 
-        bash$ telemetry -testbed_file /path/to/testbed.yaml -no_notify
+        bash$ genietelemetry -testbed_file /path/to/testbed.yaml -no_notify
 
 ``-notify_subject``
     When specified, replaces the default email notification subject line.
@@ -252,7 +252,7 @@ processed using python `argparse`_ module.
 
     .. code-block:: bash
 
-        bash$ telemetry -testbed_file /path/to/testbed.yaml
+        bash$ genietelemetry -testbed_file /path/to/testbed.yaml
                            -mail_subject "legen -wait-for-it- dary. Legendary!"
 
 ``-runinfo_dir``
@@ -283,7 +283,7 @@ processed using python `argparse`_ module.
 
     .. code-block:: bash
 
-        bash$ telemetry -testbed_file /path/to/testbed.yaml -no_meta
+        bash$ genietelemetry -testbed_file /path/to/testbed.yaml -no_meta
 
 ``-length``
     Specify the monitoring length, in XwYdZhPmQs format.
@@ -292,20 +292,20 @@ processed using python `argparse`_ module.
 
     .. code-block:: bash
 
-        bash$ telemetry -testbed_file /path/to/testbed.yaml -length 20m
+        bash$ genietelemetry -testbed_file /path/to/testbed.yaml -length 20m
 
 ``-keep_alive``
     Flag, enables indefinite testbed monitoring, stop with Ctrl + C.
 
     .. code-block:: bash
 
-        bash$ telemetry -testbed_file /path/to/testbed.yaml -keep_alive
+        bash$ genietelemetry -testbed_file /path/to/testbed.yaml -keep_alive
 
-.. _telemetry_testbed:
+.. _genietelemetry_testbed:
 
 Testbed File
 ------------
-Testbed file for Telemetry is slightly different to regular pyATS testbed
+Testbed file for GenieTelemetry is slightly different to regular pyATS testbed
 yaml file.
 
 - device should contains mandatory key 'os' and has custom abstraction order

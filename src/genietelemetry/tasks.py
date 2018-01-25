@@ -24,7 +24,7 @@ multiprocessing = __import__('multiprocessing').get_context('fork')
 from multiprocessing import Process
 
 # declare module as infra
-__telemetry_infra__ = True
+__genietelemetry_infra__ = True
 
 # module logger
 logger = logging.getLogger(__name__)
@@ -305,7 +305,7 @@ class Task(multiprocessing.Process):
         3. wrap up.
         '''
 
-        self.module_logger = logging.getLogger('telemetry')
+        self.module_logger = logging.getLogger('genietelemetry')
         self.task_handler = TaskLogHandler(self.runtime.job.joblog)
 
         self.module_logger.addHandler(self.task_handler)
@@ -316,9 +316,15 @@ class Task(multiprocessing.Process):
         self.module_logger.propagate = False
 
         self.tasklog_handler = managed_handlers.tasklog
+        # In case if device name has '/' which will cause issues while creating
+        # the monitoring directory on the server
+        if '/' in self.device.name:
+            modified_device_name = self.device.name.replace('/', '_')
+        else:
+            modified_device_name = self.device.name
         self.tasklog_handler.changeFile('%s/Device.%s' % 
                                           (self.runtime.directory,
-                                           self.device.name))
+                                           modified_device_name))
 
         logging.root.addHandler(self.tasklog_handler)
 
@@ -336,7 +342,7 @@ class Task(multiprocessing.Process):
         logger.info("Starting monitoring on %s" % self.device.name)
 
         # set process title
-        setproctitle.setproctitle('Telemetry task: %s' % self.name)
+        setproctitle.setproctitle('GenieTelemetry task: %s' % self.name)
 
         plugins = self.runtime.plugins.get_device_plugins(self.device)
         # found no plugin, finishing task
@@ -397,10 +403,7 @@ class Task(multiprocessing.Process):
         self.reporter.stop()
 
         self.tasklog_handler.disableForked()
-        logging.root.removeHandler(self.tasklog_handler)
 
-        self.task_handler.close()
-        self.module_logger.removeHandler(self.task_handler)
         self.module_logger.removeHandler(managed_handlers.screen)
 
         return self.result

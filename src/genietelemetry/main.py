@@ -19,7 +19,7 @@ from .runinfo import RunInfo
 from .reporter import Reporter
 from .switch import Switch
 from .processor import Producer, Consumer
-from .parser import TelemetryParser
+from .parser import GenieTelemetryParser
 from .config.manager import Configuration
 from .plugins.manager import PluginManager
 from .tasks import TaskManager
@@ -29,18 +29,18 @@ from .utils import filter_exception
 multiprocessing = __import__('multiprocessing').get_context('fork')
 
 # declare module as infra
-__telemetry_infra__ = True
+__genietelemetry_infra__ = True
 
 # module logger
 logger = logging.getLogger(__name__)
 
 
-class TelemetryRuntime(object):
+class GenieTelemetryRuntime(object):
 
     def __init__(self, configuration = None, uid = None):
         '''Built-in __init__
 
-        Initializes Telemetry object with default values required for the
+        Initializes GenieTelemetry object with default values required for the
         parser.
         '''
 
@@ -86,10 +86,10 @@ class TelemetryRuntime(object):
 
         # create command-line argv parser
         # -------------------------------
-        self.parser = TelemetryParser(self.runtime)
+        self.parser = GenieTelemetryParser(self.runtime)
 
-        # Telemetry configuration
-        # --------------------
+        # GenieTelemetry configuration
+        # ----------------------------
         self.configuration = Configuration()
         self.configuration.load(configuration)
 
@@ -162,7 +162,7 @@ class TelemetryRuntime(object):
         
         # configure logging level
         # ------------------------------
-        logging.getLogger('telemetry').setLevel(loglevel)
+        logging.getLogger('genietelemetry').setLevel(loglevel)
 
         # check jobfile validity
         # ----------------------
@@ -286,7 +286,7 @@ def main():
 
     strictly used for setuptools.load_entry_point/console_script. 
     '''
-    default_runtime = TelemetryRuntime()
+    default_runtime = GenieTelemetryRuntime()
     try:
         # return as system code
         sys.exit(int(default_runtime.main()))
@@ -319,7 +319,7 @@ def monitor(runtime = None, configuration = None,
     -------
         the task's result code
     '''
-    default_runtime = runtime or TelemetryRuntime()
+    default_runtime = runtime or GenieTelemetryRuntime()
 
     if configuration:
         default_runtime.configuration.load(configuration)

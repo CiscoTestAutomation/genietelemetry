@@ -1,7 +1,7 @@
 from enum import Enum
 
 # declare module as infra
-__telemetry_infra__ = True
+__genietelemetry_infra__ = True
 
 class Scope(Enum):
     execution = 'execution'

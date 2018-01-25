@@ -1,11 +1,11 @@
 ''' 
-Telemetry Template Plugin for NXOS.
+GenieTelemetry Template Plugin for NXOS.
 '''
 import logging
 
-# Telemetry
+# GenieTelemetry
 from ..plugin import Plugin as BasePlugin
-from telemetry.results import OK, ERRORED, HealthStatus
+from genietelemetry.results import OK, ERRORED, HealthStatus
 
 # module logger
 logger = logging.getLogger(__name__)

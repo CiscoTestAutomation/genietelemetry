@@ -3,7 +3,7 @@ from .bases import Consumer
 from datetime import datetime, timedelta
 
 from ats.log.utils import banner
-from telemetry.results import ERRORED, OK, WARNING, CRITICAL, StatusCounter
+from genietelemetry.results import ERRORED, OK, WARNING, CRITICAL, StatusCounter
 
 class DataConsumer(Consumer):
 

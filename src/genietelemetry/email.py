@@ -17,7 +17,7 @@ from . import utils
 logger = logging.getLogger(__name__)
 
 # declare module as infra
-__telemetry_infra__ = True
+__genietelemetry_infra__ = True
 
 # default email subject on error (note, single line)
 ERROR_SUBJECT = ('Monitoring Report - testbed: {runtime.testbed.name} '
@@ -91,7 +91,7 @@ DEFAULT_CONTENT['Health Status'] = '{runtime.consumer.health_summary}'
 class MailBot(object, metaclass = MetaClassFactory):
     '''Mail Bot Class
 
-    Allows auto-generation of report emails when Telemetry is finished
+    Allows auto-generation of report emails when GenieTelemetry is finished
     running, pulling the reports from runtime.job.report. This class is a
     context manager: when codes are executed within it, any exceptions caught by
     __exit__ will be added to the email report and sent out.

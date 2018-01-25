@@ -4,10 +4,10 @@ from pathlib import Path
 from datetime import datetime
 
 from .bases import Producer
-from telemetry.results import ERRORED
+from genietelemetry.results import ERRORED
 
 # declare module as infra
-__telemetry_infra__ = True
+__genietelemetry_infra__ = True
 
 logger = logging.getLogger(__name__)
 

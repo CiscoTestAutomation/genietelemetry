@@ -7,6 +7,7 @@ import inspect
 import datetime
 import multiprocessing
 import importlib.machinery
+import shutil
 
 from textwrap import dedent
 
@@ -21,7 +22,7 @@ from .results import StatusCounter
 from .email import TextEmailReport, PLUGIN_ERROR_SUBJECT
 
 # declare module as infra
-__telemetry_infra__ = True
+__genietelemetry_infra__ = True
 
 # module logger
 logger = logging.getLogger(__name__)
@@ -103,12 +104,6 @@ class Job(object, metaclass = MetaClassFactory):
         self.joblog = os.path.join(self.runinfo.runinfo_dir, 
                                    'MonitorLog.{name}'.format(name = self.name))
 
-        self.tasklog_handler = managed_handlers.tasklog
-
-        self.tasklog_handler.changeFile(self.joblog)
-
-        logging.root.addHandler(self.tasklog_handler)
-
         # start the reporter
         # ------------------
         self.runtime.reporter.start()
@@ -124,12 +119,16 @@ class Job(object, metaclass = MetaClassFactory):
         # ----------------
         self.runtime.reporter.stop()
 
+        # locate the unzipped plugins location under archive
+        plugins_archive_location = os.path.join(self.runinfo.runinfo_dir,
+            'plugins')
+
+        # remove all plugins directory from archive location
+        shutil.rmtree(plugins_archive_location)
+
         # create the archive dir
         self.runinfo.archive()
 
-        # Close down the JobLog.
-        self.tasklog_handler.close()
-        logging.root.removeHandler(self.tasklog_handler)
 
     def cleanup(self):
         '''Cleanup job environment
@@ -155,6 +154,13 @@ class Job(object, metaclass = MetaClassFactory):
         # terminate all foster childs first before killing our own childs
         goners, livings = psutil.wait_procs(foster_childs, timeout = 1)
         for children in livings:
+
+            # avoid killing the 'telnet' process as it will affect all the device
+            # related operations after the plugins run - not the case of
+            # running genietelemetry as a standalone
+            if children.name() == 'telnet':
+                continue
+
             logger.debug('terminating child process: %s' % children.name())
             try:
                 children.terminate()

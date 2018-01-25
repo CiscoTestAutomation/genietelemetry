@@ -3,7 +3,7 @@ from enum import Enum
 from datetime import datetime
 
 from ats.datastructures import MetaClassFactory
-from telemetry.results import ERRORED, HealthStatus
+from genietelemetry.results import ERRORED, HealthStatus
 
 logger = logging.getLogger(__name__)
 
