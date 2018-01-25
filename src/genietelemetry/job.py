@@ -7,6 +7,7 @@ import inspect
 import datetime
 import multiprocessing
 import importlib.machinery
+import shutil
 
 from textwrap import dedent
 
@@ -117,6 +118,13 @@ class Job(object, metaclass = MetaClassFactory):
         # cleanup reporter
         # ----------------
         self.runtime.reporter.stop()
+
+        # locate the unzipped plugins location under archive
+        plugins_archive_location = os.path.join(self.runinfo.runinfo_dir,
+            'plugins')
+
+        # remove all plugins directory from archive location
+        shutil.rmtree(plugins_archive_location)
 
         # create the archive dir
         self.runinfo.archive()
