@@ -178,7 +178,7 @@ class GenieTelemetryRunner(BasePlugin):
     runner_grp.add_argument('--genietelemetry_processor', action = 'store',
                                                         default = Procesor)
     runner_grp.add_argument('--genietelemetry_no_mail', action = 'store_true',
-                                                      default = False)
+                                                      default = True)
 
     def pre_task(self, task):
 
