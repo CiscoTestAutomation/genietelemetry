@@ -11,15 +11,14 @@ from .defaults import DEFAULT_CONFIGURATION
 __genietelemetry_infra__ = True
 
 # static vars
-genietelemetry_GLOBAL_CONFIG = os.path.join(sys.prefix,
-                                            'genietelemetry_config.yaml')
+GLOBAL_CONFIG = os.path.join(sys.prefix, 'genietelemetry_config.yaml')
 
 class Configuration(object):
     '''Configuration
 
-    GenieTelemetry configuration object. Core concept that allows easypy to load 
-    configuration for user plugins, and as well allows core components to 
-    be swapped with different subclasses.
+    GenieTelemetry configuration object. Core concept that allows genietelemetry
+    to load configuration for user plugins, and as well allows core components
+    to be swapped with different subclasses.
 
     '''
 
@@ -50,9 +49,9 @@ class Configuration(object):
 
         # load the global configuration
         # -----------------------------
-        if os.path.exists(genietelemetry_GLOBAL_CONFIG):
+        if os.path.exists(GLOBAL_CONFIG):
             # load the global instance level configuration file
-            self.update(self._loader.load(genietelemetry_GLOBAL_CONFIG))
+            self.update(self._loader.load(GLOBAL_CONFIG))
 
         # load dynamic runtime configuration
         # ----------------------------------
