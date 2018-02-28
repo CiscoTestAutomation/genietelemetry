@@ -1,8 +1,3 @@
-import os
-import re
-import sys
-import importlib
-from datetime import timedelta
 from ats.utils.schemaengine import Or, Any, Use, Optional
 from ats.utils.exceptions import SchemaError
 from ats.utils.import_utils import import_from_name
@@ -24,6 +19,7 @@ def validate_plugins(data):
 
             # build plugin device filter
             config.setdefault('devices', [])
+
             devices = config.pop('devices', [])
             if not isinstance(devices, list):
                 devices = [ devices ]
@@ -41,65 +37,25 @@ def validate_plugins(data):
 
             # Basically, plugin name = class name.
             # let's find it inside the loaded module
-            extension = os.path.splitext(os.path.basename(config['module']))[1]
-            if extension not in ('.zip', '.whl', '.plugin'):
-                module = config['module']
-                config['module'] = import_from_name(module)
-                config['basecls'] = import_from_name('%s.Plugin' % module)
+            module = config['module']
+            config['module'] = import_from_name(module)
             config['kwargs'] = kwargs
             config['devices'] = devices
+            config['name'] = plugin
 
     except Exception as e:
         raise SchemaError("Invalid genietelemetry_config.yaml input for "
                           "plugins") from e
     return data
 
-def import_threshold(data):
-
-    if not isinstance(data, (str, int)):
-        raise SchemaError("Invalid threshold input %s " % data)
-
-    if isinstance(data, int):
-        return timedelta(seconds = data)
-
-    m = re.match(r'((\d+)w)?((\d+)d)?((\d+)h)?((\d+)m)?((\d+)s)?', data)
-    _, weeks, _, days, _, hours, _, minutes, _, seconds = m.groups()
-    if not weeks and not days and not hours and not minutes and not seconds:
-        raise SchemaError("Invalid threshold input %s " % data)
-
-    delta = {'weeks' : int(weeks) if weeks else 0,
-             'days' : int(days) if days else 0,
-             'hours' : int(hours) if hours else 0,
-             'minutes' : int(minutes) if minutes else 0,
-             'seconds' : int(seconds) if seconds else 0,}
-
-    return timedelta(**delta)
-
-def import_thresholds(data):
-
-    try:
-        assert type(data) is dict
-
-        for status, delta in data.items():
-            data[status] = import_threshold(delta)
-
-        if not data['OK'] > data['Warning'] > data['Critical']:
-            raise SchemaError("Invalid threshold order %s " % data)
-
-    except Exception as e:
-        raise SchemaError("Invalid genietelemetry_config.yaml input for "
-                          "thresholds") from e
-    return data
-
 config_schema = {
     Optional("plugins"): Use(validate_plugins),
-    Optional("core"): {
-        Or('runinfo', 'job', 'reporter', 'mailbot', 'connection',
-           'consumer', 'producer', 'switch'): {
+    Optional("components"): {
+        Optional('manager'): {
             Optional('class'): Use(import_from_name),
             Any(): Any(),
         },
-        Optional("thresholds"): Use(import_thresholds),
+        Any(): Any(),
     },
     Any(): Any(),
 }

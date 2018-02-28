@@ -12,7 +12,7 @@ __genietelemetry_infra__ = True
 
 # static vars
 genietelemetry_GLOBAL_CONFIG = os.path.join(sys.prefix,
-                                          'genietelemetry_config.yaml')
+                                            'genietelemetry_config.yaml')
 
 class Configuration(object):
     '''Configuration
@@ -39,11 +39,8 @@ class Configuration(object):
         return parser
 
     def __init__(self):
-        self.core = AttrDict()
+        self.components = AttrDict()
         self.plugins = AttrDict()
-        self.connection = AttrDict()
-        self.thresholds = AttrDict()
-        self.processors = AttrDict()
         self._loader = ConfigLoader()
         
     def load(self, config = None):
@@ -70,11 +67,5 @@ class Configuration(object):
             self.update(self._loader.load(config))
 
     def update(self, config):
-        recursive_update(self.core, config.get('core', {}))
+        recursive_update(self.components, config.get('components', {}))
         recursive_update(self.plugins, config.get('plugins', {}))
-        recursive_update(self.processors, config.get('processors', {}))
-        recursive_update(self.connection, self.core.get('connection', {}))
-        recursive_update(self.thresholds, self.core.get('thresholds', {}))
-
-    def update_plugins(self, plugins = {}):
-        self.plugins = AttrDict(plugins)

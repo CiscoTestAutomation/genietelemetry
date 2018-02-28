@@ -29,16 +29,7 @@ def find_templates(*paths):
 
     return files
 
-# compute version range
-# For example, range >= 3.0.0 < 3.1.0
-#
-# This allows for compatible bug fixes on core dependent packages to roll out
-# without forcing a kleenex re-package, but also ensures that newer and
-# potentially incompatible packages are not picked up as well.
 version = find_version('src', 'genietelemetry', '__init__.py')
-req_ver = version.split('.')
-version_range = '>= %s.%s.0, < %s.%s.0' % (3, 0, 4, 0)
-
 
 # launch setup
 setup(
@@ -107,12 +98,11 @@ setup(
     # package dependencies
     install_requires =  ['psutil',
                          'setproctitle',
-                         'jinja2',
-                         'ats.async',
-                         'ats.datastructures {}'.format(version_range),
-                         'ats.log {}'.format(version_range),
-                         'ats.utils {}'.format(version_range),
-                         'ats.topology {}'.format(version_range),
+                         'ats.async >= 3.3.0',
+                         'ats.datastructures >= 3.3.0',
+                         'ats.log >= 3.3.0',
+                         'ats.utils >= 3.3.0',
+                         'ats.topology >= 3.3.0',
                          'unicon',
                          'abstract',
                          'parsergen',
@@ -121,11 +111,11 @@ setup(
     # any additional groups of dependencies.
     # install using: $ pip install -e .[dev]
     extras_require = {
-        'dev': ['coverage', 
-                'restview', 
-                'Sphinx', 
-                'sphinxcontrib-napoleon', 
-                'sphinx-rtd-theme'],
+        # 'dev': ['coverage',
+        #         'restview',
+        #         'Sphinx',
+        #         'sphinxcontrib-napoleon',
+        #         'sphinx-rtd-theme'],
     },
 
     # external modules

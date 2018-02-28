@@ -15,25 +15,8 @@ plugins:
         enabled: True
         module: genietelemetry_libs.plugins.tracebackcheck
 
-core:
-    job:
-        class: genietelemetry.job.Job
-    reporter:
-        class: genietelemetry.reporter.HealthReporter
-    runinfo:
-        class: genietelemetry.runinfo.RunInfo
-    mailbot:
-        class: genietelemetry.email.MailBot
-    producer:
-        class: genietelemetry.processor.DataProducer
-    consumer:
-        class: genietelemetry.processor.DataConsumer
-    switch:
-        class: genietelemetry.switch.Switch
-    connection:
-        class: unicon.Unicon
-    thresholds:
-        OK: 72h
-        Warning: 48h
-        Critical: 24h
+components:
+    manager:
+        class: genietelemetry.manager.TimedManager
+
 '''
