@@ -298,7 +298,7 @@ class TimedManager(object):
         self.runinfo_dir = runinfo_dir or os.cwd()
         self.logfile = os.path.join(self.runinfo_dir, 'telemetry.log')
 
-        self.configuration = Configuration()
+        self.configuration = Configuration(plugins=PluginManager)
         self.configuration.load(config=configuration_file)
         self.configuration.init_plugins(self.runinfo_dir,
                                         plugins_dir='plugins',
