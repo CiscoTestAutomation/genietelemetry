@@ -24,9 +24,6 @@ scheduler = sched.scheduler(time.time, time.sleep)
 class PluginManager(BaseManager):
     '''Plugin Manager class
 
-    Instanciates, configures, manages and runs all easypy plugins. This is the
-    main driver behind the easypy plugin system. Do not mock: may blow up.
-
     In any given process, there is only a single instance of PluginManager.
     '''
 
@@ -77,8 +74,9 @@ class Task(multiprocessing.Process):
 
         Arguments
         ---------
+            manager (TimedManager): timed manager currently managing all
+                                    processes
             device (device): device to be worked on in the task child process
-            manager (TaskManager): task manager currently managing all processes
             kwargs (dict): any other arguments to be propagated to the test
                            harness.
         '''
@@ -186,7 +184,7 @@ class Task(multiprocessing.Process):
 
                 # execute plugins
                 # ---------------
-                results = self.manager.run(self.name)
+                results = self.manager.run(self.name, iterval)
 
                 logger.info(results)
 
@@ -311,15 +309,6 @@ class TimedManager(object):
 
     def run(self, device, interval):
         '''run plugins
-
-        main function called by executions to run all plugins in order
-
-        This ensures proper clean-up behavior of plugins, and as well make sure
-        nothing is run execution in case a plugin is not running correctly.
-
-        If a plugin action method has "execution" argument, the current
-        executing execution device will be automatically provided as function
-        argument.
 
         Arguments
         ---------
