@@ -6,6 +6,7 @@ from ats.datastructures import AttrDict, classproperty
 from .loader import ConfigLoader
 from .schema import validate_plugins
 from .defaults import DEFAULT_CONFIGURATION
+from .plugins import PluginManager
 
 # declare module as infra
 __genietelemetry_infra__ = True
@@ -17,7 +18,7 @@ class Configuration(object):
     '''Configuration
 
     GenieTelemetry configuration object. Core concept that allows genietelemetry
-    to load configuration for user plugins, and as well allows core components
+    to load configuration for user plugins, and as well allows manager
     to be swapped with different subclasses.
 
     '''
@@ -37,10 +38,11 @@ class Configuration(object):
 
         return parser
 
-    def __init__(self):
-        self.components = AttrDict()
-        self.plugins = AttrDict()
+    def __init__(self, plugins = None):
+        self.manager = AttrDict()
+        self._plugins = AttrDict()
         self._loader = ConfigLoader()
+        self.plugins = (plugins or PluginManager)()
         
     def load(self, config = None):
 
@@ -65,6 +67,22 @@ class Configuration(object):
         if config:
             self.update(self._loader.load(config))
 
+    def init_plugins(self, directory, plugins_dir=None, devices=[]):
+
+        if not self.plugins:
+            return
+
+        if plugins_dir:
+            directory = os.path.join(directory, plugins_dir)
+
+        # append to sys path for module importing
+        sys.path.append(directory)
+
+        self.plugins.load(directory, self._plugins)
+
+        for device in devices:
+            self.plugins.init_plugins(device)
+
     def update(self, config):
-        recursive_update(self.components, config.get('components', {}))
-        recursive_update(self.plugins, config.get('plugins', {}))
+        recursive_update(self.manager, config.get('manager', {}))
+        recursive_update(self._plugins, config.get('plugins', {}))

@@ -1,3 +1,4 @@
+import os
 from ats.utils.schemaengine import Or, Any, Use, Optional
 from ats.utils.exceptions import SchemaError
 from ats.utils.import_utils import import_from_name
@@ -30,15 +31,18 @@ def validate_plugins(data):
             kwargs = {}
 
             for key, value in list(config.items()):
-                if key in ('enabled', 'module'): 
+                if key in ('enabled', 'module', 'interval'):
                     continue
 
                 kwargs[key] = config.pop(key)
 
             # Basically, plugin name = class name.
             # let's find it inside the loaded module
-            module = config['module']
-            config['module'] = import_from_name(module)
+            if os.path.isfile(config['module']):
+                extension = os.path.splitext(os.path.basename(config['module']))
+                _, extension = extension
+                assert extension in ('.zip', '.whl', '.plugin')
+
             config['kwargs'] = kwargs
             config['devices'] = devices
             config['name'] = plugin
@@ -50,11 +54,8 @@ def validate_plugins(data):
 
 config_schema = {
     Optional("plugins"): Use(validate_plugins),
-    Optional("components"): {
-        Optional('manager'): {
-            Optional('class'): Use(import_from_name),
-            Any(): Any(),
-        },
+    Optional('manager'): {
+        Optional('class'): Use(import_from_name),
         Any(): Any(),
     },
     Any(): Any(),

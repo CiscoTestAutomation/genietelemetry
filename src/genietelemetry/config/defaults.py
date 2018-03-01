@@ -15,8 +15,7 @@ plugins:
         enabled: True
         module: genietelemetry_libs.plugins.tracebackcheck
 
-components:
-    manager:
-        class: genietelemetry.manager.TimedManager
+manager:
+    class: genietelemetry.manager.TimedManager
 
 '''
