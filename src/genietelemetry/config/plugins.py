@@ -1,10 +1,16 @@
 import os
+import sys
 import zipfile
+import logging
 from copy import copy
 from operator import attrgetter
 from abstract.magic import Lookup
 
 from ats.utils.import_utils import import_from_name
+
+# module logger
+logger = logging.getLogger(__name__)
+
 
 class PluginManager(object):
     '''Plugin Manager class
@@ -18,7 +24,7 @@ class PluginManager(object):
     def __init__(self):
 
         # list of plugin class instances
-        self._plugins = list()
+        self._plugins = dict()
 
         # dictionary of plugin-device abstraction cache pair
         self._cache = dict()
@@ -27,8 +33,8 @@ class PluginManager(object):
         return any(device in c for c in self._cache.values())
 
     def get_device_plugins(self, device):
-        return [c.get('instance',
-                      None) for c in self._cache.values() if device in c]
+        return [c.get(device).get('instance',
+            None) for c in self._cache.values() if device in c]
 
     def init_plugins(self, device):
         '''init_plugins
@@ -47,17 +53,17 @@ class PluginManager(object):
                                                                    device_name))
                 continue
 
-            self._cache[name].setdefaults(device_name, {})
+            self._cache[plugin_name].setdefault(device_name, {})
 
             argv = copy(sys.argv[1:])
             plugin = self.load_plugin(device, **plugin)
-            self._cache[name][device_name]['instance'] = plugin
+            self._cache[plugin_name][device_name]['instance'] = plugin
 
             # parse plugin arguments
             # ----------------------
             # (saves arguments to plugin.args)
             plugin.parse_args(argv)
-            self._cache[name][device_name]['args'] = plugin.args
+            self._cache[plugin_name][device_name]['args'] = plugin.args
 
 
     def load_plugin_cls(self, device, name=None, module=None):
@@ -66,8 +72,9 @@ class PluginManager(object):
         return loaded plugin abstraction class
         '''
 
-        device_name = get(device, 'name', device)
+        device_name = getattr(device, 'name', device)
 
+        # import pdb; pdb.set_trace()
         mod = getattr(module, '__abstract_pkg', None)
         if mod:
             if not getattr(device, 'os', None):
@@ -81,7 +88,7 @@ class PluginManager(object):
             except Exception:
                 raise
         else:
-            module = plugin_module
+            module = module
 
         try:
             plugin_cls = attrgetter('{}.Plugin'.format(name))(module)
@@ -101,7 +108,7 @@ class PluginManager(object):
         '''
         logger.info(' - loading plugin %s' % name)
 
-        plugin_kwargs = dict(module=plugin_module, **kwargs)
+        plugin_kwargs = dict(**kwargs)
 
         plugin_cls = self.load_plugin_cls(device, name=name, module=module)
 
@@ -157,4 +164,4 @@ class PluginManager(object):
             plugin['module'] = import_from_name(module)
 
             self._plugins[name] = plugin
-            self._cache.setdefaults(name, {})
+            self._cache.setdefault(name, {})

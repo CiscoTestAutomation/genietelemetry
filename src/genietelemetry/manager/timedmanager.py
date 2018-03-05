@@ -12,7 +12,7 @@ from ats.topology import loader
 from ats.log import managed_handlers, TaskLogHandler
 
 from genietelemetry.config.manager import Configuration
-from genietelemetry.config.plugins import PluginManager as BaseManager
+from genietelemetry.manager.manager import Manager as BaseManager
 
 # declare module as infra
 __genietelemetry_infra__ = True

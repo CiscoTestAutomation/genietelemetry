@@ -5,11 +5,10 @@ import re
 # pcall
 from ats.async import Pcall
 
-# ats
-from ats.utils import parser as argparse
+# ATS
 from ats.topology.device import Device
-
-from argparse import ArgumentParser
+from ats.utils import parser as argparse
+from ats.datastructures import classproperty
 
 # configuration loader
 from genietelemetry.config.manager import Configuration
@@ -17,100 +16,94 @@ from genietelemetry.config.manager import Configuration
 
 class Manager(object):
 
-    def __init__(self):
-
-    	parser = argparse.ArgumentParser()
-    	parser.add_argument('--genietelemetry', dest = 'genietelemetry')
-    	genietelemetry_args = parser.parse_args()
-
-    	# Instantiate configuration loader
-    	configuration = Configuration()
+	def __init__(self, testbed):
+		'''
+		initialize the manager class by loading the plugin configuration file
+		and initiating the corresponding plugins.
+		'''
+		# Instantiate configuration loader
+		self.configuration = Configuration()
 
 		# parse configuration file
-    	configuration_file = genietelemetry_args.genietelemetry
+		self.parse_args(sys.argv)
 
-    	# load the configuration file
-    	configuration.load(configuration_file)
+		# parse configuration file
+		configuration_file = self.args.genietelemetry
 
-    	# extracting plugins arguments
-    	self.plugins_dict = configuration.plugins
+		# load the configuration file
+		self.testbed = testbed
+		self.configuration.load(configuration_file)
 
-    def run(self, testcase, testbed=None):
-        # (Pdb) pprint.pprint(self.plugins_dict)
-		# {'crashdumps': {'basecls': <class 'genietelemetry_libs.plugins.crashdumps.plugin.Plugin'>,
-		#                 'devices': [],
-		#                 'enabled': True,
-		#                 'kwargs': {'interval': 30},
-		#                 'module': '/ws/karmoham-sjc/pyats/projects/genietelemetry_libs/plugins/crashdumps.zip'},
-		#  'keepalive': {'basecls': <class 'genietelemetry_libs.plugins.keepalive.plugin.Plugin'>,
-		#                'devices': [],
-		#                'enabled': True,
-		#                'kwargs': {'interval': 30},
-		#                'module': <module 'genietelemetry_libs.plugins.keepalive' from '/ws/karmoham-sjc/pyats/projects/genietelemetry_libs/plugins/keepalive/__init__.py'>},
-		#  'tracebackcheck': {'basecls': <class 'genietelemetry_libs.plugins.tracebackcheck.plugin.Plugin'>,
-		#                     'devices': [],
-		#                     'enabled': True,
-		#                     'kwargs': {'interval': 30},
-		#                     'module': '/ws/karmoham-sjc/pyats/projects/genietelemetry_libs/plugins/tracebackcheck.zip'}}
-    	new_results = {}
-    	for plugin in self.plugins_dict.keys():
-    		# Collect only the plugins identified in the config file
-    		# Reason is beacuse, "keepalive" plugin "in old design" will always
-    		# be part of the plugins_dict but the module won't be a string
-			# TODO: should be removed
-    		if not isinstance(self.plugins_dict[plugin]['module'], str):
-    			continue
+		self.configuration.init_plugins('/tmp/',
+			devices=testbed.devices.values())
 
-    		# Instiantiate the Plugin
-    		plugin_obj = self.plugins_dict[plugin]['basecls']()
+	@classproperty
+	def parser(cls):
+		'''
+		store the module corresponding arguments.
+		'''
+		parser = argparse.ArgsPropagationParser(add_help = False)
+		parser.title = 'GenieTelemetry'
 
-    		# Build the per plugin-arguments dictionary to be passed to pcall
-    		plugin_args_dict = {}
-    		plugin_args_dict['plugin'] = plugin_obj
-    		plugin_args_dict['interval'] = \
-    			self.plugins_dict[plugin]['kwargs']['interval']
-    		plugin_args_dict['enabled'] = \
-    			self.plugins_dict[plugin]['enabled']
+		# GenieTelemetry config file
+		# --------------------------
+		parser.add_argument('--genietelemetry',
+							action="store",
+							help='GenieTelemetry configuration file')
+		return parser
 
-    		# Construct the plugin devices list to be used in Pcall
-    		# ex: ikwargs = [{'c': 3}, {'c': 4}]
-    		devices_list = []
-    		if self.plugins_dict[plugin]['devices']:
-	    		for item in self.plugins_dict[plugin]['`']:
-	    			new_dict = {}
-	    			new_dict[item] = testbed.devices[item]
-	    			devices_list.append(new_dict)
-	    	else:
-	    		for dev in testbed.devices:
-	    			new_dict = {}
-	    			new_dict[dev] = testbed.devices[dev]
-	    			devices_list.append(new_dict)
+	def parse_args(self, argv):
+		'''parse_args
 
-    		# Pass plugin_obj, arguments and devices to Pcall
-    		#   child 1: args=(plugin_obj), kwargs= {'enabled': True,
-    		#                                        'interval': 30,
-    		#                                        '--crashdumps_upload': 'True',
-    		#                                        'N95_1': <Device N95_1 at 0xf677b78c>}
-    		#   child 2: args=(plugin_obj), kwargs= {'enabled': True,
-    		#                                        'interval': 30,
-    		#                                        '--crashdumps_upload': 'True',
-    		#                                        'N95_2': <Device N95_2 at 0xf677cfec>}
-    		# import pdb; pdb.set_trace()
-    		p = Pcall(self.call_plugins,
-    			      ckwargs = plugin_args_dict, ikwargs = devices_list)
+		parse arguments if available, store results to self.args. This follows
+		the easypy argument propagation scheme, where any unknown arguments to
+		this plugin is then stored back into sys.argv and untouched.
 
-    		p.start()
-    		p.join()
+		Does nothing if a plugin doesn't come with a built-in parser.
+		'''
 
-    		results = p.results
-    		new_results[plugin] = results
+		# do nothing when there's no parser
+		if not self.parser:
+			return
 
-    	# Construct the testcase monitor result
-    	if not hasattr(self, 'testcase_monitor_result'):
-    		self.testcase_monitor_result = {}
+		# avoid parsing unknowns
+		self.args, _ = self.parser.parse_known_args(argv)
 
-    	self.testcase_monitor_result[testcase.uid] = new_results
-		# (Pdb) self.testcase_monitor_result
+	def run(self, testcase, testbed):
+		'''run
+
+		use pcall to run parallel device/plugins run and return back the result
+		as a dictionary of testcase and the corresponding plugin/device result.
+		'''
+
+		new_results = {}
+
+		for dev in testbed.devices.values():
+			dev_name = dev.name
+			plugins = self.configuration.plugins.get_device_plugins(dev_name)
+			plugin_list = []
+			for plugin in plugins:
+				plugin_list.append([plugin])
+
+    		# Pass device and corresponding plugins to Pcall
+    		#   child 1: args=(device object, plugin1)
+    		#   child 2: args=(device object, plugin2)
+			p = Pcall(self.call_plugins, cargs = [dev], iargs = plugin_list)
+			p.start()
+			p.join()
+
+			results = p.results
+			# Associate device with the plugin result
+			for x, y in zip(results, plugins):
+				new_results[y.__plugin_name__] = {}
+				new_results[y.__plugin_name__][dev_name] = x
+
+		# Construct the testcase monitor result
+		if not hasattr(self, 'testcase_monitor_result'):
+			self.testcase_monitor_result = {}
+
+		# Associate testcase name with the plugin results
+		# Example
 		# {'TriggerSleep.uut':
 			# {'crashdumps':
 				# ({'N95_2': {'2018-03-01T21:17:00.631819Z': 'No cores found!'}},
@@ -120,30 +113,16 @@ class Manager(object):
 				#  {'N95_1': {'2018-03-01T21:17:02.461916Z': '***** No patterns matched *****'}})},
 		# 'common_setup':
 			# {'crashdumps':
-			    # ({'N95_2': {'2018-03-01T21:16:13.206079Z': 'No cores found!'}},
-			    #  {'N95_1': {'2018-03-01T21:25:28.699888Z': "Core dump generated for process 'm6rib' at 2018-03-01 21:23:00"}}),
-			# 'tracebackcheck':
-			    # ({'N95_2': {'2018-03-01T21:16:15.538308Z': '***** No patterns matched *****'}},
-			    #  {'N95_1': {'2018-03-01T21:16:14.981929Z': '***** No patterns matched *****'}})}}
+				# ({'N95_2': {'2018-03-01T21:16:13.206079Z': 'No cores found!'}},
+				#  {'N95_1': {'2018-03-01T21:25:28.699888Z': "Core dump generated for process 'm6rib' at 2018-03-01 21:23:00"}}),
+			#  'tracebackcheck':
+				# ({'N95_2': {'2018-03-01T21:16:15.538308Z': '***** No patterns matched *****'}},
+				#  {'N95_1': {'2018-03-01T21:16:14.981929Z': '***** No patterns matched *****'}})}}
+		self.testcase_monitor_result[testcase.uid] = new_results
 
-    def call_plugins(self, **kwargs):
+	def call_plugins(self, device, plugin):
+		call_result = plugin.execution(device)
 
-    	for itm, val in kwargs.items():
-    		if isinstance(val, Device):
-    			device_name = itm
-    			device = val
-    			break
-
-    	# TODO: Investigate the device not connected
-    	# (related to removing Genie mapping dadatfile)
-    	if not device.is_connected():
-    		device.connect()
-
-    	call_result = kwargs['plugin'].execution(device, **kwargs)
-
-    	results_dict = {}
-    	results_dict[device_name] = call_result.meta
-
-    	# (Pdb) results_dict
-    	# {'N95_2': {'2018-02-27T21:28:14.152095Z': 'No cores found!'}}
-    	return results_dict
+		# Example
+		# {'2018-03-02T22:38:26.845988Z': "Core dump generated for process 'sysmgr' at 2018-03-01 23:21:11"}
+		return call_result.meta
