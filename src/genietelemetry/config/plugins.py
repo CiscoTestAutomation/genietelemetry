@@ -8,6 +8,10 @@ from abstract.magic import Lookup
 
 from ats.utils.import_utils import import_from_name
 
+# To be deleted after fixing plugins abstraction
+from genietelemetry_libs.plugins.crashdumps import Plugin as crashdump_pluign
+from genietelemetry_libs.plugins.tracebackcheck import Plugin as tracebackcheck_pluign
+
 # module logger
 logger = logging.getLogger(__name__)
 
@@ -74,7 +78,6 @@ class PluginManager(object):
 
         device_name = getattr(device, 'name', device)
 
-        # import pdb; pdb.set_trace()
         mod = getattr(module, '__abstract_pkg', None)
         if mod:
             if not getattr(device, 'os', None):
@@ -90,10 +93,16 @@ class PluginManager(object):
         else:
             module = module
 
-        try:
-            plugin_cls = attrgetter('{}.Plugin'.format(name))(module)
-        except AttributeError:
-            plugin_cls = attrgetter('Plugin')(module)
+        # import pdb; pdb.set_trace()
+        # Wei to fix abstarction call and that workaround to be deleted
+        if name == 'tracebackcheck':
+            plugin_cls = tracebackcheck_pluign
+        elif name == 'crashdumps':
+            plugin_cls = crashdump_pluign
+        # try:
+        #     plugin_cls = attrgetter('{}.Plugin'.format(name))(module)
+        # except AttributeError:
+        #     plugin_cls = attrgetter('Plugin')(module)
 
         # caching the plugin cls returned from abstraction magic
         self._cache[name][device_name]['cls'] = plugin_cls
