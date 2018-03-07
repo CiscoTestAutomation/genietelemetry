@@ -50,6 +50,11 @@ class Manager(object):
         parser.add_argument('--genietelemetry',
                             action="store",
                             help='GenieTelemetry configuration file')
+
+        parser.add_argument('--genietelemetry_enable',
+                            default=True,
+                            help='GenieTelemetry enable/disable flag')
+
         return parser
 
     def parse_args(self, argv):
