@@ -115,25 +115,27 @@ class Manager(object):
         # Example
         # {'TriggerSleep.uut':
             # {'crashdumps':
-                # ({'N95_2': {'2018-03-01T21:17:00.631819Z': 'No cores found!'}},
-                #  {'N95_1': {'2018-03-01T21:25:28.699888Z': "Core dump generated for process 'm6rib' at 2018-03-01 21:23:00"}}),
+                # ({'N95_2': {'status': 'ok', 'result':{'2018-03-01T21:17:00.631819Z': 'No cores found!'}}},
+                #  {'N95_1': {'status': 'critical', 'result':{'2018-03-01T21:25:28.699888Z': "Core dump generated for process 'm6rib' at 2018-03-01 21:23:00"}}}),
             #  'tracebackcheck':
-                # ({'N95_2': {'2018-03-01T21:17:02.985530Z': '***** No patterns matched *****'}},
-                #  {'N95_1': {'2018-03-01T21:17:02.461916Z': '***** No patterns matched *****'}})},
+                # ({'N95_2': {'status': 'ok', 'result':{'2018-03-01T21:17:02.985530Z': '***** No patterns matched *****'}}},
+                #  {'N95_1': {'status': 'ok', 'result':{'2018-03-01T21:17:02.461916Z': '***** No patterns matched *****'}}})},
         # 'common_setup':
             # {'crashdumps':
-                # ({'N95_2': {'2018-03-01T21:16:13.206079Z': 'No cores found!'}},
-                #  {'N95_1': {'2018-03-01T21:25:28.699888Z': "Core dump generated for process 'm6rib' at 2018-03-01 21:23:00"}}),
+                # ({'N95_2': {'status': 'ok', 'result':{'2018-03-01T21:16:13.206079Z': 'No cores found!'}}},
+                #  {'N95_1': {'status': 'critical', 'result':{'2018-03-01T21:25:28.699888Z': "Core dump generated for process 'm6rib' at 2018-03-01 21:23:00"}}}),
             #  'tracebackcheck':
-                # ({'N95_2': {'2018-03-01T21:16:15.538308Z': '***** No patterns matched *****'}},
-                #  {'N95_1': {'2018-03-01T21:16:14.981929Z': '***** No patterns matched *****'}})}}
+                # ({'N95_2': {'status': 'ok', 'result':{'2018-03-01T21:16:15.538308Z': '***** No patterns matched *****'}}},
+                #  {'N95_1': {'status': 'ok', 'result':{'2018-03-01T21:16:14.981929Z': '***** No patterns matched *****'}}})}}
         self.testcase_monitor_result[testcase.uid] = new_results
 
     def call_plugins(self, device, plugin):
         call_result = plugin.execution(device)
 
         # Example
-        # {'2018-03-02T22:38:26.845988Z': "Core dump generated for process 'sysmgr' at 2018-03-01 23:21:11"}
+        # {'N95_2': {'status': 'ok', 'result': {'2018-03-08T17:02:27.837458Z': '***** No patterns matched *****'}}}
         results_dict = {}
-        results_dict[device.name] = call_result.meta
+        results_dict[device.name] = {}
+        results_dict[device.name]['status'] = call_result.name
+        results_dict[device.name]['result'] = call_result.meta
         return results_dict
