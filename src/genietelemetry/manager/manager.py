@@ -30,12 +30,16 @@ class Manager(object):
         # parse configuration file
         configuration_file = self.args.genietelemetry
 
-        # load the configuration file
-        self.testbed = testbed
-        self.configuration.load(configuration_file)
+        if configuration_file:
+            # load the configuration file
+            self.testbed = testbed
+            self.configuration.load(configuration_file)
 
-        self.configuration.init_plugins('/tmp/',
-            devices=testbed.devices.values())
+            self.configuration.init_plugins('/tmp/',
+                devices=testbed.devices.values())
+        else:
+            raise AttributeError("'--genietelemetry <path to config_file.yaml>"
+                " is missing.")
 
     @classproperty
     def parser(cls):
