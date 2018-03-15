@@ -1,4 +1,4 @@
-import os
+
 from ats.utils.schemaengine import Or, Any, Use, Optional
 from ats.utils.exceptions import SchemaError
 from ats.utils.import_utils import import_from_name
@@ -17,13 +17,9 @@ def validate_plugins(data):
             # by default all plugins are always enabled and 30 seconds interval
             config.setdefault('enabled', True)
             config.setdefault('interval', 30)
+            config.setdefault('devices', []) # plugin device filter
 
-            # build plugin device filter
-            config.setdefault('devices', [])
-
-            devices = config.pop('devices', [])
-            if not isinstance(devices, list):
-                devices = [ devices ]
+            assert type(config['devices']) is list
 
             # build the plugin arguments
             # If user given any arg not defined in the yaml file,
@@ -31,20 +27,15 @@ def validate_plugins(data):
             kwargs = {}
 
             for key, value in list(config.items()):
-                if key in ('enabled', 'module', 'interval'):
+                if key in ('enabled', 'module', 'interval', 'devices'):
                     continue
 
                 kwargs[key] = config.pop(key)
 
             # Basically, plugin name = class name.
             # let's find it inside the loaded module
-            if os.path.isfile(config['module']):
-                extension = os.path.splitext(os.path.basename(config['module']))
-                _, extension = extension
-                assert extension in ('.zip', '.whl', '.plugin')
-
+            config['module'] = import_from_name(config['module'])
             config['kwargs'] = kwargs
-            config['devices'] = devices
             config['name'] = plugin
 
     except Exception as e:
@@ -54,9 +45,13 @@ def validate_plugins(data):
 
 config_schema = {
     Optional("plugins"): Use(validate_plugins),
-    Optional('manager'): {
-        Optional('class'): Use(import_from_name),
-        Any(): Any(),
+    Optional('connections'): {
+        Any(): {
+            Optional('class'): Use(import_from_name),
+            Optional('via'): str,
+            Optional('alias'): str,
+            Any(): Any(),
+        },
     },
     Any(): Any(),
 }
