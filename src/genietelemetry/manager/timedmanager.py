@@ -151,7 +151,7 @@ class TimedManager(Manager):
         for i in self.plugins._intervals:
 
             # skip if not it's turn
-            if interval % i != 0:
+            if interval % i:
                 continue
 
             super().run(tag, i)
@@ -159,6 +159,7 @@ class TimedManager(Manager):
 
     def call_plugin(self, device, *plugins):
 
+        print('call_plugin {}'.format(device))
         results = dict()
         # skip if device isn't connected
         if not self.is_connected(device.name, device):
@@ -170,7 +171,9 @@ class TimedManager(Manager):
             return results
 
         for plugin in plugins:
+            print('call_plugin {}'.format(plugin))
             result = super().call_plugin(device, plugin)
+            print('call_plugin result{}'.format(result))
 
             recursive_update(results, result)
 

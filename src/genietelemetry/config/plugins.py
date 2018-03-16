@@ -38,7 +38,6 @@ class PluginManager(object):
 
         initializing plugins for device
         '''
-
         logger.info('initializing plugins for %s' % device_name)
 
         for plugin_name, plugin in self._plugins.items():

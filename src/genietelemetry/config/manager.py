@@ -37,10 +37,7 @@ class Configuration(object):
     def load(self, config = None, devices = {}):
 
         # finally, load configuration provided via input argument
-        if isinstance(config, dict):
-            self.update(config)
-
-        elif isinstance(config, str):
+        if isinstance(config, (dict, str)):
             self.update(self._loader.load(config))
 
         else:            
