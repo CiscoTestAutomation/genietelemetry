@@ -10,12 +10,12 @@ from datetime import datetime
 from ats.topology import loader
 from ats.utils.dicts import recursive_update
 
-from genietelemetry.config import (
+from genie.telemetry.config import (
     Configuration,
     PluginManager as BaseManager,
     DEFAULT_CONFIGURATION
 )
-from genietelemetry.manager import Manager
+from genie.telemetry.manager import Manager
 
 logger = logging.getLogger(__name__)
 
@@ -159,21 +159,20 @@ class TimedManager(Manager):
 
     def call_plugin(self, device, *plugins):
 
-        print('call_plugin {}'.format(device))
         results = dict()
         # skip if device isn't connected
         if not self.is_connected(device.name, device):
             for plugin in plugins:
-                execution = results.setdefault(plugin.name,
+                plugin_name = getattr(plugin, 'name',
+                              getattr(plugin, '__plugin_name__', str(plugin)))
+                execution = results.setdefault(plugin_name,
                                               {}).setdefault(device.name, {})
                 execution['status'] = 'critical'
                 execution['result'] = {}
             return results
 
         for plugin in plugins:
-            print('call_plugin {}'.format(plugin))
             result = super().call_plugin(device, plugin)
-            print('call_plugin result{}'.format(result))
 
             recursive_update(results, result)
 

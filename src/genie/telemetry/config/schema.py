@@ -47,10 +47,8 @@ config_schema = {
     Optional("plugins"): Use(validate_plugins),
     Optional('connections'): {
         Any(): {
-            Optional('class'): Use(import_from_name),
             Optional('via'): str,
             Optional('alias'): str,
-            Any(): Any(),
         },
     },
     Any(): Any(),

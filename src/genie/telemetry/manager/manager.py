@@ -11,7 +11,7 @@ from ats.datastructures import classproperty
 from ats.utils.dicts import recursive_update
 
 # configuration loader
-from genietelemetry.config.manager import Configuration
+from genie.telemetry.config.manager import Configuration
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,7 @@ class Manager(object):
         store the module corresponding arguments.
         '''
         parser = argparse.ArgsPropagationParser(add_help = False)
-        parser.title = 'GenieTelemetry'
+        parser.title = 'Genie Telemetry'
 
         # GenieTelemetry config file
         # --------------------------
@@ -80,22 +80,15 @@ class Manager(object):
 
     def setup(self):
 
-        try:
-            cls = __import__('unicon').Unicon
-        except (ImportError, AttributeError):
-            cls = None
-
         devices = []
         for name, device in self.devices.items():
             connection = self.connections.get(name, {})
-            connection_class = connection.pop('class', cls)
             timeout = connection.pop('timeout', self.connection_timeout)
             logger.info('setting up connection to device {}'.format(name))
             if not device.is_connected(alias=connection.get('alias', None)):
                 # best effort, attempt to connect at least once.
                 try:
-                    device.connect(cls=connection_class,
-                                   timeout=timeout,
+                    device.connect(timeout=timeout,
                                    **connection)
                 except Exception as e:
                     logger.error('failed to connect to device {}'.format(name))
@@ -211,7 +204,8 @@ class Manager(object):
 
     def call_plugin(self, device, plugin):
 
-        plugin_name = getattr(plugin, '__plugin_name__', str(plugin))
+        plugin_name = getattr(plugin, 'name',
+                              getattr(plugin, '__plugin_name__', str(plugin)))
 
         result = dict()
 

@@ -29,15 +29,15 @@ def find_templates(*paths):
 
     return files
 
-version = find_version('src', 'genietelemetry', '__init__.py')
+version = find_version('src', 'genie', 'telemetry', '__init__.py')
 
 # launch setup
 setup(
-    name = 'genietelemetry',
+    name = 'genie.telemetry',
     version = version,
 
     # descriptions
-    description = 'GenieTelemetry: Testbed Health Status Monitoring Service',
+    description = 'Genie.Telemetry: Testbed Telemetry Service',
     long_description = read('DESCRIPTION.rst'),
 
     # the project's main homepage.
@@ -68,7 +68,7 @@ setup(
     keywords = 'testbed health status monitoring',
 
     # uses namespace package
-    namespace_packages = [],
+    namespace_packages = ['genie'],
 
     # project packages
     packages = find_packages(where = 'src'),
@@ -92,30 +92,21 @@ setup(
 
     # console entry point
     entry_points = { 
-        'console_scripts': ['genietelemetry = genietelemetry:main'],
+        'console_scripts': ['genietelemetry = genie.telemetry:main'],
     },
 
     # package dependencies
-    install_requires =  ['psutil',
-                         'setproctitle',
-                         'ats.async >= 3.3.0',
+    install_requires =  ['ats.async >= 3.3.0',
                          'ats.datastructures >= 3.3.0',
                          'ats.log >= 3.3.0',
                          'ats.utils >= 3.3.0',
                          'ats.topology >= 3.3.0',
-                         'unicon',
                          'abstract',
-                         'parsergen',
                         ],
 
     # any additional groups of dependencies.
     # install using: $ pip install -e .[dev]
     extras_require = {
-        # 'dev': ['coverage',
-        #         'restview',
-        #         'Sphinx',
-        #         'sphinxcontrib-napoleon',
-        #         'sphinx-rtd-theme'],
     },
 
     # external modules

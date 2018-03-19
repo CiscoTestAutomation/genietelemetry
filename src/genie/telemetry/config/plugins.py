@@ -95,7 +95,7 @@ class PluginManager(object):
                                                                 % device_name)
             try:
                 plugin_module = Lookup.from_device(device,
-                                                   packages=dict(name=mod))
+                                                   packages={ name: mod })
             except Exception:
                 logger.error('failed to load abstration for device %s'
                                                                 % device_name)
