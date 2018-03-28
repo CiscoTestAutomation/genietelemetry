@@ -1,4 +1,5 @@
 import logging
+from io import TextIOBase
 
 from ats.datastructures import AttrDict
 from ats.utils.dicts import recursive_update
@@ -49,7 +50,7 @@ class Configuration(object):
     def load(self, config = None, devices = {}):
         logger.info('Loading Genie.Telemetry Configuration')
         # finally, load configuration provided via input argument
-        if isinstance(config, (dict, str)):
+        if isinstance(config, (dict, str, TextIOBase)):
             self.update(self._loader.load(config))
 
         else:            
