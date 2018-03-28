@@ -16,6 +16,10 @@ from genie.telemetry.config import (
     DEFAULT_CONFIGURATION
 )
 from genie.telemetry.manager import Manager
+from genie.telemetry.status import CRITICAL
+
+# declare module as infra
+__genietelemetry_infra__ = True
 
 logger = logging.getLogger(__name__)
 
@@ -50,16 +54,14 @@ class PluginManager(BaseManager):
             interval = plugin.get('interval', 30)
             for i in self._intervals:
 
-                if interval % i != 0 or name in self._plugin_interval[i]:
+                if i % interval != 0 or name in self._plugin_interval[i]:
                     continue
 
                 self._plugin_interval[i].append(name)
 
-
 class TimedManager(Manager):
 
     def __init__(self,
-                 instance = None,
                  testbed={},
                  testbed_file=None,
                  configuration={},
@@ -75,8 +77,6 @@ class TimedManager(Manager):
                                         DEFAULT_CONFIGURATION),
                          plugins=PluginManager,
                          **kwargs)
-
-        self.instance = instance
 
 
     def load_testbed(self, testbed_file):
@@ -117,7 +117,7 @@ class TimedManager(Manager):
             while True:
 
                 interval += 1
-                time_now = datetime.utcnow().isoformat()
+                time_now = datetime.utcnow().strftime("%b %d %H:%M:%S UTC %Y")
                 self.run(time_now, interval)
                 time.sleep(1)
 
@@ -154,29 +154,33 @@ class TimedManager(Manager):
             if interval % i:
                 continue
 
-            super().run(tag, i)
+            super().run('{} ({})'.format(tag, i), i)
 
 
-    def call_plugin(self, device, *plugins):
+    def call_plugin(self, device, plugins):
 
+        is_connected = self.is_connected(device.name, device)
         results = dict()
-        # skip if device isn't connected
-        if not self.is_connected(device.name, device):
-            for plugin in plugins:
-                plugin_name = getattr(plugin, 'name',
-                              getattr(plugin, '__plugin_name__', str(plugin)))
-                execution = results.setdefault(plugin_name,
-                                              {}).setdefault(device.name, {})
-                execution['status'] = 'critical'
-                execution['result'] = {}
-            return results
 
         for plugin in plugins:
-            result = super().call_plugin(device, plugin)
+            # skip plugin execution if device isn't connected
+            if is_connected:
+                result = super().call_plugin(device, [plugin])
+            else:
+                result = dict()
+                plugin_name = getattr(plugin, 'name',
+                                      getattr(plugin, '__plugin_name__',
+                                              str(plugin)))
+
+                execution = result.setdefault(plugin_name,
+                                              {}).setdefault(device.name, {})
+                execution['status'] = CRITICAL
+                execution['result'] = { datetime.utcnow().isoformat():
+                                                'Lost Connection' }
 
             recursive_update(results, result)
 
             if hasattr(self.instance, 'post_call_plugin'):
-                self.instance.post_plugin_call(result)
+                self.instance.post_call_plugin(device, result)
 
         return results

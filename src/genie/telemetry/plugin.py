@@ -4,6 +4,9 @@ from ats.datastructures import classproperty
 
 from genie.telemetry.status import OK
 
+# declare module as infra
+__genietelemetry_infra__ = True
+
 logger = logging.getLogger(__name__)
 
 class BasePlugin(object):
@@ -19,7 +22,6 @@ class BasePlugin(object):
         self.args = None
 
         self.interval = interval
-        self.status = OK
 
     @property
     def name(self):

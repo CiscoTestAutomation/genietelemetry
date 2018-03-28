@@ -3,6 +3,9 @@ from ats.utils.schemaengine import Or, Any, Use, Optional
 from ats.utils.exceptions import SchemaError
 from ats.utils.import_utils import import_from_name
 
+# declare module as infra
+__genietelemetry_infra__ = True
+
 def validate_plugins(data):
     try:
         assert type(data) is dict

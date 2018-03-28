@@ -4,6 +4,9 @@ from copy import copy
 from operator import attrgetter
 from abstract.magic import Lookup
 
+# declare module as infra
+__genietelemetry_infra__ = True
+
 # module logger
 logger = logging.getLogger(__name__)
 
@@ -29,20 +32,50 @@ class PluginManager(object):
         return any(device in c for c in self._cache.values())
 
     def get_device_plugins(self, device):
-        device = get(device , 'name', device)
+        device = getattr(device , 'name', device)
         return [c.get(device).get('instance',
             None) for c in self._cache.values() if device in c]
+
+    def set_device_plugin_status(self, device, plugin, status):
+
+        for plugin_name, plugin_cache in self._plugins.items():
+            if plugin != plugin_cache.get('plugin_label'):
+                continue
+            device_cache = self._cache.get(plugin_name, {}).get(device, {})
+            if not device_cache:
+                continue
+            status_label = str(status).upper()
+            self._cache[plugin_name][device]['status'] = status
+            self._cache[plugin_name][device]['status_label'] = status_label
+
+    def get_device_plugins_status(self, device, label=False):
+        device = getattr(device , 'name', device)
+        statuses = dict()
+        for devices in self._cache.values():
+            dev = devices.get(device, {})
+            if not dev:
+                continue
+            plugin = dev.get('instance', None)
+            if label:
+                status = dev.get('status_label', 'STATUS NOT AVAILABLE')
+            else:
+                status = dev.get('status', None)
+            plugin = getattr(plugin, '__plugin_name__',
+                             getattr(plugin, '__module__',
+                                     type(plugin).__name__))
+            statuses[plugin] = status
+        return statuses
 
     def init_plugins(self, device_name, device):
         '''init_plugins
 
         initializing plugins for device
         '''
-        logger.info('initializing plugins for %s' % device_name)
+        logger.info('Initializing plugins for %s' % device_name)
 
-        for plugin_name, plugin in self._plugins.items():
+        for plugin_name, plugin_cache in self._plugins.items():
 
-            devices = plugin.get('devices', [])
+            devices = plugin_cache.get('devices', [])
             if devices and device_name not in devices:
                 logger.debug('Skipping plugin %s for device %s' % (plugin_name,
                                                                    device_name))
@@ -51,7 +84,7 @@ class PluginManager(object):
             self._cache[plugin_name].setdefault(device_name, {})
 
             argv = copy(sys.argv[1:])
-            plugin = self.load_plugin(device, **plugin)
+            plugin = self.load_plugin(device, **plugin_cache)
             self._cache[plugin_name][device_name]['instance'] = plugin
 
             # parse plugin arguments
@@ -59,6 +92,12 @@ class PluginManager(object):
             # (saves arguments to plugin.args)
             plugin.parse_args(argv)
             self._cache[plugin_name][device_name]['args'] = plugin.args
+
+            name = getattr(plugin, '__plugin_name__',
+                           getattr(plugin, '__module__',
+                                   type(plugin).__name__))
+
+            plugin_cache.setdefault('plugin_label', name)
 
     def get_plugin_cls(self, plugin_module, base_module, class_name):
 

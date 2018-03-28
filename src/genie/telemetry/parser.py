@@ -14,6 +14,8 @@ import re as re
 from ats.utils import parser
 from gettext import gettext
 
+# declare module as infra
+__genietelemetry_infra__ = True
 
 CLI_DESCRIPTION = '''\
 GenieTelemetry command line arguments.
