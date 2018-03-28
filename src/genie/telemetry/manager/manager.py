@@ -144,7 +144,7 @@ class Manager(object):
                              ''.format(name, connection))
 
 
-    def run(self, tag, *args, **kwargs):
+    def run(self, tag, *args, plugins=[], **kwargs):
         '''run
 
         use pcall to run parallel device/plugins run and return back the result
@@ -157,10 +157,16 @@ class Manager(object):
 
         for name, device in self.devices.items():
 
-            plugins = self.get_device_plugins(device, *args, **kwargs)
-            if not plugins:
+            device_plugins = self.get_device_plugins(device, *args, **kwargs)
+            if plugins:
+                device_plugins = [p for n,p in device_plugins.items() \
+                                                            if n in plugins ]
+            else:
+                device_plugins = list(device_plugins.values())
+
+            if not device_plugins:
                 continue
-            iargs.append((device, plugins))
+            iargs.append((device, device_plugins))
 
         if not iargs:
             return

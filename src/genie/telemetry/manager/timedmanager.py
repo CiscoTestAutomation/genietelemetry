@@ -43,21 +43,15 @@ class PluginManager(BaseManager):
 
         super().load(data)
 
+        # init plugin interval dictionary
         for name, plugin in self._plugins.items():
             interval = plugin.get('interval', 30)
             self._plugin_interval.setdefault(interval, [])
+            if name not in self._plugin_interval[interval]:
+                self._plugin_interval[interval].append(name)
 
         # init plugin interval dictionary
         self._intervals = sorted(self._plugin_interval.keys())
-        for name, plugin in self._plugins.items():
-
-            interval = plugin.get('interval', 30)
-            for i in self._intervals:
-
-                if i % interval != 0 or name in self._plugin_interval[i]:
-                    continue
-
-                self._plugin_interval[i].append(name)
 
 class TimedManager(Manager):
 
@@ -97,17 +91,18 @@ class TimedManager(Manager):
 
     def get_device_plugins(self, device, interval):
 
-        plugin_runs = []
+        plugin_runs = {}
 
         # get list of plugin to be executed at this interval
-        for plugin in self.plugins._plugin_interval[interval]:
-            device_plugin = self.plugins._cache[plugin].get(device.name, {})
+        for plugin_name in self.plugins._plugin_interval[interval]:
+            device_plugin = self.plugins._cache[plugin_name].get(device.name,
+                                                                 {})
             if not device_plugin:
                 continue
             plugin = device_plugin.get('instance', None)
             if not plugin:
                 continue
-            plugin_runs.append(plugin)
+            plugin_runs[plugin_name] = plugin
 
         return plugin_runs
 

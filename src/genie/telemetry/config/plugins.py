@@ -33,8 +33,9 @@ class PluginManager(object):
 
     def get_device_plugins(self, device):
         device = getattr(device , 'name', device)
-        return [c.get(device).get('instance',
-            None) for c in self._cache.values() if device in c]
+        return { n:c.get(device).get('instance',
+                                     None) for n, c in self._cache.items() \
+                                                                if device in c }
 
     def set_device_plugin_status(self, device, plugin, status):
 
