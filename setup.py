@@ -30,6 +30,8 @@ def find_templates(*paths):
     return files
 
 version = find_version('src', 'genietelemetry', '__init__.py')
+req_ver = version.split('.')
+version_range = '>= %s.%s.0, < %s.%s.0' % (3, 0, 5, 0)
 
 # launch setup
 setup(
