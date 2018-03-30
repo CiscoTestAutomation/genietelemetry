@@ -1,16 +1,11 @@
-import os
 import sys
-import zipfile
 import logging
 from copy import copy
 from operator import attrgetter
 from abstract.magic import Lookup
 
-from ats.utils.import_utils import import_from_name
-
-# To be deleted after fixing plugins abstraction
-from genietelemetry_libs.plugins.crashdumps import Plugin as crashdump_pluign
-from genietelemetry_libs.plugins.tracebackcheck import Plugin as tracebackcheck_pluign
+# declare module as infra
+__genietelemetry_infra__ = True
 
 # module logger
 logger = logging.getLogger(__name__)
@@ -37,21 +32,51 @@ class PluginManager(object):
         return any(device in c for c in self._cache.values())
 
     def get_device_plugins(self, device):
-        return [c.get(device).get('instance',
-            None) for c in self._cache.values() if device in c]
+        device = getattr(device , 'name', device)
+        return { n:c.get(device).get('instance',
+                                     None) for n, c in self._cache.items() \
+                                                                if device in c }
 
-    def init_plugins(self, device):
+    def set_device_plugin_status(self, device, plugin, status):
+
+        for plugin_name, plugin_cache in self._plugins.items():
+            if plugin != plugin_cache.get('plugin_label'):
+                continue
+            device_cache = self._cache.get(plugin_name, {}).get(device, {})
+            if not device_cache:
+                continue
+            status_label = str(status).upper()
+            self._cache[plugin_name][device]['status'] = status
+            self._cache[plugin_name][device]['status_label'] = status_label
+
+    def get_device_plugins_status(self, device, label=False):
+        device = getattr(device , 'name', device)
+        statuses = dict()
+        for devices in self._cache.values():
+            dev = devices.get(device, {})
+            if not dev:
+                continue
+            plugin = dev.get('instance', None)
+            if label:
+                status = dev.get('status_label', 'STATUS NOT AVAILABLE')
+            else:
+                status = dev.get('status', None)
+            plugin = getattr(plugin, '__plugin_name__',
+                             getattr(plugin, '__module__',
+                                     type(plugin).__name__))
+            statuses[plugin] = status
+        return statuses
+
+    def init_plugins(self, device_name, device):
         '''init_plugins
 
         initializing plugins for device
         '''
+        logger.info('Initializing plugins for %s' % device_name)
 
-        device_name = getattr(device, 'name', device)
-        logger.info('initializing plugins for %s' % device_name)
+        for plugin_name, plugin_cache in self._plugins.items():
 
-        for plugin_name, plugin in self._plugins.items():
-
-            devices = plugin.get('devices', [])
+            devices = plugin_cache.get('devices', [])
             if devices and device_name not in devices:
                 logger.debug('Skipping plugin %s for device %s' % (plugin_name,
                                                                    device_name))
@@ -60,7 +85,7 @@ class PluginManager(object):
             self._cache[plugin_name].setdefault(device_name, {})
 
             argv = copy(sys.argv[1:])
-            plugin = self.load_plugin(device, **plugin)
+            plugin = self.load_plugin(device, **plugin_cache)
             self._cache[plugin_name][device_name]['instance'] = plugin
 
             # parse plugin arguments
@@ -69,6 +94,28 @@ class PluginManager(object):
             plugin.parse_args(argv)
             self._cache[plugin_name][device_name]['args'] = plugin.args
 
+            name = getattr(plugin, '__plugin_name__',
+                           getattr(plugin, '__module__',
+                                   type(plugin).__name__))
+
+            plugin_cache.setdefault('plugin_label', name)
+
+    def get_plugin_cls(self, plugin_module, base_module, class_name):
+
+        if plugin_module == base_module:
+            modules = [plugin_module]
+        else:
+            modules = [plugin_module, base_module]
+
+        for module in modules:
+            for name in (class_name, 'Plugin'):
+                try:
+                    plugin_cls = attrgetter(name)(module)
+                except AttributeError:
+                    continue
+                return plugin_cls
+
+        raise AttributeError('%s Plugin class is not defined' % class_name)
 
     def load_plugin_cls(self, device, name=None, module=None):
         '''load_plugin_cls
@@ -87,22 +134,17 @@ class PluginManager(object):
                 raise AttributeError('%s custom abstraction is missing'
                                                                 % device_name)
             try:
-                module = Lookup.from_device(device, packages=dict(name=mod))
+                plugin_module = Lookup.from_device(device,
+                                                   packages={ name: mod })
             except Exception:
+                logger.error('failed to load abstration for device %s'
+                                                                % device_name)
                 raise
         else:
-            module = module
+            plugin_module = module
 
-        # import pdb; pdb.set_trace()
-        # Wei to fix abstarction call and that workaround to be deleted
-        if name == 'tracebackcheck':
-            plugin_cls = tracebackcheck_pluign
-        elif name == 'crashdumps':
-            plugin_cls = crashdump_pluign
-        # try:
-        #     plugin_cls = attrgetter('{}.Plugin'.format(name))(module)
-        # except AttributeError:
-        #     plugin_cls = attrgetter('Plugin')(module)
+        class_name = '{}.Plugin'.format(name)
+        plugin_cls = self.get_plugin_cls(plugin_module, module, class_name)
 
         # caching the plugin cls returned from abstraction magic
         self._cache[name][device_name]['cls'] = plugin_cls
@@ -124,7 +166,7 @@ class PluginManager(object):
         return plugin_cls(**plugin_kwargs)
 
 
-    def load(self, directory, data):
+    def load(self, data):
         '''loads plugins from dictionary data
 
         this api loads plugins defined in a specific dictionary format (same as
@@ -157,20 +199,6 @@ class PluginManager(object):
             if not plugin.get('enabled', False):
                 logger.debug('Plugin %s is not enabled' % name)
                 continue
-
-            module = plugin.get('module', None)
-
-            if os.path.isfile(module):
-                extension = os.path.splitext(os.path.basename(module))
-                fname, extension = extension
-                working_path = os.path.join(directory, fname)
-                # unzip it
-                with zipfile.ZipFile(module, 'r') as zip_ref:
-                    zip_ref.extractall(working_path)
-
-                module = fname
-
-            plugin['module'] = import_from_name(module)
 
             self._plugins[name] = plugin
             self._cache.setdefault(name, {})

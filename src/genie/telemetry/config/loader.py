@@ -7,6 +7,9 @@ from ats.utils.dicts import recursive_cast
 
 from .schema import config_schema
 
+# declare module as infra
+__genietelemetry_infra__ = True
+
 class ConfigLoader(Loader):
     def __init__(self):
         super().__init__(schema = config_schema,
