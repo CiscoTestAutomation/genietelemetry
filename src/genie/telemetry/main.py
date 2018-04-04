@@ -9,6 +9,7 @@ import traceback
 from ats import log
 from ats.utils import sig_handlers
 from ats.datastructures import AttrDict
+from ats.utils.import_utils import import_from_name
 
 from .parser import Parser
 from .manager import TimedManager
@@ -17,10 +18,27 @@ from .utils import escape, filter_exception, ordered_yaml_dump
 
 # module logger
 logger = logging.getLogger('genie.telemetry')
-logger.addHandler(log.managed_handlers.tasklog)
 
 __LOG_FILE__ = 'telemetry.log'
 __BUFF_SIZE__ = 5000
+
+class TelemetryLogHandler(logging.StreamHandler):
+    """
+    A handler class which allows the cursor to stay on
+    one line for selected messages
+    """
+    publisher = None
+
+    def emit(self, record):
+        try:
+            msg = self.format(record)
+            if self.publisher:
+                self.publisher.put(dict(stream=msg))
+            self.flush()
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            self.handleError(record)
 
 class GenieTelemetry(object):
 
@@ -43,6 +61,8 @@ class GenieTelemetry(object):
         # -----------------------
         # (this does nothing if screen hander is there already)
         logging.root.addHandler(log.managed_handlers.screen)
+        self.telemetry_view = TelemetryLogHandler()
+        logging.root.addHandler(self.telemetry_view)
 
         # enable double ctrl-c SIGINT handler
         # -----------------------------------
@@ -85,6 +105,7 @@ class GenieTelemetry(object):
         # configure logging level
         # ------------------------------
         logger.setLevel(loglevel)
+        logger.addHandler(log.managed_handlers.tasklog)
 
         self.testbed_file = testbed_file
         self.pdb = pdb or '-pdb' in sys.argv
@@ -132,9 +153,17 @@ class GenieTelemetry(object):
     def post_call_plugin(self, device, results):
 
         if self.liveview:
-            # push over websocket
-            self.liveview.server.emit('liveview',
-                                      dict(services=dict(results=results)))
+            websocket_data = {}
+            for p, res in results.items():
+                websocket_data[p] = {}
+                for device, data in res.items():
+                    status = data.get('status')
+                    websocket_data[p][device] = dict(status=str(status).upper(),
+                                                     code=status.code)
+            self.publisher.put(dict(results=websocket_data))
+            # # push over websocket
+            # self.liveview.server.emit('liveview',
+            #                           dict(services=dict(results=results)))
 
     def post_run(self, device, plugin, result):
 
@@ -153,20 +182,21 @@ class GenieTelemetry(object):
                                  result=result.get('result', {}),
                                  snapshots='\n'.join(snapshots))
 
-    def stream_log(self):
-        try:
-            with open(self.logfile, 'r') as f:
-                f.seek(self.log_index)
-                line = escape(f.read(__BUFF_SIZE__))
+    # def stream_log(self):
+    #     try:
+    #         with open(self.logfile, 'r') as f:
+    #             f.seek(self.log_index)
+    #             line = escape(f.read(__BUFF_SIZE__))
 
-                self.liveview.server.emit('liveview',
-                                          dict(services=dict(stream=line)))
+    #             self.publisher
+    #             self.liveview.server.emit('liveview',
+    #                                       dict(services=dict(stream=line)))
 
-                self.log_index += __BUFF_SIZE__
-        except Exception as e:
-            logger.error(e)
+    #             self.log_index += __BUFF_SIZE__
+    #     except Exception as e:
+    #         logger.error(e)
 
-        return ''
+    #     return ''
 
     def load_liveview(self):
         if not self.callback_notify:
@@ -174,15 +204,23 @@ class GenieTelemetry(object):
 
         try:
 
-            cls = __import__('ats').liveview.base.Feed
+            cls = import_from_name('ats_liveview.base.Feed')
 
         except (ImportError, AttributeError):
             return
 
-        liveview = cls(self, uid=self.uid, runinfo_dir=self.runinfo_dir)
-        liveview.essentials.append(('stream', self.stream_log, []))
+        telemetryview = cls(self,
+                       uid=self.uid,
+                       runinfo_dir=self.runinfo_dir,
+                       feed_type='telemetryviews',
+                       events=('telemetryview',
+                               'telemetryview-subscribe',
+                               'telemetryview-unsubscribe',
+                               'telemetryview-error'))
+        # liveview.essentials.append(('stream', self.stream_log, []))
+        self.telemetry_view.publisher = self.publisher = telemetryview.publisher
 
-        return liveview
+        return telemetryview
 
     def start(self):
 
