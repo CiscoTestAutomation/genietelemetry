@@ -106,7 +106,6 @@ class GenieTelemetry(object):
         # ------------------------------
         logger.addHandler(log.managed_handlers.tasklog)
         logger.setLevel(loglevel)
-        logger.addHandler(log.managed_handlers.tasklog)
 
         self.testbed_file = testbed_file
         self.pdb = pdb or '-pdb' in sys.argv
