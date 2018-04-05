@@ -17,7 +17,6 @@ from .utils import escape, filter_exception, ordered_yaml_dump
 
 # module logger
 logger = logging.getLogger('genie.telemetry')
-logger.addHandler(log.managed_handlers.tasklog)
 
 __LOG_FILE__ = 'telemetry.log'
 __BUFF_SIZE__ = 5000
@@ -84,6 +83,7 @@ class GenieTelemetry(object):
 
         # configure logging level
         # ------------------------------
+        logger.addHandler(log.managed_handlers.tasklog)
         logger.setLevel(loglevel)
 
         self.testbed_file = testbed_file
