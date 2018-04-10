@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import pathlib
 import logging
 import getpass
@@ -153,13 +154,18 @@ class GenieTelemetry(object):
     def post_call_plugin(self, device, results):
 
         if self.liveview:
-            websocket_data = {}
+            websocket_data = []
             for p, res in results.items():
-                websocket_data[p] = {}
                 for device, data in res.items():
                     status = data.get('status')
-                    websocket_data[p][device] = dict(status=str(status).upper(),
-                                                     code=status.code)
+                    # to nanoseconds
+                    timestamp = int(time.time()*1000000000)
+                    websocket_data.append(dict(status=str(status).upper(),
+                                               value=status.code,
+                                               device=device,
+                                               plugin=p,
+                                               result=data.get('result'),
+                                               timestamp=timestamp))
             self.publisher.put(dict(results=websocket_data))
             # # push over websocket
             # self.liveview.server.emit('liveview',
