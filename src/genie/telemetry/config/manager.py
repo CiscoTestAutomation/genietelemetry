@@ -25,11 +25,6 @@ plugins:
         interval: 30
         enabled: True
         module: genietelemetry_libs.plugins.tracebackcheck
-    keepalive:
-        interval: 10
-        enabled: True
-        module: genietelemetry_libs.plugins.keepalive
-
 '''
 
 class Configuration(object):
