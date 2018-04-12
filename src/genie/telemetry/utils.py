@@ -18,6 +18,18 @@ def escape(stdinput):
 
     return stdinput
 
+def str_or_list(value):
+    '''check_file
+
+    translates str/list into list.
+    '''
+
+    if isinstance(value, str):
+        # convert string to list
+        value = [value, ]
+
+    return value
+
 
 def filter_exception(exc_type, exc_value, tb):
     '''filter_exception

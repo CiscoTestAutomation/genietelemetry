@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import pathlib
 import logging
 import getpass
@@ -22,7 +23,7 @@ logger = logging.getLogger('genie.telemetry')
 __LOG_FILE__ = 'telemetry.log'
 __BUFF_SIZE__ = 5000
 
-class TelemetryLogHandler(logging.StreamHandler):
+class TelemetryLogHandler(log.TaskLogHandler):
     """
     A handler class which allows the cursor to stay on
     one line for selected messages
@@ -31,14 +32,12 @@ class TelemetryLogHandler(logging.StreamHandler):
 
     def emit(self, record):
         try:
-            msg = self.format(record)
             if self.publisher:
-                self.publisher.put(dict(stream=msg))
-            self.flush()
-        except (KeyboardInterrupt, SystemExit):
-            raise
+                self.publisher.put(dict(stream=self.format(record)))
         except:
-            self.handleError(record)
+            pass
+
+        super().emit(record)
 
 class GenieTelemetry(object):
 
@@ -61,8 +60,8 @@ class GenieTelemetry(object):
         # -----------------------
         # (this does nothing if screen hander is there already)
         logging.root.addHandler(log.managed_handlers.screen)
-        self.telemetry_view = TelemetryLogHandler()
-        logging.root.addHandler(self.telemetry_view)
+        # self.telemetry_view = TelemetryLogHandler()
+        # logging.root.addHandler(self.telemetry_view)
 
         # enable double ctrl-c SIGINT handler
         # -----------------------------------
@@ -71,6 +70,8 @@ class GenieTelemetry(object):
         # create command-line argv parser
         # -------------------------------
         self.parser = Parser()
+        self.manager = None
+        self.liveview = None
 
     def main(self, testbed={},
                    testbed_file = None,
@@ -104,8 +105,7 @@ class GenieTelemetry(object):
 
         # configure logging level
         # ------------------------------
-        logger.addHandler(log.managed_handlers.tasklog)
-        logger.setLevel(loglevel)
+
 
         self.testbed_file = testbed_file
         self.pdb = pdb or '-pdb' in sys.argv
@@ -124,7 +124,9 @@ class GenieTelemetry(object):
         self.runinfo_dir = runinfo_dir
         self.logfile = os.path.join(self.runinfo_dir, __LOG_FILE__)
 
-        log.managed_handlers.tasklog.changeFile(self.logfile)
+        log.managed_handlers.tasklog = TelemetryLogHandler(self.logfile)
+        logger.addHandler(log.managed_handlers.tasklog)
+        logger.setLevel(loglevel)
 
         self.mailbot = MailBot(instance = self,
                                from_addrs = self.env.user,
@@ -136,9 +138,10 @@ class GenieTelemetry(object):
 
         self.report = TextEmailReport(instance = self)
 
-        with self.mailbot:
-            self.liveview = self.load_liveview()
-            self.manager = TimedManager(instance=self,
+        try:
+            with self.mailbot:
+                self.liveview = self.load_liveview()
+                self.manager = TimedManager(instance=self,
                                         testbed=testbed,
                                         runinfo_dir= self.runinfo_dir,
                                         testbed_file=testbed_file,
@@ -146,20 +149,27 @@ class GenieTelemetry(object):
                                         configuration_file=configuration_file,
                                         timeout=self.timeout)
 
-            self.start()
-
-        self.stop()
+                self.start()
+        except Exception:
+            raise
+        finally:
+            self.stop()
 
     def post_call_plugin(self, device, results):
 
         if self.liveview:
-            websocket_data = {}
+            websocket_data = []
             for p, res in results.items():
-                websocket_data[p] = {}
                 for device, data in res.items():
                     status = data.get('status')
-                    websocket_data[p][device] = dict(status=str(status).upper(),
-                                                     code=status.code)
+                    # to nanoseconds
+                    timestamp = int(time.time()*1000000000)
+                    websocket_data.append(dict(status=str(status).upper(),
+                                               value=status.code,
+                                               device=device,
+                                               plugin=p,
+                                               result=data.get('result'),
+                                               timestamp=timestamp))
             self.publisher.put(dict(results=websocket_data))
             # # push over websocket
             # self.liveview.server.emit('liveview',
@@ -218,7 +228,8 @@ class GenieTelemetry(object):
                                'telemetryview-unsubscribe',
                                'telemetryview-error'))
         # liveview.essentials.append(('stream', self.stream_log, []))
-        self.telemetry_view.publisher = self.publisher = telemetryview.publisher
+        self.publisher = telemetryview.publisher
+        log.managed_handlers.tasklog.publisher = telemetryview.publisher
 
         return telemetryview
 
