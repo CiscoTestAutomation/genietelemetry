@@ -279,41 +279,43 @@ class TimedManager(Manager):
     def call_plugin(self, device, plugins):
 
         is_connected = self.is_connected(device.name, device)
-        results = dict()
+        if not is_connected:            
+            connection = self.connections.get(device.name, {})
+            timeout = connection.pop('timeout', self.connection_timeout)
+            logger.info('Lost Connection - Attempt to Recover Connection '
+                        'with Device ({})'.format(device.name))
+            # best effort, attempt to connect at least once.
+            try:
+                device.connect(timeout=timeout,
+                               **connection)
+            except Exception as e:
+                connection_failed = ('Lost Connection, failed to '
+                                     'recover. exception: ({})'.format(str(e)))
+            else:
+                connection_failed = 'Lost Connection, failed to recover'
+                is_connected = self.is_connected(device.name, device)
+                logger.info('Connection Re-Established for '
+                            'Device ({})'.format(device.name))
 
+        results = dict()
         for plugin in plugins:
             # skip plugin execution if device isn't connected
             if is_connected:
                 result = super().call_plugin(device, [plugin])
             else:
-                connection = self.connections.get(device.name, {})
-                timeout = connection.pop('timeout', self.connection_timeout)
-                logger.info('Lost Connection - Attempt to Recover Connection '
-                            'with Device ({})'.format(device.name))
-                # best effort, attempt to connect at least once.
-                try:
-                    device.connect(timeout=timeout,
-                                   **connection)
-                except Exception as e:
-                    # failed again
-                    result = dict()
-                    plugin_name = getattr(plugin, 'name',
-                                          getattr(plugin, '__plugin_name__',
-                                                  str(plugin)))
+                # bad connection
+                result = dict()
+                plugin_name = getattr(plugin, 'name',
+                                      getattr(plugin, '__plugin_name__',
+                                              str(plugin)))
 
-                    execution = result.setdefault(plugin_name,
-                                                  {}).setdefault(device.name,{})
-                    execution['status'] = CRITICAL
-                    execution['result'] = {
-                                            datetime.utcnow().isoformat():
-                                            ('Lost Connection, failed to '
-                                             'recover exception ({})'.format(
-                                                                        str(e)))
-                                          }
-                else:
-                    logger.info('Connection Re-Established for '
-                                'Device ({})'.format(device.name))
-                    result = super().call_plugin(device, [plugin])
+                execution = result.setdefault(plugin_name,
+                                              {}).setdefault(device.name,{})
+                execution['status'] = CRITICAL
+                execution['result'] = {
+                                        datetime.utcnow().isoformat():
+                                        connection_failed
+                                      }
 
             recursive_update(results, result)
 
