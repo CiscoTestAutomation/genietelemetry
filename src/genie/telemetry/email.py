@@ -232,6 +232,10 @@ class MailBot(object):
                                                    self.to_addrs)
             logger.error(message.get_content())
 
+            # channeling caught exception if we are not sending out email
+            if self.nomail:
+                return False
+
         else:
             # everything worked, collect standard report message
             # pass mailhtml flag to create_email

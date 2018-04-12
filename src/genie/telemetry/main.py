@@ -70,6 +70,8 @@ class GenieTelemetry(object):
         # create command-line argv parser
         # -------------------------------
         self.parser = Parser()
+        self.manager = None
+        self.liveview = None
 
     def main(self, testbed={},
                    testbed_file = None,
@@ -136,9 +138,10 @@ class GenieTelemetry(object):
 
         self.report = TextEmailReport(instance = self)
 
-        with self.mailbot:
-            self.liveview = self.load_liveview()
-            self.manager = TimedManager(instance=self,
+        try:
+            with self.mailbot:
+                self.liveview = self.load_liveview()
+                self.manager = TimedManager(instance=self,
                                         testbed=testbed,
                                         runinfo_dir= self.runinfo_dir,
                                         testbed_file=testbed_file,
@@ -146,9 +149,11 @@ class GenieTelemetry(object):
                                         configuration_file=configuration_file,
                                         timeout=self.timeout)
 
-            self.start()
-
-        self.stop()
+                self.start()
+        except Exception:
+            raise
+        finally:
+            self.stop()
 
     def post_call_plugin(self, device, results):
 
