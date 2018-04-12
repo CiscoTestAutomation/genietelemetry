@@ -125,8 +125,7 @@ class PluginManager(object):
 
         device_name = getattr(device, 'name', device)
 
-        mod = getattr(module, '__abstract_pkg', None)
-        if mod:
+        if module:
             if not getattr(device, 'os', None):
                 raise AttributeError('%s attribute [os] is not defined'
                                                                 % device_name)
@@ -135,7 +134,7 @@ class PluginManager(object):
                                                                 % device_name)
             try:
                 plugin_module = Lookup.from_device(device,
-                                                   packages={ name: mod })
+                                                   packages={ name: module })
             except Exception:
                 logger.error('failed to load abstration for device %s'
                                                                 % device_name)
