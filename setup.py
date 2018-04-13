@@ -96,11 +96,11 @@ setup(
     },
 
     # package dependencies
-    install_requires =  ['ats.async >= 3.3.0',
-                         'ats.datastructures >= 3.3.0',
-                         'ats.log >= 3.3.0',
-                         'ats.utils >= 3.3.0',
-                         'ats.topology >= 3.3.0',
+    install_requires =  ['ats.async >= 4.1.0',
+                         'ats.datastructures >= 4.1.0',
+                         'ats.log >= 4.1.0',
+                         'ats.utils >= 4.1.0',
+                         'ats.topology >= 4.1.0',
                          'abstract',
                         ],
 
