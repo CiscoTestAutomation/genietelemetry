@@ -26,12 +26,11 @@ def prepostprocessor(section):
 
     common_section = isinstance(section, (CommonSetup, CommonCleanup))
 
-    # Check for the trigger parameter only if the section is a trigger
-    # Case where 'genie_telemetry' is not enabled for the trigger
-    if not common_section and not section.parameters.get('genie_telemetry',
-                                                         False):
+    # by default genie_telemetry is enabled
+    # if 'genie_telemetry' is specifically disabled, skip
+    if not section.parameters.get('genie_telemetry', True):
         logger.info("Skipping 'genie.telemetry' processor since it "
-                    "genie_telemetry flag is set to False.")
+                    "genie_telemetry parameter is set to False.")
         return
 
     genie_telemetry = getattr(ancestor, 'genie_telemetry', None)
