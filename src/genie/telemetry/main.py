@@ -25,8 +25,8 @@ __BUFF_SIZE__ = 5000
 
 class TelemetryLogHandler(log.TaskLogHandler):
     """
-    A handler class which allows the cursor to stay on
-    one line for selected messages
+    A handler class that extends on top ats task log which publishes log to
+    websocket publisher queue.
     """
     publisher = None
 
@@ -103,16 +103,15 @@ class GenieTelemetry(object):
         loglevel = loglevel or args.loglevel
         configuration_file = configuration_file or args.configuration
 
-        # configure logging level
-        # ------------------------------
-
-
         self.testbed_file = testbed_file
         self.pdb = pdb or '-pdb' in sys.argv
         self.uid = uid or args.uid
         self.timeout = timeout or args.timeout
         self.callback_notify = callback_notify or args.callback_notify
 
+        # configure runinfo dir and log file
+        # ------------------------------
+        runinfo_dir = runinfo_dir or args.runinfo_dir
         if not runinfo_dir:
             runinfo_dir = os.path.join(os.getcwd(), 'telemetry', self.uid)
             if not os.path.exists(runinfo_dir):
@@ -124,10 +123,14 @@ class GenieTelemetry(object):
         self.runinfo_dir = runinfo_dir
         self.logfile = os.path.join(self.runinfo_dir, __LOG_FILE__)
 
+        # configure log handler and logging level
+        # ------------------------------
         log.managed_handlers.tasklog = TelemetryLogHandler(self.logfile)
         logger.addHandler(log.managed_handlers.tasklog)
         logger.setLevel(loglevel)
 
+        # configure MailBot
+        # ------------------------------
         self.mailbot = MailBot(instance = self,
                                from_addrs = self.env.user,
                                to_addrs = mailto or self.env.user,
@@ -136,11 +139,19 @@ class GenieTelemetry(object):
                                nomail = no_mail,
                                nonotify = no_notify)
 
+        # configure TextEmailReport
+        # ------------------------------
         self.report = TextEmailReport(instance = self)
 
         try:
             with self.mailbot:
+
+                # configure Live View
+                # ------------------------------
                 self.liveview = self.load_liveview()
+
+                # configure Timed Manager
+                # ------------------------------
                 self.manager = TimedManager(instance=self,
                                         testbed=testbed,
                                         runinfo_dir= self.runinfo_dir,
@@ -149,34 +160,48 @@ class GenieTelemetry(object):
                                         configuration_file=configuration_file,
                                         timeout=self.timeout)
 
+                # start genie telemetry
+                # ------------------------------
                 self.start()
         except Exception:
             raise
         finally:
+            # stop genie telemetry
+            # ------------------------------
             self.stop()
 
     def post_call_plugin(self, device, results):
+        '''post_call_plugin
 
-        if self.liveview:
-            websocket_data = []
-            for p, res in results.items():
-                for device, data in res.items():
-                    status = data.get('status')
-                    # to nanoseconds
-                    timestamp = int(time.time()*1000000000)
-                    websocket_data.append(dict(status=str(status).upper(),
-                                               value=status.code,
-                                               device=device,
-                                               plugin=p,
-                                               result=data.get('result'),
-                                               timestamp=timestamp))
-            self.publisher.put(dict(results=websocket_data))
-            # # push over websocket
-            # self.liveview.server.emit('liveview',
-            #                           dict(services=dict(results=results)))
+        post task right after each plugin execution. It emits out liveview
+        websocket data if enabled.
+        '''
+        # skip, if liveview is not enabled
+        if not self.liveview:
+            return
+        # massage the execution result
+        websocket_data = []
+        for p, res in results.items():
+            for device, data in res.items():
+                status = data.get('status')
+                # to nanoseconds
+                timestamp = int(time.time()*1000000000)
+                websocket_data.append(dict(status=str(status).upper(),
+                                           value=status.code,
+                                           device=device,
+                                           plugin=p,
+                                           result=data.get('result'),
+                                           timestamp=timestamp))
+        # push result to websocket publisher queue
+        self.publisher.put(dict(results=websocket_data))
 
     def post_run(self, device, plugin, result):
+        '''post_run
 
+        post task which gets called after each device plugin execution.
+        it sends out notification if result is not ok along with snapshot of
+        plugin current status.
+        '''
         status = str(result.get('status', 'Ok')).capitalize()
         # verify whether we should send notify
         if status == 'Ok':
@@ -192,23 +217,11 @@ class GenieTelemetry(object):
                                  result=result.get('result', {}),
                                  snapshots='\n'.join(snapshots))
 
-    # def stream_log(self):
-    #     try:
-    #         with open(self.logfile, 'r') as f:
-    #             f.seek(self.log_index)
-    #             line = escape(f.read(__BUFF_SIZE__))
-
-    #             self.publisher
-    #             self.liveview.server.emit('liveview',
-    #                                       dict(services=dict(stream=line)))
-
-    #             self.log_index += __BUFF_SIZE__
-    #     except Exception as e:
-    #         logger.error(e)
-
-    #     return ''
-
     def load_liveview(self):
+        '''load_liveview
+
+        Load liveview library if and only callback_notify uri is specified.
+        '''
         if not self.callback_notify:
             return
 
@@ -218,22 +231,27 @@ class GenieTelemetry(object):
 
         except (ImportError, AttributeError):
             return
-
+        # instantiate telemetry view
         telemetryview = cls(self,
-                       uid=self.uid,
-                       runinfo_dir=self.runinfo_dir,
-                       feed_type='telemetryviews',
-                       events=('telemetryview',
-                               'telemetryview-subscribe',
-                               'telemetryview-unsubscribe',
-                               'telemetryview-error'))
-        # liveview.essentials.append(('stream', self.stream_log, []))
+                            uid=self.uid,
+                            runinfo_dir=self.runinfo_dir,
+                            feed_type='telemetryviews',
+                            events=('telemetryview',
+                                    'telemetryview-subscribe',
+                                    'telemetryview-unsubscribe',
+                                    'telemetryview-error'))
+
         self.publisher = telemetryview.publisher
         log.managed_handlers.tasklog.publisher = telemetryview.publisher
 
         return telemetryview
 
     def start(self):
+        '''start
+
+        1. Start Liveview Manager
+        2. Start Timed Manager
+        '''
 
         if self.liveview:
             logger.info('Starting Liveview Manager ... ')
@@ -247,6 +265,11 @@ class GenieTelemetry(object):
             self.manager.start()
 
     def stop(self):
+        '''stop
+
+        1. Stop Timed Manager
+        2. Stop Liveview Manager
+        '''
         if self.manager:
             logger.info('Stopping TimedManager ... ')
             self.manager.takedown()
@@ -255,30 +278,37 @@ class GenieTelemetry(object):
             logger.info('Stopping Liveview Manager ... ')
             self.liveview.stop()
 
+    # get testbed name - shortcuts
     @property
     def name(self):
         return self.manager.testbed.name
 
+    # get testbed device names - shortcuts
     @property
     def devices(self):
         return ','.join(self.manager.devices.keys())
 
+    # get overall rollup status - shortcuts
     @property
     def status(self):
         return str(self.manager.status).upper()
 
+    # get statuses stats - shortcuts
     @property
     def statuses(self):
         return self.manager.statuses
 
+    # get final report - shortcuts
     @property
     def summary(self):
         return self.manager.finalize_report()
 
-    def get_status_snapshot(self, device, plugin):
+    # get status snapshot of given device, except specified plugin - shortcuts
+    def get_status_snapshot(self, device, plugin=None):
         snapshot = self.manager.plugins.get_device_plugins_status(device,
                                                                   label=True)
-        snapshot.pop(plugin, None)
+        if plugin:
+            snapshot.pop(plugin, None)
         return snapshot
 
 def main():

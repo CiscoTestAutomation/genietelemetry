@@ -4,18 +4,19 @@ from copy import copy
 from operator import attrgetter
 from abstract.magic import Lookup
 
+from genie.telemetry.utils import get_plugin_name
+
 # declare module as infra
 __genietelemetry_infra__ = True
 
 # module logger
 logger = logging.getLogger(__name__)
 
-
 class PluginManager(object):
     '''Plugin Manager class
 
-    Instanciates, configures, manages and runs all easypy plugins. This is the
-    main driver behind the easypy plugin system. Do not mock: may blow up.
+    Instanciates, configures, manages and runs all genie telemetry plugins. This
+    is the main driver behind the genie telemetry plugin system.
 
     In any given process, there is only a single instance of PluginManager.
     '''
@@ -29,19 +30,36 @@ class PluginManager(object):
         self._cache = dict()
 
     def has_device_plugins(self, device):
+        '''has_device_plugins
+
+        checks whether device has any plugins
+        '''
         return any(device in c for c in self._cache.values())
 
     def get_device_plugins(self, device):
+        '''get_device_plugins
+
+        retrieve plugins associated with given device
+        '''
         device = getattr(device , 'name', device)
-        return { n:c.get(device).get('instance',
-                                     None) for n, c in self._cache.items() \
-                                                                if device in c }
+
+        plugins = dict()
+        for name, cached in self._cache.items():
+            if device in cached:
+                plugins[name] = cached.get(device).get('instance', None)
+
+        return plugins
 
     def set_device_plugin_status(self, device, plugin, status):
+        '''set_device_plugin_status
 
+        set specific plugin status of given device
+        '''
         for plugin_name, plugin_cache in self._plugins.items():
+            # plugin name doesn't match, skip
             if plugin != plugin_cache.get('plugin_label'):
                 continue
+            # the device isn't cached for the plugin, skip
             device_cache = self._cache.get(plugin_name, {}).get(device, {})
             if not device_cache:
                 continue
@@ -50,10 +68,18 @@ class PluginManager(object):
             self._cache[plugin_name][device]['status_label'] = status_label
 
     def get_device_plugins_status(self, device, label=False):
+        '''get_device_plugins_status
+
+        get all plugin status of given device
+
+        Argument:
+            - label: Flag, if true, return status_label instead of status
+        '''
         device = getattr(device , 'name', device)
         statuses = dict()
         for devices in self._cache.values():
             dev = devices.get(device, {})
+            # the device isn't cached, skip
             if not dev:
                 continue
             plugin = dev.get('instance', None)
@@ -61,10 +87,9 @@ class PluginManager(object):
                 status = dev.get('status_label', 'STATUS NOT AVAILABLE')
             else:
                 status = dev.get('status', None)
-            plugin = getattr(plugin, '__plugin_name__',
-                             getattr(plugin, '__module__',
-                                     type(plugin).__name__))
-            statuses[plugin] = status
+
+            statuses[get_plugin_name(plugin)] = status
+
         return statuses
 
     def init_plugins(self, device_name, device):
@@ -94,11 +119,7 @@ class PluginManager(object):
             plugin.parse_args(argv)
             self._cache[plugin_name][device_name]['args'] = plugin.args
 
-            name = getattr(plugin, '__plugin_name__',
-                           getattr(plugin, '__module__',
-                                   type(plugin).__name__))
-
-            plugin_cache.setdefault('plugin_label', name)
+            plugin_cache.setdefault('plugin_label', get_plugin_name(plugin))
 
     def get_plugin_cls(self, plugin_module, base_module, class_name):
 

@@ -14,11 +14,13 @@ import re as re
 from ats.utils import parser
 from gettext import gettext
 
+from genie.telemetry.email import MailBot
+
 # declare module as infra
 __genietelemetry_infra__ = True
 
 CLI_DESCRIPTION = '''\
-GenieTelemetry command line arguments.
+genie telemetry command line arguments.
 
 Example
 -------
@@ -68,7 +70,7 @@ class Parser(parser.ArgsPropagationParser):
                                         'WARNING', 'INFO', 'DEBUG'),
                              metavar = '',
                              default = logging.INFO,
-                             help = 'genietelemetry logging level\n'
+                             help = 'genie telemetry logging level\n'
                                     'eg: -loglevel="INFO"')
 
         # configuration args
@@ -85,19 +87,26 @@ class Parser(parser.ArgsPropagationParser):
                                 action = "store",
                                 default = str(uuid.uuid4()),
                                 help = 'Specify monitoring job uid')
+        # runinfo_dir args
+        # ------------
+        config_grp.add_argument('-runinfo_dir',
+                                action = "store",
+                                default = None,
+                                help = 'Specify directory to store execution '
+                                       'logs')
         # callback_notify args
         # ------------
         config_grp.add_argument('-callback_notify',
                                 action = "store",
                                 default = '',
-                                help = 'Specify liveview callback_notify')
+                                help = 'Specify Liveview callback notify URI')
         # timeout args
         # ------------
         config_grp.add_argument('-timeout',
                                 action = "store",
                                 default = 300,
                                 help = 'Specify plugin maximum execution '
-                                       'length')
+                                       'length\nDefault to 300 seconds')
         # connection_timeout args
         # ------------
         config_grp.add_argument('-connection_timeout',
@@ -105,6 +114,13 @@ class Parser(parser.ArgsPropagationParser):
                                 default = 10,
                                 help = 'Specify connection timeout')
 
+
+    def _get_subsystems(self):
+
+        # build list of core component classes
+        subsystems = [ MailBot ]
+
+        return subsystems
 
     def format_usage(self):
         # start with the base parser args
@@ -120,10 +136,15 @@ class Parser(parser.ArgsPropagationParser):
         return formatter.format_help()
 
     def format_help(self):
+        subsystems = self._get_subsystems()
         # start with the base parser args
         actions = self._actions.copy()
         mut_excl_grp = self._mutually_exclusive_groups.copy()
 
+        # include subsystem parsers
+        for subsystem in subsystems:
+            actions += subsystem.parser._actions
+            mut_excl_grp += subsystem.parser._mutually_exclusive_groups
 
         # create a formatter
         formatter = self._get_formatter()
@@ -139,6 +160,35 @@ class Parser(parser.ArgsPropagationParser):
             formatter.start_section(action_group.title)
             formatter.add_text(action_group.description)
             formatter.add_arguments(action_group._group_actions)
+            formatter.end_section()
+
+        # add subsystem parserargument groups
+        for subsystem in subsystems:
+
+            # get the parser
+            # (this is important because they are classproperty)
+            # (eg, each call returns a new parser instance)
+            parser = subsystem.parser
+
+            # try to get subsystem.parser title
+            # default to subsystem name if available, or just class name
+            title = getattr(subsystem.parser, 'title', 
+                            getattr(subsystem, 'name', 
+                                    subsystem.__class__.__name__))
+
+            formatter.start_section(title)
+
+            for group in parser._action_groups:
+                if group in (parser._positionals, parser._optionals):
+                    # standard positiona/optional arguments
+                    formatter.add_arguments(group._group_actions)
+                else:
+                    # add a new section for each sub-group
+                    formatter.start_section(group.title)
+                    formatter.add_text(group.description)
+                    formatter.add_arguments(group._group_actions)
+                    formatter.end_section()
+
             formatter.end_section()
 
         # epilog

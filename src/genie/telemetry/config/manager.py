@@ -13,26 +13,12 @@ __genietelemetry_infra__ = True
 # module logger
 logger = logging.getLogger(__name__)
 
-# default configuration for GenieTelemetry
-# (removed file loading for simplicity)
-DEFAULT_CONFIGURATION = '''
-plugins:
-    crashdumps:
-        interval: 30
-        enabled: True
-        module: genietelemetry_libs.plugins.crashdumps
-    tracebackcheck:
-        interval: 30
-        enabled: True
-        module: genietelemetry_libs.plugins.tracebackcheck
-'''
-
 class Configuration(object):
     '''Configuration
 
-    GenieTelemetry configuration object. Core concept that allows genietelemetry
-    to load configuration for user plugins, and as well allows manager
-    to be swapped with different subclasses.
+    genie telemetry configuration object. Core concept that allows genie
+    telemetry to load configuration for user plugins, and as well allows device
+    connections to be swapped with different port.
 
     '''
 
@@ -43,19 +29,16 @@ class Configuration(object):
         self.plugins = (plugins or PluginManager)()
 
     def load(self, config = None, devices = {}):
-        logger.info('Loading Genie.Telemetry Configuration')
-        # finally, load configuration provided via input argument
+        logger.info('Loading genie.telemetry Configuration')
+        # load configuration provided via input argument
+        # -----------------------------
         if isinstance(config, (dict, str, TextIOBase)):
             self.update(self._loader.load(config))
 
-        else:            
-            # start with the default configuration as basis
-            self.update(self._loader.load(DEFAULT_CONFIGURATION))
-
-        logger.info('Loading Genie.Telemetry Plugins')
+        logger.info('Loading genie.telemetry Plugins')
         self.plugins.load(self._plugins)
 
-        logger.info('Initializing Genie.Telemetry Plugins for Testbed Devices')
+        logger.info('Initializing genie.telemetry Plugins for Testbed Devices')
         for name, device in devices.items():
             self.plugins.init_plugins(name, device)
 

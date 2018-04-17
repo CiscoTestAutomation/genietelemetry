@@ -2,149 +2,28 @@
 import os
 import sys
 import time
-import getpass
 import logging
 import traceback
 import multiprocessing
 from datetime import datetime
-from ipaddress import IPv4Interface, IPv6Interface, ip_address
 
 from ats.topology import loader
 from ats.utils.dicts import recursive_update
-from ats.utils.schemaengine import Schema, Optional, Any, Or
-from ats.utils.schemaengine import Use, And, Default, Fallback
-from ats.utils.import_utils import import_from_name, translate_host
 
 from genie.telemetry.config import (
     Configuration,
     PluginManager as BaseManager,
     DEFAULT_CONFIGURATION
 )
+from genie.telemetry.config.schema import testbed_schema
 from genie.telemetry.manager import Manager
 from genie.telemetry.status import CRITICAL
-from genie.telemetry.utils import str_or_list
+from genie.telemetry.utils import get_plugin_name
 
 # declare module as infra
 __genietelemetry_infra__ = True
 
 logger = logging.getLogger(__name__)
-
-testbed_schema = {
-    Optional('extends'): Use(str_or_list), # extends file or list of files
-
-    'testbed': {
-        Optional('name'): str,
-        Optional('alias'): str,
-        Optional('class'): Use(import_from_name),
-        'tacacs': {
-            'login_prompt': Default(str, 'login:'),
-            'password_prompt': Default(str, 'Password:'),
-            'username': Default(str, getpass.getuser()),
-        },
-        'passwords': {
-            'tacacs': Default(str, 'lab'),
-            'enable': Default(str, 'lab'),
-            'line': Default(str, 'lab'),
-            'linux': Default(str, 'lab'),
-        },
-        Optional('custom'): dict,
-        Optional('servers'): {
-            Any(): {
-                Optional('server'): str,
-                Optional('type'): str,
-                Optional('address'): str,
-                Optional('path'): str,
-                Optional('username'): str,
-                Optional('password'): str,
-                Optional('laas'): {
-                    Optional('port'): int,
-                    Optional('notification_port'): int,
-                    Optional('image_dir'): str,
-                },
-                Optional('custom'): dict,
-            },
-        },
-        Optional('network'): Any(),
-        Optional('iou'): {
-            Optional('iou_flags'): str,
-            Optional('iou'): str,
-        },
-        Optional('bringup'): {
-            Optional('xrut'): {
-                'sim_dir': str,
-                'base_dir': str,
-            },
-        },
-        Optional('testbed_file'): str, # not to be filled by hand
-    },
-
-    'devices': {
-        Any() : {
-            'type': str,
-            Optional('class'): Use(import_from_name),
-            Optional('alias'): str,
-            Optional('region'): str,
-            Optional('role'): str,
-            Optional('os'): str,
-            Optional('series'): str,
-            Optional('model'): str,
-            Optional('power'): str,
-            Optional('hardware'): Any(),
-            'tacacs': {
-                'login_prompt': Fallback(str, 'testbed.tacacs.login_prompt'),
-                'password_prompt':
-                                Fallback(str, 'testbed.tacacs.password_prompt'),
-                'username': Fallback(str, 'testbed.tacacs.username'),
-            },
-            'passwords': {
-                'tacacs': Fallback(str, 'testbed.passwords.tacacs'),
-                'enable': Fallback(str, 'testbed.passwords.enable'),
-                'line': Fallback(str, 'testbed.passwords.line'),
-                'linux': Fallback(str, 'testbed.passwords.linux'),
-            },
-            'connections': {
-                Optional('defaults'): {
-                    Optional('class'): Use(import_from_name),
-                    Optional('alias'): str,
-                    Optional('via'): str,
-                },
-                Any(): {
-                    Optional('class'): Use(import_from_name),
-                    Optional('protocol'): str,
-                    Optional('ip'): And(Use(translate_host), ip_address),
-                    Any(): Any(),
-                },
-            },
-            Optional('clean'): dict,
-            Optional('auto_bringup'): dict,
-            Optional('custom'): dict,
-            Any(): Any(),
-        },
-    },
-
-    Optional('topology'): {
-        Optional('links'): {
-            Any(): {
-                Optional('class'): Use(import_from_name),
-                Optional('alias'): str,
-                Any(): Any(),
-            }
-        },
-        Any(): {
-            'interfaces': {
-                Any(): {
-                    'type': str,
-                    Optional('alias'): str,
-                    Optional('class'): Use(import_from_name),
-                    Optional('link'): str,
-                    Optional('ipv4'): IPv4Interface,
-                    Optional('ipv6'): IPv6Interface,
-                    Any(): Any(),
-                },
-            },
-        },
-    },
-}
 
 class PluginManager(BaseManager):
     '''Plugin Manager class
@@ -305,9 +184,7 @@ class TimedManager(Manager):
             else:
                 # bad connection
                 result = dict()
-                plugin_name = getattr(plugin, 'name',
-                                      getattr(plugin, '__plugin_name__',
-                                              str(plugin)))
+                plugin_name = get_plugin_name(plugin)
 
                 execution = result.setdefault(plugin_name,
                                               {}).setdefault(device.name,{})

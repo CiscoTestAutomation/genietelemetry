@@ -1,21 +1,21 @@
 ''' 
-GenieTelemetry Template Plugin for IOS-XR.
+genie telemetry Template Plugin for IOS-XR.
 '''
 import logging
 
-# GenieTelemetry
+# genie telemetry
 from ..plugin import Plugin as BasePlugin
-from genietelemetry.results import OK, ERRORED, HealthStatus
+from genie.telemetry.status import OK, ERRORED
 
 # module logger
 logger = logging.getLogger(__name__)
 
 class Plugin(BasePlugin):
 
-    def execution(self, device, datetime):
+    def execution(self, device):
 
         result = device.execute('show version')
         if not result:
-            return ERRORED
+            return ERRORED("'show version' returns no result")
 
-        return HealthStatus(status = OK, meta = result)
+        return OK(result)

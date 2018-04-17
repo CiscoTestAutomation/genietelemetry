@@ -12,7 +12,7 @@ from genie.telemetry.config import DEFAULT_CONFIGURATION
 
 logger = logging.getLogger(__name__)
 
-def prepostprocessor(section):
+def genie_telemetry_processor(section):
     '''Check for genie telemetry plugins specified by the user in the
     genie_telemetry plugins provided.
     '''
