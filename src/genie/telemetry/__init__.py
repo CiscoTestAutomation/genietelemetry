@@ -6,3 +6,4 @@ __copyright__ = 'Cisco Systems, Inc. Cisco Confidential'
 
 from .main import main
 from .manager import Manager, TimedManager
+from .plugin import BasePlugin

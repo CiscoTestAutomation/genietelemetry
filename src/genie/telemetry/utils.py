@@ -12,40 +12,28 @@ ESCAPE_STD = (("&", "&amp;"),
               ("\n", "\u000A"))
 
 def escape(stdinput):
-
+    # liveview stream character escape
     for esc in ESCAPE_STD:
         stdinput = stdinput.replace(*esc)
 
     return stdinput
 
-def str_or_list(value):
-    '''check_file
-
-    translates str/list into list.
-    '''
-
-    if isinstance(value, str):
-        # convert string to list
-        value = [value, ]
-
-    return value
-
 
 def filter_exception(exc_type, exc_value, tb):
     '''filter_exception
 
-    Filters an exception's traceback stack and removes GenieTelemetry stack frames
-    from it to make it more apparent that the error came from a script. Should
-    be only used on user-script errors, and must not be used when an error is
-    caught from ats.genietelemetry infra itself.
+    Filters an exception's traceback stack and removes genie telemetry stack
+    frames from it to make it more apparent that the error came from a script.
+    Should be only used on user-script errors, and must not be used when an
+    error is caught from genie.telemetry infra itself.
 
-    Any frame with __genietelemetry_infra__ flag set is considered genietelemetry
-    infra stack.
+    Any frame with __genietelemetry_infra__ flag set is considered
+    genie.telemetry infra stack.
 
     Returns
     -------
-        properly formatted exception message with stack trace, with genietelemetry
-        stacks removed
+        properly formatted exception message with stack trace, with
+        genie.telemetry stacks removed
 
     '''
 
@@ -55,23 +43,6 @@ def filter_exception(exc_type, exc_value, tb):
 
     # return the formatted exception
     return ''.join(traceback.format_exception(exc_type, exc_value, tb)).strip()
-
-def ordered_yaml_load(stream,
-                      Loader=yaml.SafeLoader,
-                      object_pairs_hook=OrderableDict):
-
-    class OrderedYamlLoader(Loader):
-        pass
-
-    def construct_mapping(loader, node):
-        loader.flatten_mapping(node)
-        return object_pairs_hook(loader.construct_pairs(node))
-
-    OrderedYamlLoader.add_constructor(
-                    yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
-                    construct_mapping)
-
-    return yaml.load(stream, OrderedYamlLoader)
 
 def ordered_yaml_dump(data,
                       stream=None,
@@ -89,3 +60,8 @@ def ordered_yaml_dump(data,
     OrderedYamlDumper.add_representer(OrderableDict, _dict_representer)
 
     return yaml.dump(data, stream, OrderedYamlDumper, **kwds)
+
+def get_plugin_name(plugin):
+    return getattr(plugin, 'name', getattr(plugin, '__plugin_name__',
+                                   getattr(plugin, '__module__',
+                                   type(plugin).__name__)))

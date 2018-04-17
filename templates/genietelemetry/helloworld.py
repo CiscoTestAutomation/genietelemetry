@@ -8,7 +8,7 @@ import logging
 import argparse
 import datetime
 
-from genietelemetry.plugins.bases import BasePlugin
+from genie.telemetry import BasePlugin
 
 logger = logging.getLogger(__name__)
 
@@ -49,12 +49,9 @@ class Plugin(BasePlugin):
     # define your plugin's core execution logic as method.
 
     # define the execution action
-    # if 'device' is specified as a function argument, the current device
-    # object is provided as input to this action method when called.
-    # same idea when 'execution_datetime' is specified as a function
-    # argument, the plugin execution datetime is provided as input to this
-    # action method.
-    def execution(self, device, execution_datetime):
+    # the current device object is provided as input to this action method when
+    # called.
+    def execution(self, device):
 
         # plugin parser results are always stored as 'self.args'
         if self.args.print_timestamp:

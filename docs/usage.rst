@@ -55,77 +55,52 @@ accessible directly as part of the user PATH after activating your instance.
 .. code-block:: bash
 
     [tony@jarvis:~]$ genietelemetry -h
-    usage: genietelemetry [-h] [-testbed_file TESTBEDFILE] [-uid UID] [-loglevel]
-                          [-configuration FILE] [-runinfo_dir] [-no_mail]
-                          [-no_notify] [-mailto] [-mail_subject] [-notify_subject]
-                          [-no_meta] [-length LENGTH] [-keep_alive] [-upload]
-                          [-clean_up] [-upload_via UPLOAD_VIA]
-                          [-upload_server UPLOAD_SERVER]
-                          [-upload_port UPLOAD_PORT]
-                          [-upload_folder UPLOAD_FOLDER]
-                          [-upload_timeout UPLOAD_TIMEOUT]
+    usage: genietelemetry [TESTBEDFILE]
+                          [-h] [-loglevel] [-configuration FILE] [-uid UID]
+                          [-runinfo_dir RUNINFO_DIR]
+                          [-callback_notify CALLBACK_NOTIFY] [-timeout TIMEOUT]
+                          [-connection_timeout CONNECTION_TIMEOUT] [-no_mail]
+                          [-no_notify] [-mailto] [-mail_subject]
+                          [-notify_subject]
 
-    GenieTelemetry command line arguments.
+    genie telemetry command line arguments.
 
     Example
     -------
-      genietelemetry -testbed_file /path/to/testbed.yaml
+      genietelemetry /path/to/testbed.yaml
 
     ----------------------------------------------------------------------------
 
-    Optional Arguments:
-      -testbed_file TESTBEDFILE
-                            testbed file to be monitored
-      -uid UID              Specify monitoring job uid
+    Positional Arguments:
+      TESTBEDFILE           testbed file to be monitored
 
     Help:
       -h, -help             show this help message and exit
 
     Logging:
-      -loglevel             genietelemetry logging level
+      -loglevel             genie telemetry logging level
                             eg: -loglevel="INFO"
 
     Configuration:
       -configuration FILE   configuration yaml file for plugins and settings
-
-    Runinfo:
-      -runinfo_dir          specify alternate runinfo directory
-      -archive_dir          specify alternate archive directory
-      -no_archive           disable archive creation
+      -uid UID              Specify monitoring job uid
+      -runinfo_dir RUNINFO_DIR
+                            Specify directory to store execution logs
+      -callback_notify CALLBACK_NOTIFY
+                            Specify Liveview callback notify URI
+      -timeout TIMEOUT      Specify plugin maximum execution length
+                            Default to 300 seconds
+      -connection_timeout CONNECTION_TIMEOUT
+                            Specify connection timeout
 
     Mailing:
-      -no_mail              disable report email notifications
-      -no_notify            disable notification on device health staus
-      -mailto               list of report email recipients
+      -no_mail              disable final email report
+      -no_notify            disable notification on device health status other
+                            than "ok"
+      -mailto               list of email recipients
       -mail_subject         report email subject header
       -notify_subject       notification email subject header
 
-    Monitor:
-      -no_meta              Specify to hide plugin result meta
-      -length LENGTH        Specify monitor length, in XwYdZhPmQs format,
-                            X Weeks, Y Days, Z Hours, P Minutes, Q Seconds.
-                            ie: 5m20s, default to on demand request
-      -keep_alive           Specify keep monitoring alive
-                            Stop with Ctrl + C
-
-    Crash Dumps:
-      -upload               Specify whether upload core dumps
-      -clean_up             Specify whether clear core after upload
-      -upload_via UPLOAD_VIA
-                            Specify upload protocol
-                            default to TFTP
-      -upload_server UPLOAD_SERVER
-                            Specify upload Server
-                            default uses servers information from yaml file
-      -upload_port UPLOAD_PORT
-                            Specify upload Port
-                            default uses servers information from yaml file
-      -upload_folder UPLOAD_FOLDER
-                            Specify destination folder at remote server
-                            default to '/'
-      -upload_timeout UPLOAD_TIMEOUT
-                            Specify upload timeout value
-                            default to 300 seconds
 
 Standard Arguments
 ------------------

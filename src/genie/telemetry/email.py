@@ -119,21 +119,21 @@ class MailBot(object):
                             action = "store_true",
                             default = argparse.SUPPRESS,
                             dest = 'nomail',
-                            help = 'disable report email notifications')
+                            help = 'disable final email report')
 
         parser.add_argument('-no_notify',
                             action = "store_true",
                             default = argparse.SUPPRESS,
                             dest = 'nonotify',
                             help = 'disable notification on device health '
-                                   'staus')
+                                   'status other than "ok"')
 
         parser.add_argument('-mailto',
                             type = str,
                             metavar = '',
                             default = argparse.SUPPRESS,
                             dest = 'to_addrs',
-                            help = 'list of report email recipients')
+                            help = 'list of email recipients')
 
         parser.add_argument('-mail_subject',
                             type = str,

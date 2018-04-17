@@ -16,7 +16,7 @@ from ats.datastructures import OrderableDict, classproperty
 # configuration loader
 from genie.telemetry.config.manager import Configuration
 from genie.telemetry.status import OK, ERRORED
-from genie.telemetry.utils import ordered_yaml_dump
+from genie.telemetry.utils import ordered_yaml_dump, get_plugin_name
 
 # declare module as infra
 __genietelemetry_infra__ = True
@@ -99,8 +99,7 @@ class Manager(object):
 
     def set_device_plugin_status(self, device, plugin, status):
 
-        plugin_name = getattr(plugin, 'name', getattr(plugin, '__plugin_name__',
-                                                      str(plugin)))
+        plugin_name = get_plugin_name(plugin)
         return self.plugins.set_device_plugin_status(device.name,
                                                      plugin_name,
                                                      status)
@@ -172,8 +171,8 @@ class Manager(object):
             return
 
         # Pass device and corresponding plugins to Pcall
-        #   child 1: args=(device object, plugin1)
-        #   child 2: args=(device object, plugin2)
+        #   child 1: args=(device1 object, [plugin1, plugin2])
+        #   child 2: args=(device2 object, [plugin2])
         self.p = Pcall(self.call_plugin,
                        iargs=iargs,
                        timeout=self.timeout)
@@ -234,7 +233,7 @@ class Manager(object):
                     status = device.get('status', OK)
                     p_status = str(status).capitalize()
                     p_result = ordered_yaml_dump(device.get('result', {}),
-                                               default_flow_style=False)
+                                                 default_flow_style=False)
                     logger.info(' - device ({})\n      - Status : {}\n'
                                 '      - Result : \n{}'.format(device_name,
                                                                p_status,
@@ -254,9 +253,7 @@ class Manager(object):
 
         for plugin in plugins:
             results = dict()
-            plugin_name = getattr(plugin, 'name',
-                                  getattr(plugin, '__plugin_name__',
-                                          str(plugin)))
+            plugin_name = get_plugin_name(plugin)
 
             execution = results.setdefault(plugin_name,
                                           {}).setdefault(device.name, {})
@@ -274,8 +271,10 @@ class Manager(object):
 
             # Example
             # {'crashdumps':{'N95_2':{'status': 'ok',
-            #                         'result': { '2018-03-08T17:02:27.837458Z':
-            #                                   '***** No patterns matched *****'}}}
+            #                         'result':
+            #                               { '2018-03-08T17:02:27.837458Z':
+            #                                 '***** No patterns matched *****'}
+            #                        }}
 
             execution['status'] = status
             execution['result'] = result
