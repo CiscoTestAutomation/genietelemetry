@@ -14,6 +14,7 @@ from ats.utils.import_utils import import_from_name
 
 from .parser import Parser
 from .manager import TimedManager
+from .config import Configuration
 from .email import MailBot, TextEmailReport
 from .utils import escape, filter_exception, ordered_yaml_dump
 
@@ -87,6 +88,9 @@ class GenieTelemetry(object):
                    uid = None,
                    callback_notify = None,
                    timeout = None,
+                   email_domain = None,
+                   smtp_host = None,
+                   smtp_port = None,
                    pdb = False):
 
         '''run
@@ -103,7 +107,7 @@ class GenieTelemetry(object):
         loglevel = loglevel or args.loglevel
         configuration_file = configuration_file or args.configuration
 
-        if not configuration_file:
+        if not configuration and not configuration_file:
             raise AttributeError("'-configuration <path to config_file.yaml>"
                                  " is missing.")
 
@@ -141,7 +145,10 @@ class GenieTelemetry(object):
                                subject = mail_subject,
                                notify_subject = notify_subject,
                                nomail = no_mail,
-                               nonotify = no_notify)
+                               nonotify = no_notify,
+                               email_domain = email_domain,
+                               smtp_host = smtp_host,
+                               smtp_port = smtp_port)
 
         # configure TextEmailReport
         # ------------------------------

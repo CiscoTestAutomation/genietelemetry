@@ -1,5 +1,6 @@
 import sys
 import logging
+from copy import copy
 
 # runtime
 from ats.easypy import runtime
@@ -8,7 +9,6 @@ from ats.easypy import runtime
 from ats.aetest import CommonSetup, CommonCleanup
 
 from genie.telemetry import Manager
-from genie.telemetry.config import DEFAULT_CONFIGURATION
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +25,15 @@ def genie_telemetry_processor(section):
         return
 
     common_section = isinstance(section, (CommonSetup, CommonCleanup))
+    genie_telemetry = getattr(ancestor, 'genie_telemetry', None)
+
+    # validate --genietelemetry configuration
+    args = copy(sys.argv)
+    configuration = Manager.parser.parse_args(args).configuration
+    if not configuration and not genie_telemetry:
+        logger.info("Skipping 'genie.telemetry' processor as '--genietelemetry'"
+                    " argument is not provided.")
+        return
 
     # by default genie_telemetry is enabled
     # if 'genie_telemetry' is specifically disabled, skip
@@ -33,7 +42,6 @@ def genie_telemetry_processor(section):
                     "genie_telemetry parameter is set to False.")
         return
 
-    genie_telemetry = getattr(ancestor, 'genie_telemetry', None)
     try:
         # Instantiate the Manager
         if not genie_telemetry:
@@ -44,12 +52,8 @@ def genie_telemetry_processor(section):
                             "no testbed supplied")
                 return
 
-            # if --genietelemetry is not supplied, fallback to default
-            # configuration
-            configuration = Manager.parser.parse_args().configuration
-
             kwargs = dict(runinfo_dir=runtime.runinfo.runinfo_dir,
-                          configuration=configuration or DEFAULT_CONFIGURATION)
+                          configuration=configuration)
 
             genie_telemetry = ancestor.genie_telemetry = Manager(testbed,
                                                                  **kwargs)
@@ -72,19 +76,19 @@ def genie_telemetry_processor(section):
         results = genie_telemetry.results.get(uid, {})
         for pluginname, devices in results.items():
 
-            results = []
+            p_results = []
             # iterating over device, result
             for name, result in devices.items():
                 status = result.get('status', None)
                 status_name = getattr(status, 'name', status)
                 if str(status_name).lower() == 'ok':
                     continue
-                results.append('\n\t\t'.join([name, status_name]))
+                p_results.append('\n\t\t'.join([name, status_name]))
             # everything is ok
-            if not results:
+            if not p_results:
                 continue
 
-            anomallies.append('\n\t'.join([pluginname, '\n'.join(results)]))
+            anomallies.append('\n\t'.join([pluginname, '\n'.join(p_results)]))
 
         if isinstance(section, CommonCleanup):
             # Calling finalize_report
@@ -96,8 +100,8 @@ def genie_telemetry_processor(section):
                         "encountered an issue: {error}".format(error=e))
             return
         else:
-            section.skipped("'genie.telemetry' encountered an issue: {}".\
-                format(e))
+            section.passx("'genie.telemetry' encountered an issue: {}".\
+                          format(e))
 
     # Determine section result as per genie.telemetry findings
     if anomallies:

@@ -149,6 +149,27 @@ class MailBot(object):
                             dest = 'notify_subject',
                             help = 'notification email subject header')
 
+        parser.add_argument('-email_domain',
+                            type = str,
+                            metavar = '',
+                            default = argparse.SUPPRESS,
+                            dest = 'email_domain',
+                            help = 'default email domain')
+
+        parser.add_argument('-smtp_host',
+                            type = str,
+                            metavar = '',
+                            default = argparse.SUPPRESS,
+                            dest = 'smtp_host',
+                            help = 'specify smtp host')
+
+        parser.add_argument('-smtp_port',
+                            type = str,
+                            metavar = '',
+                            default = argparse.SUPPRESS,
+                            dest = 'smtp_port',
+                            help = 'specify smtp server port')
+
         return parser
 
     def __init__(self,
@@ -159,9 +180,9 @@ class MailBot(object):
                  notify_subject,
                  nomail = False,
                  nonotify = False,
-                 default_email_domain='cisco.com',
-                 smtp_host = 'mail.cisco.com',
-                 smtp_port = 25):
+                 email_domain = None,
+                 smtp_host = None,
+                 smtp_port = None):
         '''mailbot constructor
 
         Arguments
@@ -187,14 +208,25 @@ class MailBot(object):
         self.from_addrs = from_addrs
         self.to_addrs = to_addrs
 
+        self.email_domain = email_domain
+        # store smtp server to be used
+        self.smtp_host = smtp_host
+        self.smtp_port = smtp_port
+
         # parse arguments into self
         # (overwrite any of the above)
         self.parser.parse_args(namespace = self)
 
-        self.default_email_domain = default_email_domain
-        # store smtp server to be used
-        self.smtp_host = smtp_host
-        self.smtp_port = smtp_port
+        if not self.nomail:
+
+            if not self.email_domain:
+                raise AttributeError("'-email_domain is missing.")
+
+            if not self.smtp_host:
+                raise AttributeError("'-smtp_host is missing.")
+
+            self.smtp_args = dict(smtp_host=self.smtp_host,
+                                  smtp_port=self.smtp_port)
 
     def __enter__(self):
         '''context manager entry
@@ -231,10 +263,8 @@ class MailBot(object):
                  contents = (exc_type,
                              exc_value,
                              exc_tb)).create_email(self.from_addrs,
-                                                   self.to_addrs,
-                                                   self.default_email_domain,
-                                                   self.smtp_host,
-                                                   self.smtp_port)
+                                                   self.to_addrs)
+
             logger.error(message.get_content())
 
             # channeling caught exception if we are not sending out email
@@ -244,17 +274,15 @@ class MailBot(object):
         else:
             # everything worked, collect standard report message
             # pass mailhtml flag to create_email
-            message = self.instance.report.create_email(
-                                                    self.from_addrs,
-                                                    self.to_addrs,
-                                                    self.default_email_domain,
-                                                    self.smtp_host,
-                                                    self.smtp_port)
+            message = self.instance.report.create_email(self.from_addrs,
+                                                        self.to_addrs)
             logger.info(message.get_content())
 
         # handle subject overwrite from command-line
         if self.subject:
             message.subject = self.subject
+
+        message.default_email_domain = self.email_domain
 
         path = self.instance.runinfo_dir
         onlyfiles = [os.path.join(path, f) for f in os.listdir(path) \
@@ -265,7 +293,7 @@ class MailBot(object):
 
         if not self.nomail:
             # send the bloody email
-            message.send()
+            message.send(**self.smtp_args)
 
         # exception was handled, do not propagate
         return True
@@ -274,19 +302,17 @@ class MailBot(object):
 
         if not self.nonotify:
             message = Notification(instance = self.instance,
-                                   **kwargs).create_email(
-                                                    self.from_addrs,
-                                                    self.to_addrs,
-                                                    self.default_email_domain,
-                                                    self.smtp_host,
-                                                    self.smtp_port)
+                                   **kwargs).create_email(self.from_addrs,
+                                                          self.to_addrs)
             logger.info(message.get_content())
+
+            message.default_email_domain = self.email_domain
 
             # handle subject overwrite from command-line
             message.subject = self.notify_subject or message.subject
 
             # send the bloody email
-            message.send()
+            message.send(**self.smtp_args)
 
     @property
     def mailto(self):
@@ -315,8 +341,7 @@ class AbstractEmailReport(object, metaclass = abc.ABCMeta):
     Base class for all report emails to inherit from and follow.
     '''
 
-    def create_email(self, from_addrs, to_addrs,
-                     default_email_domain, smtp_host, smtp_port):
+    def create_email(self, from_addrs, to_addrs):
         '''create_email
 
         returns EmailMessage class instance with subject and body filled. This
@@ -327,10 +352,7 @@ class AbstractEmailReport(object, metaclass = abc.ABCMeta):
                          to_email=to_addrs,
                          subject=self.format_subject(),
                          body=self.format_content(),
-                         attachments=self.get_attachment(),
-                         default_email_domain=default_email_domain,
-                         smtp_host=smtp_host,
-                         smtp_port=smtp_port)
+                         attachments=self.get_attachment())
 
         return email
 
