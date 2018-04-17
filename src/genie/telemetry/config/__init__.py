@@ -1,2 +1,2 @@
 from .plugins import PluginManager
-from .manager import Configuration, DEFAULT_CONFIGURATION
+from .manager import Configuration

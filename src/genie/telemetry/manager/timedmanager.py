@@ -12,8 +12,7 @@ from ats.utils.dicts import recursive_update
 
 from genie.telemetry.config import (
     Configuration,
-    PluginManager as BaseManager,
-    DEFAULT_CONFIGURATION
+    PluginManager as BaseManager
 )
 from genie.telemetry.config.schema import testbed_schema
 from genie.telemetry.manager import Manager
@@ -68,9 +67,7 @@ class TimedManager(Manager):
             raise FileNotFoundError('Did you forget to provide a testbed file?')
 
         super().__init__(testbed or self.load_testbed(testbed_file),
-                         configuration=(configuration or \
-                                        configuration_file or \
-                                        DEFAULT_CONFIGURATION),
+                         configuration=(configuration or configuration_file),
                          plugins=PluginManager,
                          **kwargs)
 

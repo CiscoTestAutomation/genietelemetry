@@ -103,6 +103,10 @@ class GenieTelemetry(object):
         loglevel = loglevel or args.loglevel
         configuration_file = configuration_file or args.configuration
 
+        if not configuration_file:
+            raise AttributeError("'-configuration <path to config_file.yaml>"
+                                 " is missing.")
+
         self.testbed_file = testbed_file
         self.pdb = pdb or '-pdb' in sys.argv
         self.uid = uid or args.uid
