@@ -37,7 +37,7 @@ setup(
     version = version,
 
     # descriptions
-    description = 'Genie.Telemetry: Testbed Telemetry Service',
+    description = 'genie.telemetry: Testbed Telemetry Service',
     long_description = read('DESCRIPTION.rst'),
 
     # the project's main homepage.
@@ -101,7 +101,7 @@ setup(
                          'ats.log >= 4.1.0',
                          'ats.utils >= 4.1.0',
                          'ats.topology >= 4.1.0',
-                         'abstract',
+                         'abstract >= 1.1.1',
                         ],
 
     # any additional groups of dependencies.

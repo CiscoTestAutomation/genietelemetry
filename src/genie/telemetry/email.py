@@ -159,8 +159,9 @@ class MailBot(object):
                  notify_subject,
                  nomail = False,
                  nonotify = False,
-                 smtp_host = None,
-                 smtp_port = None):
+                 default_email_domain='cisco.com',
+                 smtp_host = 'mail.cisco.com',
+                 smtp_port = 25):
         '''mailbot constructor
 
         Arguments
@@ -190,6 +191,7 @@ class MailBot(object):
         # (overwrite any of the above)
         self.parser.parse_args(namespace = self)
 
+        self.default_email_domain = default_email_domain
         # store smtp server to be used
         self.smtp_host = smtp_host
         self.smtp_port = smtp_port
@@ -229,7 +231,10 @@ class MailBot(object):
                  contents = (exc_type,
                              exc_value,
                              exc_tb)).create_email(self.from_addrs,
-                                                   self.to_addrs)
+                                                   self.to_addrs,
+                                                   self.default_email_domain,
+                                                   self.smtp_host,
+                                                   self.smtp_port)
             logger.error(message.get_content())
 
             # channeling caught exception if we are not sending out email
@@ -239,8 +244,12 @@ class MailBot(object):
         else:
             # everything worked, collect standard report message
             # pass mailhtml flag to create_email
-            message = self.instance.report.create_email(self.from_addrs,
-                                                        self.to_addrs)
+            message = self.instance.report.create_email(
+                                                    self.from_addrs,
+                                                    self.to_addrs,
+                                                    self.default_email_domain,
+                                                    self.smtp_host,
+                                                    self.smtp_port)
             logger.info(message.get_content())
 
         # handle subject overwrite from command-line
@@ -256,7 +265,7 @@ class MailBot(object):
 
         if not self.nomail:
             # send the bloody email
-            message.send(smtp_host = self.smtp_host, smtp_port = self.smtp_port)
+            message.send()
 
         # exception was handled, do not propagate
         return True
@@ -265,15 +274,19 @@ class MailBot(object):
 
         if not self.nonotify:
             message = Notification(instance = self.instance,
-                                   **kwargs).create_email(self.from_addrs,
-                                                          self.to_addrs)
+                                   **kwargs).create_email(
+                                                    self.from_addrs,
+                                                    self.to_addrs,
+                                                    self.default_email_domain,
+                                                    self.smtp_host,
+                                                    self.smtp_port)
             logger.info(message.get_content())
 
             # handle subject overwrite from command-line
             message.subject = self.notify_subject or message.subject
 
             # send the bloody email
-            message.send(smtp_host = self.smtp_host, smtp_port = self.smtp_port)
+            message.send()
 
     @property
     def mailto(self):
@@ -302,15 +315,22 @@ class AbstractEmailReport(object, metaclass = abc.ABCMeta):
     Base class for all report emails to inherit from and follow.
     '''
 
-    def create_email(self, from_addrs, to_addrs):
+    def create_email(self, from_addrs, to_addrs,
+                     default_email_domain, smtp_host, smtp_port):
         '''create_email
 
         returns EmailMessage class instance with subject and body filled. This
         class can be overwritten to allow for MIME rich contents
         '''
 
-        email = EmailMsg(from_addrs, to_addrs, self.format_subject(),
-                         self.format_content(), self.get_attachment())
+        email = EmailMsg(from_email=from_addrs,
+                         to_email=to_addrs,
+                         subject=self.format_subject(),
+                         body=self.format_content(),
+                         attachments=self.get_attachment(),
+                         default_email_domain=default_email_domain,
+                         smtp_host=smtp_host,
+                         smtp_port=smtp_port)
 
         return email
 
