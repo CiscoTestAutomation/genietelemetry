@@ -3,52 +3,44 @@
 Plugin System
 =============
 
-``genietelemetry`` is designed around a modular plugin-based architecture.
+``genie.telemetry`` is designed around a modular plugin-based architecture.
 The end goal is to allow maximum developer configurability & extendability
 without sacrificing overall structure, flow and code-base integrity.
 
 .. note::
 
-    GenieTelemetry plugins are not for the faint of heart: it is intended for
-    advanced developers to provide optional *pluggable* ``genietelemetry``
+    Genie Telemetry plugins are not for the faint of heart: it is intended for
+    advanced developers to provide optional *pluggable* ``genie.telemetry``
     features for other developers to use.
 
 
 Concept & Rules
 ---------------
 
-Plugins offers *optional* functionalities that may be added to ``genietelemetry``.
+Plugins offers *optional* functionalities that may be added to
+``genie.telemetry``.
 Each plugin must be configured first via a configuration YAML file before they
 can be loaded, instantiated and executed.
 
 All plugins must obey the following rules of development:
-
-- plugins may be configured globally (for all runs in this pyATS instance) by
-  creating a  ``genietelemetry_config.yaml`` in the root pyATS installation
-  folder.
 
 - plugins may be configured locally (for this run only) by passing in a config
   YAML via a command-line argument called ``-configuration``.
 
 - plugins shall be independent from all other plugins.
 
-- plugins must inherit from ``genietelemetry.plugins.bases.BasePlugin`` class
+- plugins must inherit from ``genie.telemetry.plugin.BasePlugin`` class
 
-- plugins may contain its own argument parser. Such parsers shall follow the
-  :ref:`genietelemetry_argument_propagation` scheme, and shall not contain
-  positional arguments.
+- plugins may contain its own argument parser which standardizes on double-dash
+  ``--`` style arguments, and shall not contain positional arguments.
 
-- plugins may modify ``genietelemetry.runtime`` attributes, but is it the
-  responbility of the plugin owner to diagnose and support any failures due to
-  such changes.
-
-- plugin developers are expected to read and understand ``genietelemetry``
-  source code. It is mostly not possible to develop useful plugins by simply
+- plugin developers are expected to read and understand ``genie.telemetry``
+  plugin template. It is mostly not possible to develop useful plugins by simply
   reading this document.
 
 There is only one stage where plugins may run its actions.
 
-.. csv-table:: GenieTelemetry Plugin Stages
+.. csv-table:: Genie Telemetry Plugin Stages
     :header: Stage, Description
 
     ``execution``, "core plugin execution logic"
@@ -59,7 +51,7 @@ Plugins are run in the designated interval in the configuration yaml file.
 Creating Plugins
 ----------------
 
-To create a plugin, simply subclass ``genietelemetry.plugins.bases.BasePlugin``
+To create a plugin, simply subclass ``genie.telemetry.plugin.BasePlugin``
 class and define the stages where your plugin needs to run.
 
 .. code-block:: python
@@ -73,7 +65,7 @@ class and define the stages where your plugin needs to run.
     import argparse
     import datetime
 
-    from genietelemetry.plugins.bases import BasePlugin
+    from genie.telemetry.plugin import BasePlugin
 
     logger = logging.getLogger(__name__)
 
@@ -114,12 +106,9 @@ class and define the stages where your plugin needs to run.
         # define your plugin's core execution logic as method.
 
         # define the execution action
-        # if 'device' is specified as a function argument, the current device
-        # object is provided as input to this action method when called.
-        # same idea when 'execution_datetime' is specified as a function
-        # argument, the plugin execution datetime is provided as input to this
-        # action method.
-        def execution(self, device, execution_datetime):
+        # the current device object is provided as input to this action method
+        # when called.
+        def execution(self, device):
 
             # plugin parser results are always stored as 'self.args'
             if self.args.print_timestamp:
@@ -130,17 +119,15 @@ class and define the stages where your plugin needs to run.
 
 
 After defining a plugin class, it needs to be configured in order to run. The
-``genietelemetry`` plugin manager automatically reads plugin configurations
-from a YAML file, ``genietelemetry_config.yaml``, located under top level
-folder of pyats instance or the file path can be provided with ``-configuration``
-parameter.
+``genie.telemetry`` plugin manager automatically reads plugin configurations
+from the file path that's provided with ``-configuration`` parameter.
 
 .. code-block:: yaml
 
     # Example
     # -------
     #
-    #   example genietelemetry configuration file for plugins
+    #   example genie telemetry configuration file for plugins
 
     plugins:                   # top level key for plugins
 
@@ -149,9 +136,6 @@ parameter.
                             # mandatory. Any additional key/values are
                             # used as arguments to the plugin class
                             # constructor.
-
-          enabled: True           # flag marking it as "enabled"
-                                  # set to False to disable a plugin
 
           module: module.where.plugin.is.defined      # module path where this
                                                       # plugin can be imported
@@ -163,7 +147,7 @@ parameter.
                                     # otherwise, only the included devices will
                                     # be applied.
 
-And ``genietelemetry`` automatically discovers, loads your plugin, and runs its
+And ``genie.telemetry`` automatically discovers, loads your plugin, and runs its
 actions as part of its standard execution stage.
 
 
@@ -182,7 +166,6 @@ device with name `Tonystark-sjc`.
     
     plugins:
         HelloWorldPlugin:
-          enabled: True
           module: module.where.plugin.is.defined
           interval: 30 
           devices: [Tonystark-sjc]
@@ -191,64 +174,46 @@ device with name `Tonystark-sjc`.
 Plugin Errors
 -------------
 
-Because plugins are a fundamental building block of ``genietelemetry``, any
+Because plugins are a fundamental building block of ``genie.telemetry``, any
 unhandled exceptions raised from plugin actions result in catastrophic failures:
 make **double sure** that your plugin is well tested and robust against all
 possible environments and outcomes.
 
-By default, all plugin errors are automatically caught and handled by
-``BasePlugin.error_handler()`` method, which registers the error and prevent
-the system from crashing. Plugin developers may overwrite this method to
-develop custom error handling schemes.
+By default, all plugin errors are automatically caught and handled which prevent
+the system from crashing.
 
-Whenever plugins error out, your email report will contain the detailed
-exception.
+Whenever plugins error out, the status of the execution will be ERRORED along
+with exception message in the result, your email report will contain the
+detailed exception in the log.
 
 
 Plugin Meta Data
 ----------------
 
-By default, plugin meta data is collected through ``HealthStatus.meta`` method,
-which stores any python picklable value and display at notification or final
-report when ``-meta`` argument is used. Plugin developers may overwrite this
-method to develop custom meta data handling logic.
+By default, plugin meta data is collected through ``HealthStatus.meta``,
+which stores any python picklable value and display at notification.
 
 
 Plugin Execution
 ----------------
-Plugin Templates can be found in the template folder after installation
+Plugin Templates can be found in the template folder of ``genietelemetry_libs``
 
-.. code-block:: bash
-
-    $VIRTUAL_ENV/templates/genietelemetry/
 
 Steps for executing your plugin:
 
-    - Compress your plugin package or file into zip file
+    - Move your plugin package to any location that is accessible via PYTHONPATH
 
     .. code-block:: bash
 
-        [tony@jarvis:template]$ zip -r plugin.zip plugin/
-          adding: plugin/ (stored 0%)
-          adding: plugin/iosxe/ (stored 0%)
-          adding: plugin/iosxe/__init__.py (deflated 32%)
-          adding: plugin/iosxe/plugin.py (deflated 49%)
-          adding: plugin/iosxr/ (stored 0%)
-          adding: plugin/iosxr/__init__.py (deflated 32%)
-          adding: plugin/iosxr/plugin.py (deflated 50%)
-          adding: plugin/nxos/ (stored 0%)
-          adding: plugin/nxos/__init__.py (deflated 32%)
-          adding: plugin/nxos/plugin.py (deflated 50%)
-          adding: plugin/__init__.py (deflated 18%)
-          adding: plugin/plugin.py (deflated 60%)
-        [tony@jarvis:template]$ ls -al
+        [tony@jarvis:template]$ cp -r plugin/ $VIRTUAL_ENV/projects/genietelemetry_libs/plugins/hello
+        [tony@jarvis:template]$ ls -al $VIRTUAL_ENV/projects/genietelemetry_libs/plugins/hello
         total 24
         drwxr-xr-x 3 tony eng 4096 Sep 30 23:50 .
         drwxr-xr-x 4 tony eng 4096 Sep 30 23:39 ..
-        drwxr-xr-x 5 tony eng 4096 Sep 30 23:39 plugin
-        -rw-r--r-- 1 tony eng 8273 Sep 30 23:50 plugin.zip
-        [tony@jarvis:template]$ pwd
-        /ws/tony-stark/pyats/template
+        drwxr-xr-x 5 tony eng 4096 Sep 30 23:39 iosxe
+        drwxr-xr-x 5 tony eng 4096 Sep 30 23:39 iosxr
+        drwxr-xr-x 5 tony eng 4096 Sep 30 23:39 nxos
+        -rw-r--r-- 1 tony eng 8273 Sep 30 23:50 plugin.py
 
     - Create your config.yaml file
 
@@ -257,60 +222,33 @@ Steps for executing your plugin:
         plugins:
             plugin:
                 interval: 30
-                enabled: True
-                module: /ws/tony-stark/pyats/template/plugin.zip
-
-        core:
-            job:
-                class: genietelemetry.job.Job
-            reporter:
-                class: genietelemetry.reporter.HealthReporter
-            runinfo:
-                class: genietelemetry.runinfo.RunInfo
-            mailbot:
-                class: genietelemetry.email.MailBot
-            producer:
-                class: genietelemetry.processor.DataProducer
-            consumer:
-                class: genietelemetry.processor.DataConsumer
-            connection:
-                class: unicon.Unicon
-            thresholds:
-                OK: 272h
-                Warning: 252h
-                Critical: 248h
+                module: genietelemetry_libs.plugins.hello
 
     - Execute genietelemetry for on-demand monitoring:
 
     .. code-block:: bash
 
-        genietelemetry -testbed_file /path/to/testbed.yaml
+        genietelemetry /path/to/testbed.yaml
                        -configuration /path/to/config.yaml
-                       -plugin_arg1 "abc"
+                       --print_timestamp false
 
 You should see the following lines show up in the log.
 
 .. code-block:: bash
 
-    Starting monitoring job for testbed: basement_lab
-    Monitoring type: On Demand
-    ----------------------------------------------------------------------------
-    Unpacking and importing plugins
-    ----------------------------------------------------------------------------
-     - imported module : crashdumps
-     - unpacked plugin file : /ws/tony-stark/pyats/template/plugin.zip
-     - imported module : plugin
-    ----------------------------------------------------------------------------
-    initializing plugins for Jarvis
-     - loading plugin crashdumps
+    Loading genie.telemetry Configuration
+    Loading genie.telemetry Plugins
+    Initializing genie.telemetry Plugins for Testbed Devices
+    Initializing plugins for Jarvis
      - loading plugin plugin
-    Starting monitoring on device_1
+    Starting TimedManager ... 
+    Setting up connection to device (Jarvis)
 
 
 Abstraction Plugin Package
 --------------------------
 First make sure you have read pyATS abstract_, especially the section on Lookup
-Decorator as it is the root of abstraction in GenieTelemetry.
+Decorator as it is the root of abstraction in Genie Telemetry.
 
 .. _abstract: http://wwwin-pyats.cisco.com/cisco-shared/abstract/html/
 
@@ -329,25 +267,3 @@ Decorator as it is the root of abstraction in GenieTelemetry.
        |   |-- __init__.py          <-- Token declaration
        |   `-- plugin.py            <-- Plugin core logic implementation
 
-
-Default Plugins
----------------
-Once development for your plugin is completed, it can be added to the "default"
-list of plugins that run everytime genietelemetry is executed. The keepalive
-plugin is an example of a default plugin.
-
-To add your plugin to the default list, simply add your information to the
-src/genietelemetry/config/defaults.py file
-
-.. code-block:: bash
-
-    DEFAULT_CONFIGURATION = '''
-        plugins:
-            keepalive:
-                interval: 30
-                enabled: True
-                module: genietelemetry.plugins.keepalive
-            mynewplugin:
-                interval: 60
-                enabled: True
-                module: genietelemetry.plugins.mynewplugin

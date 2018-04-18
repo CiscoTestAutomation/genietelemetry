@@ -1,11 +1,11 @@
 .. highlightlang:: python
 
-.. _genietelemetry_result_objects:
+.. _genietelemetry_status_objects:
 
 Health Status Objects
 =====================
 
-This guide will cover the basics of how GenieTelemetry health status work: the
+This guide will cover the basics of how Genie Telemetry health status work: the
 different types of status, their corresponding code, and how they roll up
 together.
 
@@ -21,9 +21,9 @@ following types ``OK``, ``WARNING``, ``CRITICAL``, ``PARTIAL`` or ``ERRORED``.
     # Example
     # -------
     #
-    #   GenieTelemetry health status objects
+    #   Genie Telemetry health status objects
 
-    from genietelemetry.results import OK, CRITICAL
+    from genie.telemetry.status import OK, CRITICAL
 
     # rolling up OK + CRITICAL yields CRITICAL
     OK + CRITICAL
@@ -32,7 +32,7 @@ following types ``OK``, ``WARNING``, ``CRITICAL``, ``PARTIAL`` or ``ERRORED``.
 HealthStatus Objects
 --------------------
 
-HealthStatus in GenieTelemetry are represented by 5 unique instances of
+HealthStatus in Genie Telemetry are represented by 5 unique instances of
 ``HealthStatus`` `singleton`_ objects, each corresponding to a unique health
 status type.
 
@@ -75,52 +75,12 @@ used directly. As simple as:
     #   importing health status objects
 
     # import each health status object individually
-    from genietelemetry.results import (OK, WARNING, CRITICAL, PARTIAL, ERRORED)
+    from genie.telemetry.status import (OK, WARNING, CRITICAL, PARTIAL, ERRORED)
 
     # or you can also import them altogether using * wildcard
     # the module has code that specifically limits this to be the same as
     # the localized import statement above
-    from genietelemetry.results import *
-
-All status singleton objects are instances of ``HealthStatus`` class, e,g:
-
-.. code-block:: python
-
-    # Example
-    # -------
-    #
-    #   status singleton objects (HealthStatus)
-
-    # note that for all intents and purposes:
-    #   - always use the pre-created bjects
-    #
-    # this here is only for demonstration purposes.
-
-    # let's import the base class HealthStatus
-    # (all results objects are instances of HealthStatus class)
-    from genietelemetry.results import HealthStatus
-
-    # result objects are instances of HealthStatus
-    type(OK)
-    # <class 'genietelemetry.results.status.HealthStatus'>
-
-    # and demonstrate these are singletons
-    # eg - Passed (code 1) is created via TestResult(1)
-    OK is HealthStatus(0)
-    # True
-    WARNING is TestResult(1)
-    # True
-
-
-.. tip::
-
-    do not instantiate more ``HealthStatus`` objects. All the supported status
-    types are already pre-created for you and should be imported and used
-    directly. As singleton objects, instantiating ``HealthStatus`` class
-    multiple times has no effect anyway. The above code only shows the
-    class to help users understand the status object types and where they
-    came from.
-
+    from genie.telemetry.status import *
 
 Object Attributes
 -----------------
@@ -133,16 +93,19 @@ code
 name
     the string equivalent of this status type
 
+meta
+    the meta information associated with this status, keyed by timestamp when
+    it happened and the actual information.
 
 .. code-block:: python
 
     # Example
     # -------
     #
-    #    using GenieTelemetry status objects
+    #    using Genie Telemetry status objects
 
     # import all of them
-    from genietelemetry.results import OK, CRITICAL
+    from genie.telemetry.status import OK, CRITICAL
 
     # getting the status equivalent code
     OK.code
@@ -160,13 +123,22 @@ name
     str(CRITICAL)
     # critical
 
+    # getting the meta information associated with the status
+    OK('Hello World').meta
+    # {'2018-04-18T18:04:35.570472Z': 'Hello World'}
+
+    # the meta information will be rolled up as well
+    ( OK('Hello') + CRITICAL('World') ).meta
+    # {'2018-04-18T18:08:05.259669Z': 'Hello',
+    #  '2018-04-18T18:08:05.259730Z': 'World'}
+
 
 
 Status Rollups
 --------------
 
 Status roll-up is the act of combining one or more status together and
-yielding a new, summary result. Rolling up status with ``results`` module
+yielding a new, summary status. Rolling up status with ``status`` module
 objects is as simple as adding them together using the Python ``+`` operator.
 
 .. code-block:: python
@@ -177,7 +149,7 @@ objects is as simple as adding them together using the Python ``+`` operator.
     #   rolling multiple status objects
 
     # import all status codes
-    from genietelemetry.results import (OK, WARNING, CRITICAL, PARTIAL, ERRORED)
+    from genie.telemetry.status import (OK, WARNING, CRITICAL, PARTIAL, ERRORED)
 
     # roll up some status together
     OK + WARNING
@@ -269,7 +241,7 @@ roll-ups:
     #   performing multiple rollups
 
     # import all status codes
-    from genietelemetry.results import (OK, WARNING, CRITICAL, PARTIAL, ERRORED)
+    from genie.telemetry.status import (OK, WARNING, CRITICAL, PARTIAL, ERRORED)
 
     # consider this
     OK + WARNING + CRITICAL + PARTIAL
