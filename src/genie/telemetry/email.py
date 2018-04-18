@@ -300,7 +300,7 @@ class MailBot(object):
 
     def send_notify(self, **kwargs):
 
-        if not self.nonotify:
+        if not self.nomail and not self.nonotify:
             message = Notification(instance = self.instance,
                                    **kwargs).create_email(self.from_addrs,
                                                           self.to_addrs)
