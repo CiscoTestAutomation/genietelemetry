@@ -21,14 +21,6 @@ def find_version(*paths):
         return version_match.group(1)
     raise RuntimeError("Unable to find version string.")
 
-def find_templates(*paths):
-    '''finds all template files'''
-    files = []
-    for (dirpath, dirnames, filenames) in os.walk(os.path.join(*paths)):
-        files.append((dirpath, [os.path.join(dirpath, f) for f in filenames]))
-
-    return files
-
 version = find_version('src', 'genie', 'telemetry', '__init__.py')
 
 # launch setup
@@ -96,11 +88,7 @@ setup(
     },
 
     # package dependencies
-    install_requires =  ['ats.async >= 4.1.0',
-                         'ats.datastructures >= 4.1.0',
-                         'ats.log >= 4.1.0',
-                         'ats.utils >= 4.1.0',
-                         'ats.topology >= 4.1.0',
+    install_requires =  ['ats >= 4.1.0',
                          'abstract >= 1.1.1',
                         ],
 
@@ -110,14 +98,14 @@ setup(
     },
 
     # external modules
-    ext_modules =[],
+    ext_modules = [],
 
     # any data files placed outside this package. 
     # See: http://docs.python.org/3.4/distutils/setupscript.html
     # format:
     #   [('target', ['list', 'of', 'files'])]
     # where target is sys.prefix/<target>
-    data_files = find_templates('templates'),
+    data_files = [],
     
     # non zip-safe (never tested it)
     zip_safe = False,
