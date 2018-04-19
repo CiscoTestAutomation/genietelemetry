@@ -5,5 +5,5 @@ __contact__ = 'pyats-support@cisco.com'
 __copyright__ = 'Cisco Systems, Inc. Cisco Confidential'
 
 from .main import main
-from .manager import Manager, TimedManager
 from .plugin import BasePlugin
+from .manager import Manager, TimedManager
