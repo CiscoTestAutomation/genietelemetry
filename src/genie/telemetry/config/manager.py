@@ -1,8 +1,10 @@
 import logging
 from io import TextIOBase
 
-from ats.datastructures import AttrDict
+# argparse
+from ats.utils import parser as argparse
 from ats.utils.dicts import recursive_update
+from ats.datastructures import AttrDict, classproperty
 
 from .loader import ConfigLoader
 from .plugins import PluginManager
@@ -28,6 +30,14 @@ class Configuration(object):
         self._loader = ConfigLoader()
         self.plugins = (plugins or PluginManager)()
 
+    def load_plugin_classess(self, config = None):
+
+        if isinstance(config, (dict, str, TextIOBase)):
+            self.update(self._loader.load(config))
+
+        self.plugins.load(self._plugins)
+        return self.plugins.get_plugin_classes()
+
     def load(self, config = None, devices = {}):
         logger.info('Loading genie.telemetry Configuration')
         # load configuration provided via input argument
@@ -45,3 +55,34 @@ class Configuration(object):
     def update(self, config):
         recursive_update(self._plugins, config.get('plugins', {}))
         recursive_update(self.connections, config.get('connections', {}))
+
+    @classproperty
+    def parser(cls):
+        parser = argparse.ArgsPropagationParser(add_help = False)
+        parser.title = 'Configuration'
+
+        # timeout
+        # -------
+        parser.add_argument('-configuration',
+                            type = argparse.FileType('r'),
+                            metavar = 'FILE',
+                            help = 'configuration yaml file for plugins and'
+                                   ' settings')
+        return parser
+
+    def parse_args(self, argv):
+        '''parse_args
+
+        parse arguments if available, store results to self.args. This follows
+        the easypy argument propagation scheme, where any unknown arguments to
+        this plugin is then stored back into sys.argv and untouched.
+
+        Does nothing if a plugin doesn't come with a built-in parser.
+        '''
+
+        # do nothing when there's no parser
+        if not self.parser:
+            return
+
+        # avoid parsing unknowns
+        self.args, _ = self.parser.parse_known_args(argv)

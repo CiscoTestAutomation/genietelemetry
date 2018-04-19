@@ -62,7 +62,8 @@ accessible directly as part of the user PATH after activating your instance.
                           [-callback_notify CALLBACK_NOTIFY] [-timeout TIMEOUT]
                           [-connection_timeout CONNECTION_TIMEOUT] [-no_mail]
                           [-no_notify] [-mailto] [-mail_subject]
-                          [-notify_subject]
+                          [-notify_subject] [-email_domain] [-smtp_host]
+                          [-smtp_port]
 
     genie telemetry command line arguments.
 
@@ -104,6 +105,93 @@ accessible directly as part of the user PATH after activating your instance.
       -email_domain         default email domain
       -smtp_host            specify smtp host
       -smtp_port            specify smtp server port
+
+
+.. tip::
+
+    The built-in help information of ``genietelemetry`` automatically finds and
+    lists all arguments available from each genie telemetry plugin if
+    configuration file is provided.
+
+    For example, the following config file contains tracebackcheck plugin with
+    3 arguments.
+
+    .. code-block:: yaml
+
+        plugins:
+            tracebackcheck:
+                interval: 30
+                module: genietelemetry_libs.plugins.tracebackcheck
+
+    .. code-block:: bash
+
+    [tony@jarvis:~]$ genietelemetry -h /path/to/config.yaml
+    usage: genietelemetry [TESTBEDFILE]
+                          [-h] [-loglevel] [-configuration FILE] [-uid UID]
+                          [-runinfo_dir RUNINFO_DIR]
+                          [-callback_notify CALLBACK_NOTIFY] [-timeout TIMEOUT]
+                          [-connection_timeout CONNECTION_TIMEOUT] [-no_mail]
+                          [-no_notify] [-mailto] [-mail_subject]
+                          [-notify_subject] [-email_domain] [-smtp_host]
+                          [-smtp_port]
+                          [--tracebackcheck_logic_pattern TRACEBACKCHECK_LOGIC_PATTERN]
+                          [--tracebackcheck_clean_up TRACEBACKCHECK_CLEAN_UP]
+                          [--tracebackcheck_timeout TRACEBACKCHECK_TIMEOUT]
+
+
+    genie telemetry command line arguments.
+
+    Example
+    -------
+      genietelemetry /path/to/testbed.yaml
+
+    ----------------------------------------------------------------------------
+
+    Positional Arguments:
+      TESTBEDFILE           testbed file to be monitored
+
+    Help:
+      -h, -help             show this help message and exit
+
+    Logging:
+      -loglevel             genie telemetry logging level
+                            eg: -loglevel="INFO"
+
+    Configuration:
+      -configuration FILE   configuration yaml file for plugins and settings
+      -uid UID              Specify monitoring job uid
+      -runinfo_dir RUNINFO_DIR
+                            Specify directory to store execution logs
+      -callback_notify CALLBACK_NOTIFY
+                            Specify Liveview callback notify URI
+      -timeout TIMEOUT      Specify plugin maximum execution length
+                            Default to 300 seconds
+      -connection_timeout CONNECTION_TIMEOUT
+                            Specify connection timeout
+
+    Mailing:
+      -no_mail              disable final email report
+      -no_notify            disable notification on device health status other
+                            than "ok"
+      -mailto               list of email recipients
+      -mail_subject         report email subject header
+      -notify_subject       notification email subject header
+      -email_domain         default email domain
+      -smtp_host            specify smtp host
+      -smtp_port            specify smtp server port
+
+    Traceback Check:
+      --tracebackcheck_logic_pattern TRACEBACKCHECK_LOGIC_PATTERN
+                            Specify logical expression for patterns to
+                            include/exclude when checking tracebacks following
+                            PyATS logic format. Default patternis to check for
+                            Tracebacks.
+      --tracebackcheck_clean_up TRACEBACKCHECK_CLEAN_UP
+                            Specify whether to clear all warnings and tracebacks
+                            after reporting error
+      --tracebackcheck_timeout TRACEBACKCHECK_TIMEOUT
+                            Specify duration (in seconds) to wait before timing
+                            out execution of a command
 
 
 

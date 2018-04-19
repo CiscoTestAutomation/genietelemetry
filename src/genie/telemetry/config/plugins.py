@@ -121,6 +121,23 @@ class PluginManager(object):
 
             plugin_cache.setdefault('plugin_label', get_plugin_name(plugin))
 
+    def get_plugin_classes(self):
+
+        plugins = []
+        for plugin_name, plugin_cache in self._plugins.items():
+            name = plugin_cache.get('name', plugin_name)
+            module = plugin_cache.get('module', None)
+            if not name or not module:
+                continue
+            class_name = '{}.Plugin'.format(name)
+            try:
+                plugin_cls = self.get_plugin_cls(module, module, class_name)
+            except Exception:
+                continue
+            plugins.append(plugin_cls)
+
+        return plugins
+
     def get_plugin_cls(self, plugin_module, base_module, class_name):
 
         if plugin_module == base_module:
