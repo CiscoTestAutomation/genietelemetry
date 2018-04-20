@@ -2,7 +2,7 @@ import sys
 import logging
 from copy import copy
 from operator import attrgetter
-from abstract.magic import Lookup
+from genie.abstract.magic import Lookup
 
 from genie.telemetry.utils import get_plugin_name
 
@@ -121,6 +121,23 @@ class PluginManager(object):
 
             plugin_cache.setdefault('plugin_label', get_plugin_name(plugin))
 
+    def get_plugin_classes(self):
+
+        plugins = []
+        for plugin_name, plugin_cache in self._plugins.items():
+            name = plugin_cache.get('name', plugin_name)
+            module = plugin_cache.get('module', None)
+            if not name or not module:
+                continue
+            class_name = '{}.Plugin'.format(name)
+            try:
+                plugin_cls = self.get_plugin_cls(module, module, class_name)
+            except Exception:
+                continue
+            plugins.append(plugin_cls)
+
+        return plugins
+
     def get_plugin_cls(self, plugin_module, base_module, class_name):
 
         if plugin_module == base_module:
@@ -157,9 +174,10 @@ class PluginManager(object):
                 plugin_module = Lookup.from_device(device,
                                                    packages={ name: module })
             except Exception:
-                logger.error('failed to load abstration for device %s'
-                                                                % device_name)
-                raise
+                logger.error('failed to load abstration on device {} for plugin'
+                             ' {}'.format(device_name, name))
+                logger.error('fallback to load as standard plugin')
+                plugin_module = module
         else:
             plugin_module = module
 

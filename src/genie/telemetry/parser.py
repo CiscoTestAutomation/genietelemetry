@@ -15,6 +15,7 @@ from ats.utils import parser
 from gettext import gettext
 
 from genie.telemetry.email import MailBot
+from genie.telemetry.config import Configuration
 
 # declare module as infra
 __genietelemetry_infra__ = True
@@ -119,6 +120,12 @@ class Parser(parser.ArgsPropagationParser):
 
         # build list of core component classes
         subsystems = [ MailBot ]
+
+        # build list of plugin classes
+        config = Configuration.parser.parse_args().configuration
+        if config:
+            plugins = Configuration().load_plugin_classess(config=config)
+            subsystems.extend(plugins)
 
         return subsystems
 

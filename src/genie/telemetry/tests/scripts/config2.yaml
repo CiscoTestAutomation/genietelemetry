@@ -1,0 +1,7 @@
+plugins:
+    crashdumps:
+        interval: 10
+        module: genie.libs.telemetry.plugins.crashdumps
+    tracebackcheck:
+        interval: 11
+        module: genie.libs.telemetry.plugins.tracebackcheck

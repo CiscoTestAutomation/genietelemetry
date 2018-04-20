@@ -1,7 +1,9 @@
 # python
 import os
+import sys
 import yaml
 import logging
+from copy import copy
 from datetime import datetime
 
 # pcall
@@ -41,9 +43,10 @@ class Manager(object):
         initialize the manager class by loading the plugin configuration file
         and initiating the corresponding plugins.
         '''
-
+        args = copy(sys.argv[1:])
         # parse configuration file
-        configuration = configuration or self.parser.parse_args().configuration
+        configuration = configuration or self.parser.parse_args(
+                                                           args).configuration
 
         if not configuration:
             raise AttributeError("'--genietelemetry <path to config_file.yaml>"
