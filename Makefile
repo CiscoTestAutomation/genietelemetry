@@ -34,7 +34,7 @@ BUILD_CMD     = python setup.py bdist_wheel --dist-dir=$(OUTPUT_DIR)
 PROD_USER     = pyadm@pyats-ci
 PROD_PKGS     = /auto/pyats/packages/cisco-shared
 PROD_SCRIPTS  = /auto/pyats/bin
-TESTCMD       = python -m unittest discover tests
+TESTCMD       = python -m unittest discover -f src/genie/telemetry/tests/
 WATCHERS      = python-core@cisco.com
 HEADER        = [Watchdog]
 PYPIREPO      = pypitest

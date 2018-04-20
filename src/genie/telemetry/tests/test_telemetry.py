@@ -170,7 +170,7 @@ class GenieTelemetryTestcase(unittest.TestCase):
     def test_pass_processor(self):
         [d.connect() for d in testbed.devices.values()]
         sys.argv = ['easypy', '--genietelemetry', config_file2]
-        with self.assertLogs('', level='INFO') as cm:   
+        with self.assertLogs('', level='INFO') as cm:
             self.assertTrue(section.result)
             self.assertIsNone(section.message)
             # processors.runtime = Mock(side_effect=runtime)

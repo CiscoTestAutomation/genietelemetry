@@ -1,10 +1,10 @@
 plugins:
     crashdumps:
         interval: 30
-        module: genietelemetry_libs.plugins.crashdumps
+        module: genie.libs.telemetry.plugins.crashdumps
     tracebackcheck:
         interval: 30
-        module: genietelemetry_libs.plugins.tracebackcheck
+        module: genie.libs.telemetry.plugins.tracebackcheck
     mockplugin:
         interval: 10
         module: genie.telemetry.tests.scripts.mockplugin
