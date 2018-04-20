@@ -9,7 +9,7 @@ def massage_meta(input_):
 
     try:
         pickle.dumps(input_)
-    except PicklingError as e:
+    except pickle.PicklingError as e:
         raise AttributeError('Status Meta [%s] contains unpicklable value'
                              % input_, e)
 

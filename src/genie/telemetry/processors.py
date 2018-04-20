@@ -28,7 +28,7 @@ def genie_telemetry_processor(section):
     genie_telemetry = getattr(ancestor, 'genie_telemetry', None)
 
     # validate --genietelemetry configuration
-    args = copy(sys.argv)
+    args = copy(sys.argv[1:])
     configuration = Manager.parser.parse_args(args).configuration
     if not configuration and not genie_telemetry:
         logger.info("Skipping 'genie.telemetry' processor as '--genietelemetry'"
@@ -41,6 +41,9 @@ def genie_telemetry_processor(section):
         logger.info("Skipping 'genie.telemetry' processor since it "
                     "genie_telemetry parameter is set to False.")
         return
+
+    # Checking the execution result
+    anomallies = []
 
     try:
         # Instantiate the Manager
@@ -70,8 +73,6 @@ def genie_telemetry_processor(section):
         # Run all plugins on the section (CS/Trigger/CC)
         genie_telemetry.run(uid, **kwargs)
 
-        # Checking the execution result
-        anomallies = []
         # iterating over plugin, results
         results = genie_telemetry.results.get(uid, {})
         for pluginname, devices in results.items():

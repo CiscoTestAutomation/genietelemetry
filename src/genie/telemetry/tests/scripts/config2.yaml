@@ -1,0 +1,7 @@
+plugins:
+    crashdumps:
+        interval: 10
+        module: genietelemetry_libs.plugins.crashdumps
+    tracebackcheck:
+        interval: 11
+        module: genietelemetry_libs.plugins.tracebackcheck

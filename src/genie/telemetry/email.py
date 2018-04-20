@@ -170,6 +170,20 @@ class MailBot(object):
                             dest = 'smtp_port',
                             help = 'specify smtp server port')
 
+        parser.add_argument('-smtp_username',
+                            type = str,
+                            metavar = '',
+                            default = argparse.SUPPRESS,
+                            dest = 'smtp_host',
+                            help = 'specify smtp username')
+
+        parser.add_argument('-smtp_password',
+                            type = str,
+                            metavar = '',
+                            default = argparse.SUPPRESS,
+                            dest = 'smtp_port',
+                            help = 'specify smtp password')
+
         return parser
 
     def __init__(self,
@@ -182,7 +196,9 @@ class MailBot(object):
                  nonotify = False,
                  email_domain = None,
                  smtp_host = None,
-                 smtp_port = None):
+                 smtp_port = None,
+                 smtp_username = None,
+                 smtp_password = None):
         '''mailbot constructor
 
         Arguments
@@ -212,6 +228,10 @@ class MailBot(object):
         # store smtp server to be used
         self.smtp_host = smtp_host
         self.smtp_port = smtp_port
+        self.smtp_username = smtp_username
+        self.smtp_password = smtp_password
+        self.smtp_credentials = dict(smtp_username=self.smtp_username,
+                                     smtp_password=self.smtp_password)
 
         # parse arguments into self
         # (overwrite any of the above)
@@ -263,7 +283,8 @@ class MailBot(object):
                  contents = (exc_type,
                              exc_value,
                              exc_tb)).create_email(self.from_addrs,
-                                                   self.to_addrs)
+                                                   self.to_addrs,
+                                                   **self.smtp_credentials)
 
             logger.error(message.get_content())
 
@@ -275,7 +296,8 @@ class MailBot(object):
             # everything worked, collect standard report message
             # pass mailhtml flag to create_email
             message = self.instance.report.create_email(self.from_addrs,
-                                                        self.to_addrs)
+                                                        self.to_addrs,
+                                                        **self.smtp_credentials)
             logger.info(message.get_content())
 
         # handle subject overwrite from command-line
@@ -302,8 +324,10 @@ class MailBot(object):
 
         if not self.nomail and not self.nonotify:
             message = Notification(instance = self.instance,
-                                   **kwargs).create_email(self.from_addrs,
-                                                          self.to_addrs)
+                                   **kwargs).create_email(
+                                                        self.from_addrs,
+                                                        self.to_addrs,
+                                                        **self.smtp_credentials)
             logger.info(message.get_content())
 
             message.default_email_domain = self.email_domain
@@ -341,7 +365,9 @@ class AbstractEmailReport(object, metaclass = abc.ABCMeta):
     Base class for all report emails to inherit from and follow.
     '''
 
-    def create_email(self, from_addrs, to_addrs):
+    def create_email(self, from_addrs, to_addrs,
+                     smtp_username=None,
+                     smtp_password=None):
         '''create_email
 
         returns EmailMessage class instance with subject and body filled. This
@@ -352,7 +378,9 @@ class AbstractEmailReport(object, metaclass = abc.ABCMeta):
                          to_email=to_addrs,
                          subject=self.format_subject(),
                          body=self.format_content(),
-                         attachments=self.get_attachment())
+                         attachments=self.get_attachment(),
+                         smtp_username=smtp_username,
+                         smtp_password=smtp_password)
 
         return email
 

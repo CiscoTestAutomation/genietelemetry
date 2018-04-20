@@ -63,7 +63,8 @@ accessible directly as part of the user PATH after activating your instance.
                           [-connection_timeout CONNECTION_TIMEOUT] [-no_mail]
                           [-no_notify] [-mailto] [-mail_subject]
                           [-notify_subject] [-email_domain] [-smtp_host]
-                          [-smtp_port]
+                          [-smtp_port] [-smtp_username] [-smtp_password]
+
 
     genie telemetry command line arguments.
 
@@ -105,6 +106,8 @@ accessible directly as part of the user PATH after activating your instance.
       -email_domain         default email domain
       -smtp_host            specify smtp host
       -smtp_port            specify smtp server port
+      -smtp_username        specify smtp username
+      -smtp_password        specify smtp password
 
 
 .. tip::
@@ -133,7 +136,7 @@ accessible directly as part of the user PATH after activating your instance.
                           [-connection_timeout CONNECTION_TIMEOUT] [-no_mail]
                           [-no_notify] [-mailto] [-mail_subject]
                           [-notify_subject] [-email_domain] [-smtp_host]
-                          [-smtp_port]
+                          [-smtp_port] [-smtp_username] [-smtp_password]
                           [--tracebackcheck_logic_pattern TRACEBACKCHECK_LOGIC_PATTERN]
                           [--tracebackcheck_clean_up TRACEBACKCHECK_CLEAN_UP]
                           [--tracebackcheck_timeout TRACEBACKCHECK_TIMEOUT]
@@ -179,6 +182,8 @@ accessible directly as part of the user PATH after activating your instance.
       -email_domain         default email domain
       -smtp_host            specify smtp host
       -smtp_port            specify smtp server port
+      -smtp_username        specify smtp username
+      -smtp_password        specify smtp password
 
     Traceback Check:
       --tracebackcheck_logic_pattern TRACEBACKCHECK_LOGIC_PATTERN
@@ -229,6 +234,10 @@ processed using python `argparse`_ module.
     notification"
     ``-smtp_host``, "specify smtp host, required for email or notification"
     ``-smtp_port``, "specify smtp server port, required for email or
+    notification"
+    ``-smtp_username``, "specify smtp username, required for email or "
+    notification"
+    ``-smtp_password``, "specify smtp password, required for email or
     notification"
 
 .. tip::
@@ -331,6 +340,33 @@ processed using python `argparse`_ module.
                              -email_domain cisco.com
                              -smtp_host cisco.com
                              -smtp_port 25
+
+``-smtp_username``
+    SMTP username for emailing. Optional argument for email or
+    notification.
+
+    .. code-block:: bash
+
+        bash$ genietelemetry /path/to/testbed.yaml
+                             -configuration /path/to/config.yaml
+                             -email_domain cisco.com
+                             -smtp_host cisco.com
+                             -smtp_port 25
+                             -smtp_username tonystark
+
+``-smtp_password``
+    SMTP password for emailing. Optional argument for email or
+    notification.
+
+    .. code-block:: bash
+
+        bash$ genietelemetry /path/to/testbed.yaml
+                             -configuration /path/to/config.yaml
+                             -email_domain cisco.com
+                             -smtp_host cisco.com
+                             -smtp_port 25
+                             -smtp_username tonystark
+                             -smtp_password I@mIronMan
 
 ``-mailto``
     Provides a list of recipients that receive email report at the

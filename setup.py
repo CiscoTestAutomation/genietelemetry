@@ -5,23 +5,45 @@
 See: 
     https://packaging.python.org/en/latest/distributing.html
 '''
-import os, re
-from setuptools import setup, find_packages
+import os
+from ciscodistutils import setup, find_packages, is_devnet_build
+from ciscodistutils.tools import (read,
+                                  version_info,
+                                  generate_cython_modules)
 
-def read(*paths):
-    '''read and return txt content of file'''
-    with open(os.path.join(*paths)) as fp:
-        return fp.read()
 
-def find_version(*paths):
-    '''reads a file and returns the defined __version__ value'''
-    version_match = re.search(r"^__version__ ?= ?['\"]([^'\"]*)['\"]",
-                              read(*paths), re.M)
-    if version_match:
-        return version_match.group(1)
-    raise RuntimeError("Unable to find version string.")
+_INTERNAL_SUPPORT = 'pyats-support@cisco.com'
+_EXTERNAL_SUPPORT = 'pyats-support-ext@cisco.com'
 
-version = find_version('src', 'genie', 'telemetry', '__init__.py')
+_INTERNAL_LICENSE = 'Cisco Systems, Inc. Cisco Confidential',
+_EXTERNAL_LICENSE = 'Apache 2.0'
+
+_INTERNAL_URL = 'http://wwwin-pyats.cisco.com/cisco-shared/genietelemetry/html/'
+_EXTERNAL_URL = 'https://developer.cisco.com/site/pyats/'
+
+
+# pyats support mailer
+SUPPORT = _EXTERNAL_SUPPORT if is_devnet_build() else _INTERNAL_SUPPORT
+
+# license statement
+LICENSE = _EXTERNAL_LICENSE if is_devnet_build() else _INTERNAL_LICENSE
+
+# project url
+URL = _EXTERNAL_URL if is_devnet_build() else _INTERNAL_URL
+
+# pyats package
+PYATS_PKG = 'pyats' if is_devnet_build() else 'ats'
+
+# get version information
+version, version_range = version_info('src',
+                                      'genie',
+                                      'telemetry',
+                                      '__init__.py')
+
+install_requires=['setuptools', 'netaddr', 'wheel',
+                  'genie.abstract >= 1.1.1',
+                  '{package} >= {range}'.format(package = PYATS_PKG,
+                                                range = '4.1.0')]
 
 # launch setup
 setup(
@@ -29,35 +51,40 @@ setup(
     version = version,
 
     # descriptions
-    description = 'genie.telemetry: Testbed Telemetry Service',
+    description = 'Genie Library for testbed telemetry support',
     long_description = read('DESCRIPTION.rst'),
 
     # the project's main homepage.
-    url = 'http://wwwin-pyats.cisco.com/',
+    url = URL,
 
     # author details
-    author = 'ASG/ATS Teams',
-    author_email = 'python-core@cisco.com',
+    author = 'Cisco Systems Inc.',
+    author_email = SUPPORT,
 
     # project licensing
-    license = 'Cisco Systems, Inc. Cisco Confidential',
+    license = LICENSE,
 
     # see https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers = [
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Intended Audience :: Developers',
-        'Intended Audience :: Telecommunications Industry'
-        'License :: Other/Proprietary License',
+        'Intended Audience :: Telecommunications Industry',
+        'Intended Audience :: Information Technology',
+        'License :: OSI Approved :: Apache Software License',
         'Operating System :: POSIX :: Linux',
-        'Operating System :: OS Independent',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3 :: Only',
+        'Programming Language :: Python :: Implementation :: CPython',
         'Topic :: Software Development :: Testing',
+        'Topic :: Software Development :: Build Tools',
+        'Topic :: Software Development :: Libraries',
+        'Topic :: Software Development :: Libraries :: Python Modules',
     ],
 
+
     # project keywords
-    keywords = 'testbed health status monitoring',
+    keywords = 'genie telemetry pyats cisco',
 
     # uses namespace package
     namespace_packages = ['genie'],
@@ -72,15 +99,11 @@ setup(
 
     # additional package data files that goes into the package itself
     package_data = {
-        '': ['tests/*.py',
-             'tests/scripts/*.py',
-             'tests/scripts/*.yaml',
-             'tests/scripts/*.html',
-            ]
+        '': ['README.rst']
     },
 
     # custom argument specifying the list of cythonized modules
-    #pyats_cythonized_modules = generate_cython_modules('src/'),
+    cisco_cythonized_modules = generate_cython_modules('src/'),
 
     # console entry point
     entry_points = { 
@@ -88,13 +111,17 @@ setup(
     },
 
     # package dependencies
-    install_requires =  ['ats >= 4.1.0',
-                         'abstract >= 1.1.1',
-                        ],
+    install_requires = install_requires,
 
     # any additional groups of dependencies.
     # install using: $ pip install -e .[dev]
     extras_require = {
+        'dev': ['coverage',
+                'restview',
+                'Sphinx',
+                'sphinxcontrib-napoleon',
+                'sphinx-rtd-theme',
+                'sphinxcontrib-mockautodoc'],
     },
 
     # external modules

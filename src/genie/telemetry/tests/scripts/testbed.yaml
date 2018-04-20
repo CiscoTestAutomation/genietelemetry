@@ -1,0 +1,28 @@
+testbed:
+    name: ott-genie
+devices:
+    P1:
+        type: 'router'
+        alias: 'uut'
+        os: nxos
+        tacacs:
+            login_prompt: "login:"
+            password_prompt: "Password:"
+            username: "admin"
+        passwords:
+            tacacs: CSCO12345^
+            enable: CSCO12345^
+            line: CSCO12345^
+        connections:
+            a:
+                protocol: telnet
+                ip: "10.85.87.25"
+                port: 6009
+            vty1:
+                protocol: telnet
+                ip: 5.25.26.101
+            defaults:
+                class: genie.telemetry.tests.test_telemetry.MockConnection
+        custom:
+          abstraction:
+              order: [os]
