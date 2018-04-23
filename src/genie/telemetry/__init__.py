@@ -7,3 +7,4 @@ __copyright__ = 'Cisco Systems, Inc. Cisco Confidential'
 from .main import main
 from .plugin import BasePlugin
 from .manager import Manager, TimedManager
+from .processors import genie_telemetry_processor

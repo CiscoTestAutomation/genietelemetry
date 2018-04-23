@@ -30,7 +30,7 @@ genie_telemetry_processor in your testscript or your test datafile.
     #   Test script
 
     from ats import aetest
-    from genie.telemetry import prepostprocessor
+    from genie.telemetry import genie_telemetry_processor
 
     class common_setup(aetest.CommonSetup):
 
