@@ -96,13 +96,13 @@ help:
 	@echo " develop              set all package to development mode"
 	@echo " undevelop            unset the above development mode"
 	@echo ""
-	@echo "     --- cisco external/devnet builds ---"
+	@echo "     --- build all targets ---"
 	@echo ""
-	@echo " devnet               build devnet set of packages"
+	@echo " all                  make all available pyATS packages"
 	@echo ""
 	@echo "     --- build specific targets ---"
 	@echo ""
-	@echo " genietelemetry             build base genie.telemetry namespace package"
+	@echo " genietelemetry       build genie telemetry package"
 	@echo ""
 	@echo "     --- distributions to production environment ---"
 	@echo ""
@@ -201,17 +201,6 @@ genietelemetry:
 	$(BUILD_CMD)
 
 	@echo "Completed building genie.telemetry Namespace Package"
-	@echo ""
-
-devnet:
-	@echo ""
-	@echo "--------------------------------------------------------------------"
-	@echo "Building cisco external/devnet Package"
-
-	mkdir -p $(OUTPUT_DIR)/
-	$(BUILD_CMD)
-
-	@echo "Completed cisco external/devnet Package"
 	@echo ""
 
 test:
