@@ -52,7 +52,7 @@ setup(
     version = version,
 
     # descriptions
-    description = 'Genie Library for testbed telemetry support',
+    description = 'testbed health status monitoring tool',
     long_description = read('DESCRIPTION.rst'),
 
     # the project's main homepage.
