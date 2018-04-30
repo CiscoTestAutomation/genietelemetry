@@ -5,8 +5,10 @@ Genie Telemetry
 ===============
 
     1. Installation
-    2. GenieTelemetry Launcher
-    2. Standard Arguments
+    2. Support
+    3. GenieTelemetry Launcher
+    4. Standard Arguments
+    5. Testbed File
 
 Installation
 ------------
@@ -20,13 +22,28 @@ First install the core package via pip.
 
     bash$ pip install genie.telemetry
 
-The user-contributed libraries are downloadable via Git. Execute this command
-under your `projects` directory in your pyATS virtual environment `$VIRTUAL_ENV`.
+.. note::
+
+    GenieTelemetry plugins are automatically made available by the above
+    import at genie.libs.telemtery.
+    Ex: Plugins are accessed as "genie.libs.telemtery.plugins.tracebackcheck"
+
+In case of the need to contribute to the community telemtery plugins. The
+user-contributed libraries are downloadable via Git.
 
 .. code-block:: bash
 
-    cd $VIRTUAL_ENV/projects
-    git clone ssh://git@bitbucket-eng-sjc1.cisco.com:7999/pyats-proj/genietelemetry_libs.git
+    git clone ssh://git@bitbucket-eng-sjc1.cisco.com:7999/pyats-pypi/genietelemetrylibs.git
+
+
+Support
+-------
+
+Reach out to :mailto:`contact us <cisco.com>` for any questions or issues related to the
+``genie.abstract`` package.
+
+You can also post questions to the :communityforum:`community forum <http>` - the support team patrols
+these forums daily.
 
 
 GenieTelemetry Launcher
@@ -124,7 +141,7 @@ accessible directly as part of the user PATH after activating your instance.
         plugins:
             tracebackcheck:
                 interval: 30
-                module: genietelemetry_libs.plugins.tracebackcheck
+                module: genie.libs.telemtery.plugins.tracebackcheck
 
     .. code-block:: bash
 
@@ -204,10 +221,7 @@ Standard Arguments
 ------------------
 ``genie.telemetry`` accepts a number of standard arguments that can be used to
 influence and/or change monitoring behaviors. All arguments are constructed and
-processed using python `argparse`_ module.
-
-
-.. _argparse: https://docs.python.org/3/library/argparse.html
+processed using python :argparse:`argparse <http>` module.
 
 .. csv-table:: Genie Telemetry Standard Arguments
     :header: Argument, Description
@@ -244,7 +258,7 @@ processed using python `argparse`_ module.
 
     ``genie.telemetry`` standardizes on single-dash ``-`` style arguments.
 
-    ``genietelemetry_libs`` standardizes on double-dash ``--`` style arguments.
+    ``genie.libs.telemtery`` standardizes on double-dash ``--`` style arguments.
 
 
 ``-help``
@@ -285,7 +299,8 @@ processed using python `argparse`_ module.
 ``-loglevel``
     Specifies the logging level for GenieTelemetry. Use this to increase or
     decrease GenieTelemetry module's log output level for debugging purposes.
-    May be specified in UPPERCASE or lowercase.
+    May be specified in UPPERCASE or lowercase. Check :loglevel:`loglevel <http>`
+    for more details.
 
     .. code-block:: bash
 
@@ -295,8 +310,6 @@ processed using python `argparse`_ module.
         bash$ genietelemetry /path/to/testbed.yaml
                              -configuration /path/to/config.yaml
                              -loglevel DEBUG
-
-.. _log level: https://docs.python.org/3/howto/logging.html#logging-levels
 
 ``-no_mail``
     Flag, disables email report at the end of execution.
@@ -534,7 +547,6 @@ Example Testbed File
 
 .. hint::
 
-    Please remember to include default connection class and `abstraction`_ order
-    in your testbed YAML file as shown in the example above.
-
-    .. _abstraction: http://wwwin-pyats.cisco.com/cisco-shared/abstract/html/
+    Please remember to include default connection class and
+    :abstraction:`abstraction <http>` order in your testbed YAML file as shown
+    in the example above.

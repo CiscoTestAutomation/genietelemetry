@@ -10,11 +10,9 @@ pyATS/Genie.
 
 .. sidebar:: Helpful Reading
 
-    - `Preprocessors`_
-    - `Decorators`_
+    - :preprocessors:`Preprocessors <http>`
+    - :decorators:`Decorators <http>`
 
-.. _Decorators: https://wiki.python.org/moin/PythonDecorators
-.. _Preprocessors: http://en.wikipedia.org/wiki/Preprocessor
 
 Introduction
 ------------

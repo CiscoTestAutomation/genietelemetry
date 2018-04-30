@@ -247,10 +247,9 @@ You should see the following lines show up in the log.
 
 Abstraction Plugin Package
 --------------------------
-First make sure you have read pyATS abstract_, especially the section on Lookup
-Decorator as it is the root of abstraction in Genie Telemetry.
-
-.. _abstract: http://wwwin-pyats.cisco.com/cisco-shared/abstract/html/
+First make sure you have read pyATS :abstraction:`abstraction <http>`,
+especially the section on Lookup Decorator as it is the root of abstraction in
+Genie Telemetry.
 
 .. code-block:: bash
 

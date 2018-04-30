@@ -23,6 +23,9 @@ import subprocess
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('../../genie/'))
 
+sys.path.append(os.path.abspath(''))
+import links
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -38,6 +41,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'sphinxcontrib.napoleon',
+    'sphinx.ext.extlinks',
     'sphinx.ext.intersphinx'
 ]
 
@@ -268,3 +272,6 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+# Links for the documentation
+extlinks = links.internal_links

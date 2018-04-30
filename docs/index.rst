@@ -13,5 +13,6 @@ Genie Telemetry.
    plugins
    results
    harness
+   changelog/index
 
 .. sectionauthor:: Wei Chen <weiche3@cisco.com>

@@ -33,10 +33,8 @@ HealthStatus Objects
 --------------------
 
 HealthStatus in Genie Telemetry are represented by 5 unique instances of
-``HealthStatus`` `singleton`_ objects, each corresponding to a unique health
-status type.
-
-.. _singleton: http://en.wikipedia.org/wiki/Singleton_pattern
+``HealthStatus`` :singleton:`singleton <http>` objects, each corresponding to a
+unique health status type.
 
 
 ``OK``
@@ -64,8 +62,8 @@ status type.
 Import & Usage
 --------------
 
-These 5 `singleton`_ health status objects can be imported into your code to be
-used directly. As simple as:
+These 5 :singleton:`singleton <http>` health status objects can be imported
+into your code to be used directly. As simple as:
 
 .. code-block:: python
 
