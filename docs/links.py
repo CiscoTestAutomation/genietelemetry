@@ -7,6 +7,7 @@ internal_links = {'argparse': ('%s://docs.python.org/3/library/argparse.html', '
                   'decorators': ('%s://wiki.python.org/moin/PythonDecorators', 'Decorators'),
                   'mailto': ('mailto:asg-genie-support@%s','mailto'),
                   'communityforum': ('%s://piestack.cisco.com', 'community forum'),
+                  'genietelemetrylibs_repo': ('%s://bitbucket-eng-sjc1.cisco.com/bitbucket/projects/PYATS-PYPI/repos/genietelemetrylibs/browse', 'genie.libs.telemetry'),
                   }
 
 external_links = {'argparse': ('%s://docs.python.org/3/library/argparse.html', 'argparse'),
@@ -17,4 +18,5 @@ external_links = {'argparse': ('%s://docs.python.org/3/library/argparse.html', '
                   'decorators': ('%s://wiki.python.org/moin/PythonDecorators', 'Decorators'),
                   'mailto': ('mailto:pyats-support-ext@%s','mailto'),
                   'communityforum': ('%s:%s://communities.cisco.com/community/developer/pyats', 'community forum'),
+                  'genietelemetrylibs_repo': ('%s://github.com/CiscoTestAutomation/genietelemetrylibs', 'genie.libs.telemetry'),
                   }

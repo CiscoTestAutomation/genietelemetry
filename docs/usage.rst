@@ -28,13 +28,14 @@ First install the core package via pip.
     import at genie.libs.telemtery.
     Ex: Plugins are accessed as "genie.libs.telemtery.plugins.tracebackcheck"
 
-In case of the need to contribute to the community telemtery plugins. The
-user-contributed libraries are downloadable via Git.
+The **GenieTelemetry libraries** are user-community owned and developed.
+To contribute to the library, clone the :genietelemetrylibs_repo:`genie.libs.telemetry <http>`
+repo and do the following:
 
 .. code-block:: bash
 
-    git clone ssh://git@bitbucket-eng-sjc1.cisco.com:7999/pyats-pypi/genietelemetrylibs.git
-
+    cd genietelemetrylibs
+    make develop
 
 Support
 -------
@@ -147,16 +148,16 @@ accessible directly as part of the user PATH after activating your instance.
 
     [tony@jarvis:~]$ genietelemetry -h /path/to/config.yaml
     usage: genietelemetry [TESTBEDFILE]
-                          [-h] [-loglevel] [-configuration FILE] [-uid UID]
-                          [-runinfo_dir RUNINFO_DIR]
-                          [-callback_notify CALLBACK_NOTIFY] [-timeout TIMEOUT]
-                          [-connection_timeout CONNECTION_TIMEOUT] [-no_mail]
-                          [-no_notify] [-mailto] [-mail_subject]
-                          [-notify_subject] [-email_domain] [-smtp_host]
-                          [-smtp_port] [-smtp_username] [-smtp_password]
-                          [--tracebackcheck_logic_pattern TRACEBACKCHECK_LOGIC_PATTERN]
-                          [--tracebackcheck_clean_up TRACEBACKCHECK_CLEAN_UP]
-                          [--tracebackcheck_timeout TRACEBACKCHECK_TIMEOUT]
+    [-h] [-loglevel] [-configuration FILE] [-uid UID]
+    [-runinfo_dir RUNINFO_DIR]
+    [-callback_notify CALLBACK_NOTIFY] [-timeout TIMEOUT]
+    [-connection_timeout CONNECTION_TIMEOUT] [-no_mail]
+    [-no_notify] [-mailto] [-mail_subject]
+    [-notify_subject] [-email_domain] [-smtp_host]
+    [-smtp_port] [-smtp_username] [-smtp_password]
+    [--tracebackcheck_logic_pattern TRACEBACKCHECK_LOGIC_PATTERN]
+    [--tracebackcheck_clean_up TRACEBACKCHECK_CLEAN_UP]
+    [--tracebackcheck_timeout TRACEBACKCHECK_TIMEOUT]
 
 
     genie telemetry command line arguments.
