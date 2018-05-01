@@ -156,7 +156,7 @@ develop:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
 	@echo "Setting up development environment"
-	@./setup.py develop --no-deps -q
+	@python setup.py develop --no-deps -q
 	@echo ""
 	@echo "Done."
 	@echo ""
@@ -165,7 +165,7 @@ undevelop:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
 	@echo "Removing development environment"
-	@./setup.py develop --no-deps -q --uninstall
+	@python setup.py develop --no-deps -q --uninstall
 	@echo ""
 	@echo "Done."
 	@echo ""
