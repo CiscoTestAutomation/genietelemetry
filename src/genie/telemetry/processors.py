@@ -43,7 +43,7 @@ def genie_telemetry_processor(section):
         return
 
     # Checking the execution result
-    anomallies = []
+    anomalies = []
 
     try:
         # Instantiate the Manager
@@ -89,7 +89,7 @@ def genie_telemetry_processor(section):
             if not p_results:
                 continue
 
-            anomallies.append('\n\t'.join([pluginname, '\n'.join(p_results)]))
+            anomalies.append('\n\t'.join([pluginname, '\n'.join(p_results)]))
 
         if isinstance(section, CommonCleanup):
             # Calling finalize_report
@@ -101,11 +101,22 @@ def genie_telemetry_processor(section):
                         "encountered an issue: {error}".format(error=e))
             return
         else:
-            section.passx("'genie.telemetry' encountered an issue: {}".\
-                          format(e))
+            if section.result.name == 'passed' or\
+                section.result.name == 'skipped':
+                section.passx("'genie.telemetry' encountered an issue: {}".\
+                              format(e))
+            else:
+                logger.info("'genie.telemetry' encountered an issue: {}".\
+                              format(e))
 
     # Determine section result as per genie.telemetry findings
-    if anomallies:
-        section.passx("'genie.telemetry' caught anomallies: \n{}".format(
-                                                      '\n'.join(anomallies))
-                                                    )
+    if anomalies:
+        if section.result.name == 'passed' or\
+            section.result.name == 'skipped':
+            section.passx("'genie.telemetry' caught anomalies: \n{}".format(
+                                                          '\n'.join(anomalies))
+                                                        )
+        else:
+            logger.info("'genie.telemetry' caught anomalies: \n{}".format(
+                                                          '\n'.join(anomalies))
+                                                        )
