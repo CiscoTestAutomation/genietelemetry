@@ -101,22 +101,19 @@ def genie_telemetry_processor(section):
                         "encountered an issue: {error}".format(error=e))
             return
         else:
-            if section.result.name == 'passed' or\
-                section.result.name == 'skipped':
-                section.passx("'genie.telemetry' encountered an issue: {}".\
-                              format(e))
+            if section.result.name == 'passed':
+                action = section.passx
             else:
-                logger.info("'genie.telemetry' encountered an issue: {}".\
-                              format(e))
+                action = logger.error
+
+            action("'genie.telemetry' encountered an issue: {}".format(e))
 
     # Determine section result as per genie.telemetry findings
     if anomalies:
-        if section.result.name == 'passed' or\
-            section.result.name == 'skipped':
-            section.passx("'genie.telemetry' caught anomalies: \n{}".format(
-                                                          '\n'.join(anomalies))
-                                                        )
+        if section.result.name == 'passed':
+            action = section.passx
         else:
-            logger.info("'genie.telemetry' caught anomalies: \n{}".format(
-                                                          '\n'.join(anomalies))
-                                                        )
+            action = logger.warning
+
+        action("'genie.telemetry' caught anomalies: \n{}".format(
+            '\n'.join(anomalies)))
