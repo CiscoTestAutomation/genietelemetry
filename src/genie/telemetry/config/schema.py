@@ -47,6 +47,8 @@ def validate_plugins(data):
             config.setdefault('enabled', True)
             config.setdefault('interval', 30)
             config.setdefault('devices', []) # plugin device filter
+            # Check if user passed in plugin_arguments through YAML
+            config.setdefault('plugin_arguments', {})
 
             assert type(config['devices']) is list
 
@@ -56,7 +58,8 @@ def validate_plugins(data):
             kwargs = {}
 
             for key, value in list(config.items()):
-                if key in ('enabled', 'module', 'interval', 'devices'):
+                if key in ('enabled', 'module', 'interval', 'devices',
+                           'plugin_arguments'):
                     continue
 
                 kwargs[key] = config.pop(key)
