@@ -113,6 +113,13 @@ class PluginManager(object):
             plugin = self.load_plugin(device, **plugin_cache)
             self._cache[plugin_name][device_name]['instance'] = plugin
 
+            # Add configuration YAML plugin arguments to argv for parsing
+            for key, value in plugin_cache['plugin_arguments'].items():
+                # if key already exists in argv (provided to easypy as --key)
+                # then argv takes priority over YAML value
+                if key not in str(argv):
+                    argv.extend(('--{key}'.format(key=key), str(value)))
+
             # parse plugin arguments
             # ----------------------
             # (saves arguments to plugin.args)

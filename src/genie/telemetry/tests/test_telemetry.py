@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+# Python
 import os
 import sys
 import yaml
@@ -12,13 +13,16 @@ from multiprocessing import Process
 from collections import OrderedDict
 from unittest.mock import Mock, patch, call, PropertyMock
 
+# ATS
 from ats.topology import loader
 from ats.aetest import CommonCleanup
 from ats.datastructures import AttrDict
 from ats.aetest.base import  TestContainer
 from ats.aetest.signals import AEtestPassxSignal
 from ats.connections.bases import BaseConnection
+from ats.results import Passed, Passx
 
+# GenieTelemetry
 from genie.telemetry.parser import Parser
 from genie.telemetry.main import GenieTelemetry
 from genie.telemetry import BasePlugin, Manager, TimedManager, processors
@@ -56,11 +60,11 @@ class MockTestScript(TestContainer):
 class MockSection(object):
 
     parameters = {}
-    result = True
+    result = Passed
     message = None
 
     def passx(self, message):
-        self.result = False
+        self.result = Passx
         self.message = message
 
     def __str__(self):
@@ -123,9 +127,9 @@ class GenieTelemetryTestcase(unittest.TestCase):
             output = '\n'.join(cm.output)
             msg = "failed to load abstration on device P1 for plugin mockplugin"
             self.assertTrue(msg in output)
-            self.assertFalse(section.result)
+            self.assertEqual(section.result, Passx)
             self.assertIsNotNone(section.message)
-            msg = ("'genie.telemetry' caught anomallies: \n"
+            msg = ("'genie.telemetry' caught anomalies: \n"
                   "genie.telemetry.tests.scripts.mockplugin\n\tP1\n\t\tpartial")
             self.assertEqual(msg, section.message)
 
