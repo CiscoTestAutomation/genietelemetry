@@ -115,11 +115,10 @@ class PluginManager(object):
 
             # Add configuration YAML plugin arguments to argv for parsing
             for key, value in plugin_cache['plugin_arguments'].items():
-                if key in str(argv):
-                    # plugin argument also provided to easypy as --arg
-                    # this takes precedence over YAML values
-                    continue
-                argv.extend(('--{key}'.format(key=key), str(value)))
+                # if key already exists in argv (provided to easypy as --key)
+                # then argv takes priority over YAML value
+                if key not in str(argv):
+                    argv.extend(('--{key}'.format(key=key), str(value)))
 
             # parse plugin arguments
             # ----------------------
