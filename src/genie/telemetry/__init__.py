@@ -7,3 +7,13 @@ __copyright__ = 'Cisco Systems, Inc. Cisco Confidential'
 from .main import main
 from .plugin import BasePlugin
 from .manager import Manager, TimedManager
+
+try:
+    from ats.cisco.stats import CesMonitor
+    CesMonitor(action = 'genietelemetry', application='Genie').post()
+except Exception:
+    try:
+        from ats.utils.stats import CesMonitor
+        CesMonitor(action = 'genietelemetry', application='Genie').post()
+    except Exception:
+        pass
