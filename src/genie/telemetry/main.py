@@ -107,6 +107,21 @@ class GenieTelemetry(object):
         loglevel = loglevel or args.loglevel
         configuration_file = configuration_file or args.configuration
 
+        # Check if custom abstraction OS has been provided in testbed YAML
+        for dev in testbed.devices:
+            if not hasattr(testbed.devices[dev], 'custom'):
+                raise KeyError("Abstraction order not specified in the"
+                                " testbed YAML for device '{d}'".\
+                                format(d=device.name))
+            if not hasattr(testbed.devices[dev].custom, 'abstraction'):
+                raise KeyError("Abstraction order not specified in the"
+                               " testbed YAML for device '{d}'".\
+                               format(d=device.name))
+            if not hasattr(testbed.devices[dev].custom.abstraction, 'order'):
+                raise KeyError("Abstraction order not specified in the"
+                                       " testbed YAML for device '{d}'".\
+                                       format(d=device.name))
+
         if not configuration and not configuration_file:
             raise AttributeError("'-configuration <path to config_file.yaml>"
                                  " is missing.")
