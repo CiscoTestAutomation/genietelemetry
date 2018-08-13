@@ -6,6 +6,7 @@ import logging
 import getpass
 import platform
 import traceback
+import pprint
 
 from ats import log
 from ats.utils import sig_handlers
@@ -106,6 +107,21 @@ class GenieTelemetry(object):
         testbed_file = testbed_file or args.testbedfile
         loglevel = loglevel or args.loglevel
         configuration_file = configuration_file or args.configuration
+
+        # Check if custom abstraction OS has been provided in testbed YAML
+        for dev in testbed.devices:
+            device = testbed.devices[dev]
+            # Check if custom abstraction OS has been provided in testbed YAML
+            if not getattr(device.custom, 'abstraction', None) or \
+               not getattr(device.custom.abstraction, 'order', None):
+                sample = {}
+                sample.setdefault(device.name, {}).setdefault('custom', {}).\
+                        setdefault('abstraction', {})['os'] = 'nxos'
+                raise Exception("Keys 'custom' and 'abstraction' are missing in"
+                                " the testbed YAML for device '{d}'"
+                                "\n    Missing keys under device:"
+                                "\n    {keys}".\
+                            format(d=device.name, keys=pprint.pformat(sample)))
 
         if not configuration and not configuration_file:
             raise AttributeError("'-configuration <path to config_file.yaml>"
