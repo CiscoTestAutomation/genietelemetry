@@ -5,6 +5,7 @@ from copy import copy
 # runtime
 from ats.easypy import runtime
 
+from ats import log
 # aetest
 from ats.aetest import CommonSetup, CommonCleanup
 
@@ -70,8 +71,14 @@ def genie_telemetry_processor(section):
         if telemetry_plugins:
             kwargs['plugins'] = telemetry_plugins
 
+        # temporary disable task log fork support
+        log.managed_handlers.tasklog.disableForked()
+
         # Run all plugins on the section (CS/Trigger/CC)
         genie_telemetry.run(uid, **kwargs)
+
+        # restore task log fork support
+        log.managed_handlers.tasklog.enableForked()
 
         # iterating over plugin, results
         results = genie_telemetry.results.get(uid, {})
