@@ -50,7 +50,7 @@ def massage_meta(input_, syntax = None):
             break
     else:
         # all keys are datetime string
-        return syntax_converter(input_, supported_syntax)
+        return intput_
     # wrap with datetime key
     return { key: syntax_converter(input_, supported_syntax) }
 
