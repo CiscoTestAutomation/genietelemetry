@@ -1,16 +1,24 @@
 import pickle
 from datetime import datetime, timedelta, timezone
 
-SUPPORTED_SYNTAX = dict( link = '%LINK{###}' )
+SUPPORTED_SYNTAX = dict( link = ('%LINK{###}', '%LINK{') )
+
+def syntax_replace(input_, template, key):
+
+    str_input = str(input_)
+    if str_input.startswith(key) and str_input.endswith('}'):
+        return str_input
+
+    return template.replace('###', str_input)
 
 def syntax_converter(input_, syntax):
     if not syntax:
         return input_
 
     if not isinstance(input_, dict):
-        return syntax.replace('###', str(input_))
+        return syntax_replace(input_, *syntax)
 
-    return { k: syntax.replace('###', str(v)) for k,v in input_.items() }
+    return { k: syntax_replace(v, *syntax) for k,v in input_.items() }
 
 def massage_meta(input_, syntax = None):
 
