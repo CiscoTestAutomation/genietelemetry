@@ -93,7 +93,7 @@ class HealthStatus(object):
 
         return cls(cls.__str_map__[string.lower()])
 
-    def __init__(self, code = None, meta = {}, status = None):
+    def __init__(self, code = None, meta = {}, status = None, syntax = None):
         '''built-in __init__
 
         Inits internal variables: name and code
@@ -105,14 +105,14 @@ class HealthStatus(object):
         self.code = code or status.code if status else code
         self.name = self.__code_map__[self.code]
 
-        self._meta = massage_meta(meta)
+        self._meta = massage_meta(meta, syntax = syntax)
 
-    def __call__(self, meta = {}):
+    def __call__(self, meta = {}, syntax = None):
         '''built-in __call__
 
         Returns a new health status instance with the provided meta
         '''
-        return HealthStatus(code = self.code, meta = meta)
+        return HealthStatus(code = self.code, meta = meta, syntax = None)
 
     @property
     def meta(self):

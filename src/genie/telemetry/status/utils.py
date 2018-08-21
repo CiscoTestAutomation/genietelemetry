@@ -1,12 +1,27 @@
 import pickle
 from datetime import datetime, timedelta, timezone
 
-def massage_meta(input_):
+SUPPORTED_SYNTAX = dict( link = '%LINK{###}' )
+
+def syntax_converter(input_, syntax):
+    if not syntax:
+        return input_
+
+    if not isinstance(input_, dict):
+        return syntax.replace('###', str(input_))
+
+    return { k: syntax.replace('###', str(v)) for k,v in input_.items() }
+
+def massage_meta(input_, syntax = None):
 
     # no input or empty input
     if not input_:
         return {}
 
+    supported_syntax = SUPPORTED_SYNTAX.get(syntax, None)
+    if syntax and not supported_syntax:
+        raise AttributeError('Status Meta [%s] contains unrecognized syntax '
+                             '[%s] ' % input_, syntax)
     try:
         pickle.dumps(input_)
     except pickle.PicklingError as e:
@@ -17,7 +32,7 @@ def massage_meta(input_):
     key = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
     # if not dictionary
     if not isinstance(input_, dict):
-        return { key: input_ }
+        return { key: syntax_converter(input_, supported_syntax) }
 
     # loop over dictionary and validate all keys
     for k in input_.keys():
@@ -27,9 +42,9 @@ def massage_meta(input_):
             break
     else:
         # all keys are datetime string
-        return input_
+        return syntax_converter(input_, supported_syntax)
     # wrap with datetime key
-    return { key: input_ }
+    return { key: syntax_converter(input_, supported_syntax) }
 
 def str_to_datetime(input_):
     # convert from datetime str to datetime instance
