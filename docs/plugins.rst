@@ -81,6 +81,16 @@ class and define the stages where your plugin needs to run.
         # (defaults to the current class name)
         __plugin_name__ = 'HelloWorld'
 
+        # each plugin may have a version
+        # set the plugin version by setting the 'version' class variable.
+        # (defaults to 1.0.0)
+        __version__ = '1.0.0'
+
+        # each plugin may have a list of supported os
+        # set the plugin supported os by setting the 'token' class variable.
+        # (defaults to [])
+        __supported_os__ = ['nxos', 'iosxr', 'iosxe']
+
         # each plugin may have a parser to parse its own command line arguments.
         # these parsers are invoked automatically by the parser engine during
         # easypy startup. (always use add_help=False)

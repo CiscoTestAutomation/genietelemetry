@@ -33,6 +33,26 @@ class BasePlugin(object):
         return getattr(self, '__plugin_name__',
                        getattr(self, '__module__', type(self).__name__))
 
+    @property
+    def version(self):
+        '''version
+
+        The plugin version defaults to its meta information __version__.
+        This is also used to provide information on version of the plugin when
+        available.
+        '''
+        return getattr(self, '__version__', '1.0.0')
+
+    @property
+    def token(self):
+        '''token
+
+        The abstraction token of a plugin defaults to its meta information
+        __supported_os__. This is also used to provide information on supported
+        os for the plugin when available.
+        '''
+        return getattr(self, '__supported_os__', [])
+
     @classproperty
     def parser(cls):
         '''parser
