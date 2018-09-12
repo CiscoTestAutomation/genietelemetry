@@ -93,7 +93,7 @@ class HealthStatus(object):
 
         return cls(cls.__str_map__[string.lower()])
 
-    def __init__(self, code = None, meta = {}, status = None):
+    def __init__(self, code = None, meta = {}, status = None, syntax = None):
         '''built-in __init__
 
         Inits internal variables: name and code
@@ -104,15 +104,18 @@ class HealthStatus(object):
 
         self.code = code or status.code if status else code
         self.name = self.__code_map__[self.code]
+        self.syntax = syntax
 
-        self._meta = massage_meta(meta)
+        self._meta = massage_meta(meta, syntax = self.syntax)
 
-    def __call__(self, meta = {}):
+    def __call__(self, meta = {}, syntax = None):
         '''built-in __call__
 
         Returns a new health status instance with the provided meta
         '''
-        return HealthStatus(code = self.code, meta = meta)
+        return HealthStatus(code = self.code,
+                            meta = meta,
+                            syntax = syntax or self.syntax)
 
     @property
     def meta(self):
@@ -120,7 +123,7 @@ class HealthStatus(object):
 
     @meta.setter
     def meta(self, value):
-        self._meta.update(massage_meta(value))
+        self._meta.update(massage_meta(value, syntax = self.syntax))
 
     def __bool__(self):
         '''built-in __bool__
@@ -156,15 +159,21 @@ class HealthStatus(object):
         Example:
             Failed + Errored
         '''
+        syntax = getattr(self, 'syntax', getattr(other, 'syntax', None))
+
         if not isinstance(other, HealthStatus):
-            other = HealthStatus(code = 0, meta = other or {})
+            other = HealthStatus(code = 0,
+                                 meta = other or {},
+                                 syntax = self.syntax)
 
         rollup = self.__rollup__[self.name][other.name]
 
         meta = self.meta.copy()
         meta.update(other.meta)
 
-        return HealthStatus(code = self.__str_map__[rollup], meta = meta)
+        return HealthStatus(code = self.__str_map__[rollup],
+                            meta = meta,
+                            syntax = syntax)
 
     def __radd__(self, other):
         '''built-in __radd__
@@ -179,19 +188,26 @@ class HealthStatus(object):
         Example:
             0 + Errored
         '''
+
+        syntax = getattr(self, 'syntax', getattr(other, 'syntax', None))
+
         if not isinstance(other, HealthStatus):
-            other = HealthStatus(code = 0, meta = other or {})
+            other = HealthStatus(code = 0,
+                                 meta = other or {},
+                                 syntax = syntax)
 
         meta = self.meta.copy()
         meta.update(other.meta)
 
         if other is 0:
             return HealthStatus(code = self.code,
-                                meta = meta)
+                                meta = meta,
+                                syntax = syntax)
         else:
             rollup = self.__rollup__[other.name][self.name]
             return HealthStatus(code = self.__str_map__[rollup],
-                                meta = meta)
+                                meta = meta,
+                                syntax = syntax)
 
     def __str__(self):
         '''built-in __int__
