@@ -111,17 +111,11 @@ class GenieTelemetry(object):
         # Check if custom abstraction OS has been provided in testbed YAML
         for dev in testbed.devices:
             device = testbed.devices[dev]
-            # Check if custom abstraction OS has been provided in testbed YAML
+            # Check if custom abstraction OS is there, else provide default
             if not getattr(device.custom, 'abstraction', None) or \
                'order' not in device.custom.abstraction.keys():
-                sample = {}
-                sample.setdefault(device.name, {}).setdefault('custom', {}).\
-                        setdefault('abstraction', {})['order'] = ['os']
-                raise Exception("Keys 'abstraction' and 'order' are missing in"
-                                " the testbed YAML for device '{d}'"
-                                "\n    Missing keys under device:"
-                                "\n    {keys}".\
-                            format(d=device.name, keys=pprint.pformat(sample)))
+                # Set default
+                device.custom.setdefault('abstraction', {})['order'] = ['os']
 
         if not configuration and not configuration_file:
             raise AttributeError("'-configuration <path to config_file.yaml>"
