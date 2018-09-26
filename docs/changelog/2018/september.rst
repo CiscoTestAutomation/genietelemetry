@@ -16,4 +16,4 @@ Features:
 
  * Data wrapping, syntax stacking, syntax formatting
  * Added supported os and version to genietelemetry
- * Testbed yaml custom asbtraction check
+ * Testbed yaml custom abstraction check
