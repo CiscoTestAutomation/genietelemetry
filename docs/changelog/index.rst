@@ -4,5 +4,6 @@ Changelog
 .. toctree::
    :maxdepth: 2
 
+   2018/september
    2018/may
    2018/april
