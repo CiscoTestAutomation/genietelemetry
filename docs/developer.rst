@@ -6,32 +6,43 @@
 Genie Telemetry Developer Guide
 ===============================
 
-    1. Integrate genie.telemtry
-    2. genie telemetry plugin
-    3. genie telemetry plugin result
+    1. What's avaialble?
+    2. Genie Telemetry Configuration
+    3. Genie Telemetry Plugin
+    4. Customized Integration
+    5. Genie Telemetry Plugin Result
 
 What is available?
 ------------------
-``genie.telemetry`` comes in 3 tiers: the core package, the executable and
-pyATS/Genie processor.
+``genie.telemetry`` comes in 3 tiers: the executable and the libraries and the
+core package.
 
-- The core package which is a python library that developer can import into
-  their project and tailor making to suit their needs.
+- The command line executable, launch a pre-defined set of plugins (managed by
+  yaml file). Users have the ability to select a list of monitoring plugins
+  for their testbeds with options such as customizable interval or white-list
+  devices for specific plugin. Run this as a daemon process and you will have a
+  continous device health watchdog. Please beware that it will consume a
+  connection to the device.
 
-- The executable allows you to define a custom monitoring interval for selected
-  genie telemetry plugins to monitor your testbed device. Run this as a daemon
-  process and you will have a continous device health watchdog. Please beware
-  that it will consume a connection to the device.
+- ``genie.libs.telemetry`` library ships with a variety list of plugins that
+  engineers at ``genie`` team created to enhance your onboarding experience and
+  could be used as reference or base plugin. The built-in pyATS/Genie processor
+  which a pre-built postprocessor that allow easy usage and integration between
+  pyats/Genie and ``genie.telemtry`` plugins.
 
-- The pyATS/Genie processor which a pre-built postprocessor that our team
-  created to allow easy usage and integration between pyats/Genie and
-  genie.telemtry plugins.
+- The core package which is a python package for custom extension, which
+  developers can import into their project and tailor to suit their needs. It
+  comes with the device connection setup, supports os abstraction and handles
+  plugin scheduling.
 
 
-Integrate genie.telemtry
-------------------------
+Genie Telemetry Configuration
+-----------------------------
 
-Developers can integrate genie.telemetry into their python projects easily.
+First, you need a configuration yaml file. The yaml file should contains
+required information such as plugin name and module path. The ``genie.telemetry``
+plugin manager automatically reads plugin configurations from the file and
+enables defined plugins in the system.
 
 .. code-block:: yaml
 
@@ -50,6 +61,46 @@ Developers can integrate genie.telemetry into their python projects easily.
         crashdumps:
             module: genie.libs.telemtery.plugins.crashdumps
 
+For more information on yaml schema of configuration file, please have a look at
+:ref:`genietelemetry_configuration`
+
+
+Genie Telemetry Plugin
+----------------------
+
+The potential of genie telemetry plugin is endless. It's purely based on how do
+you as developer want to interact with testbed. The core package takes care of
+the connection, os abstraction and scheduling so you can focus on creating great
+plugins.
+
+- You could simply have a set of configuration/command that you want to deploy
+  to device at your testbed and it becomes an ultimate autonomous testbed
+  management tool. It could be a daily backup, deployment a package, security
+  policy or cleanup the entire network at midnight without login hundreds of
+  devices and do this manually.
+
+- You could create a list of monitor and disaster recovery plugin and the tool
+  transform into a continous device watchdog that checks system usage (cpu, disk
+  or network), program process monitoring, restart crashed program or any great
+  idea that you have in your mind.
+
+For more information how to create your very frist plugin, please have a look at
+:ref:`plugin_system`
+
+
+Customized Integration
+----------------------
+
+Developers can integrate ``genie.telemetry`` into their python projects easily.
+
+``genie.telemetry`` delivers with a Manager class which should initialized
+with required arguments such as testbed, configuration, runinfo directory before
+plugin execution.
+
+You can then invoke **run(...)** api with an unique name for the execution and
+an optional list of plugins to execute. Only plugin that was defined at
+configuration file will be executed. By default or empty list of plugins passed
+in as argument, all defined plugins will be executed.
 
 .. code-block:: python
 
@@ -82,6 +133,9 @@ Developers can integrate genie.telemetry into their python projects easily.
 
             # create our genie telemetry manager
             self.genie_telemetry = Manager(this.testbed, **kwargs)
+
+            # setup device connections to testbed
+            self.genie_telemetry.setup()
 
         def run(self, uid, plugins=[]):
 
@@ -135,34 +189,15 @@ Developers can integrate genie.telemetry into their python projects easily.
         hello_world.genie_telemetry.finalize_report()
 
 
+The code is ready, you can now test the customized ``genie.telemetry``
+application using the following command.
+
 .. code-block:: bash
 
     $bash> python hello_world.py --genietelemetry hello_world.yaml
 
 
-Genie telemetry plugin
-----------------------
-
-The potential of genie telemetry plugin is endless. It's purely based on how do
-you as developer want to interact with testbed. The core package takes care of
-the connection, os abstraction and scheduling so you can focus on creating great
-plugins.
-
-- You could simply have a set of configuration/command that you want to deploy
-  to device at your testbed and it becomes an ultimate autonomous testbed
-  management tool. It could be a daily backup, deployment a package, security
-  policy or cleanup the entire network at midnight without login hundreds of
-  devices and do this manually.
-
-- You could create a list of monitor and disaster recovery plugin and the tool
-  transform into a continous device watchdog that checks system usage (cpu, disk
-  or network), program process monitoring, restart crashed program or any great
-  idea that you have in your mind.
-
-For more information how to create your very frist plugin, please have a look at
-:ref:`plugin_system`
-
-Genie telemetry plugin result
+Genie Telemetry Plugin Result
 -----------------------------
 
 Developer could roll up health status or integrate custom logic based on all

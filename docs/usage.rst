@@ -28,8 +28,9 @@ Secondly install the library package via pip.
 
 .. note::
 
-    Officially released genie.telemetry plugins are automatically made available
-    by the above command and can be imported from genie.libs.telemtery.
+    Officially released ``genie.telemetry`` plugins are automatically made
+    available by the above command and can be imported from
+    ``genie.libs.telemtery``.
     Ex: Plugins are accessed as "genie.libs.telemtery.plugins.tracebackcheck"
 
 The **Genie Telemetry Libraries** are user-community owned and developed.
