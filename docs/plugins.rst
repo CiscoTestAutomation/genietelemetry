@@ -1,4 +1,4 @@
-.. _plugins:
+.. _plugin_system:
 
 Plugin System
 =============
@@ -25,7 +25,8 @@ can be loaded, instantiated and executed.
 All plugins must obey the following rules of development:
 
 - plugins may be configured locally (for this run only) by passing in a config
-  YAML via a command-line argument called ``-configuration``.
+  YAML via a command-line argument called ``-configuration`` (when used with
+  command line executable).
 
 - plugins shall be independent from all other plugins.
 
@@ -128,9 +129,16 @@ class and define the stages where your plugin needs to run.
             logger.info('Execution %s: Hello World!' % device.name)
 
 
+.. _genietelemetry_configuration:
+
+
+Configuration YAML Schema
+-------------------------
+
 After defining a plugin class, it needs to be configured in order to run. The
 ``genie.telemetry`` plugin manager automatically reads plugin configurations
-from the file path that's provided with ``-configuration`` parameter.
+from the file path that's provided with ``-configuration`` parameter when
+passed through command line executable.
 
 .. code-block:: yaml
 

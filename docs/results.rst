@@ -1,13 +1,13 @@
 .. highlightlang:: python
 
-.. _genietelemetry_status_objects:
+.. _status_objects:
 
 Health Status Objects
 =====================
 
-This guide will cover the basics of how Genie Telemetry health status work: the
-different types of status, their corresponding code, and how they roll up
-together.
+This guide will cover the basics of how genie telemetry plugin health status
+work: the different types of status, their corresponding code, and how they roll
+up together.
 
 
 Introduction
@@ -32,7 +32,7 @@ following types ``OK``, ``WARNING``, ``CRITICAL``, ``PARTIAL`` or ``ERRORED``.
 HealthStatus Objects
 --------------------
 
-HealthStatus in Genie Telemetry are represented by 5 unique instances of
+HealthStatus in genie telemetry are represented by 5 unique instances of
 ``HealthStatus`` :singleton:`singleton <http>` objects, each corresponding to a
 unique health status type.
 

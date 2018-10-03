@@ -1,19 +1,17 @@
 .. _usage:
 
-===============
-Genie Telemetry
-===============
+==========================
+Genie Telemetry User Guide
+==========================
 
     1. Installation
     2. Support
-    3. GenieTelemetry Launcher
+    3. Genie Telemetry Launcher
     4. Standard Arguments
     5. Testbed File
 
 Installation
 ------------
-``genie.telemetry`` package is hosted on the pyATS pypi server. 
-
 ``genie.telemetry`` comes in two parts. The core package and the libraries.
 
 First install the core package via pip.
@@ -22,13 +20,20 @@ First install the core package via pip.
 
     bash$ pip install genie.telemetry
 
+Secondly install the library package via pip.
+
+.. code-block:: bash
+
+    bash$ pip install genie.libs.telemetry
+
 .. note::
 
-    GenieTelemetry plugins are automatically made available by the above
-    import at genie.libs.telemtery.
+    Officially released ``genie.telemetry`` plugins are automatically made
+    available by the above command and can be imported from
+    ``genie.libs.telemtery``.
     Ex: Plugins are accessed as "genie.libs.telemtery.plugins.tracebackcheck"
 
-The **GenieTelemetry libraries** are user-community owned and developed.
+The **Genie Telemetry Libraries** are user-community owned and developed.
 To contribute to the library, clone the :genietelemetrylibs_repo:`genie.libs.telemetry <http>`
 repo and do the following:
 
@@ -40,15 +45,15 @@ repo and do the following:
 Support
 -------
 
-Reach out to :mailto:`contact us <cisco.com>` for any questions or issues related to the
-``genie.abstract`` package.
+Reach out to :mailto:`contact us <cisco.com>` for any questions or issues
+related to the ``genie.abstract`` package.
 
-You can also post questions to the :communityforum:`community forum <http>` - the support team patrols
-these forums daily.
+You can also post questions to the :communityforum:`community forum <http>` - 
+the support team patrols these forums daily.
 
 
-GenieTelemetry Launcher
------------------------
+Genie Telemetry Launcher
+------------------------
 Genie Telemetry comes with its own launcher: the ``genietelemetry`` executable.
 This launcher is installed into your pyATS instance automatically, and is
 accessible directly as part of the user PATH after activating your instance.
@@ -146,75 +151,75 @@ accessible directly as part of the user PATH after activating your instance.
 
     .. code-block:: bash
 
-    [tony@jarvis:~]$ genietelemetry -h /path/to/config.yaml
-    usage: genietelemetry [TESTBEDFILE]
-    [-h] [-loglevel] [-configuration FILE] [-uid UID]
-    [-runinfo_dir RUNINFO_DIR]
-    [-callback_notify CALLBACK_NOTIFY] [-timeout TIMEOUT]
-    [-connection_timeout CONNECTION_TIMEOUT] [-no_mail]
-    [-no_notify] [-mailto] [-mail_subject]
-    [-notify_subject] [-email_domain] [-smtp_host]
-    [-smtp_port] [-smtp_username] [-smtp_password]
-    [--tracebackcheck_logic_pattern TRACEBACKCHECK_LOGIC_PATTERN]
-    [--tracebackcheck_clean_up TRACEBACKCHECK_CLEAN_UP]
-    [--tracebackcheck_timeout TRACEBACKCHECK_TIMEOUT]
+        [tony@jarvis:~]$ genietelemetry -h /path/to/config.yaml
+        usage: genietelemetry [TESTBEDFILE]
+        [-h] [-loglevel] [-configuration FILE] [-uid UID]
+        [-runinfo_dir RUNINFO_DIR]
+        [-callback_notify CALLBACK_NOTIFY] [-timeout TIMEOUT]
+        [-connection_timeout CONNECTION_TIMEOUT] [-no_mail]
+        [-no_notify] [-mailto] [-mail_subject]
+        [-notify_subject] [-email_domain] [-smtp_host]
+        [-smtp_port] [-smtp_username] [-smtp_password]
+        [--tracebackcheck_logic_pattern TRACEBACKCHECK_LOGIC_PATTERN]
+        [--tracebackcheck_clean_up TRACEBACKCHECK_CLEAN_UP]
+        [--tracebackcheck_timeout TRACEBACKCHECK_TIMEOUT]
 
 
-    genie telemetry command line arguments.
+        genie telemetry command line arguments.
 
-    Example
-    -------
-      genietelemetry /path/to/testbed.yaml
+        Example
+        -------
+          genietelemetry /path/to/testbed.yaml
 
-    ----------------------------------------------------------------------------
+        ------------------------------------------------------------------------
 
-    Positional Arguments:
-      TESTBEDFILE           testbed file to be monitored
+        Positional Arguments:
+          TESTBEDFILE           testbed file to be monitored
 
-    Help:
-      -h, -help             show this help message and exit
+        Help:
+          -h, -help             show this help message and exit
 
-    Logging:
-      -loglevel             genie telemetry logging level
-                            eg: -loglevel="INFO"
+        Logging:
+          -loglevel             genie telemetry logging level
+                                eg: -loglevel="INFO"
 
-    Configuration:
-      -configuration FILE   configuration yaml file for plugins and settings
-      -uid UID              Specify monitoring job uid
-      -runinfo_dir RUNINFO_DIR
-                            Specify directory to store execution logs
-      -callback_notify CALLBACK_NOTIFY
-                            Specify Liveview callback notify URI
-      -timeout TIMEOUT      Specify plugin maximum execution length
-                            Default to 300 seconds
-      -connection_timeout CONNECTION_TIMEOUT
-                            Specify connection timeout
+        Configuration:
+          -configuration FILE   configuration yaml file for plugins and settings
+          -uid UID              Specify monitoring job uid
+          -runinfo_dir RUNINFO_DIR
+                                Specify directory to store execution logs
+          -callback_notify CALLBACK_NOTIFY
+                                Specify Liveview callback notify URI
+          -timeout TIMEOUT      Specify plugin maximum execution length
+                                Default to 300 seconds
+          -connection_timeout CONNECTION_TIMEOUT
+                                Specify connection timeout
 
-    Mailing:
-      -no_mail              disable final email report
-      -no_notify            disable notification on device health status other
-                            than "ok"
-      -mailto               list of email recipients
-      -mail_subject         report email subject header
-      -notify_subject       notification email subject header
-      -email_domain         default email domain
-      -smtp_host            specify smtp host
-      -smtp_port            specify smtp server port
-      -smtp_username        specify smtp username
-      -smtp_password        specify smtp password
+        Mailing:
+          -no_mail              disable final email report
+          -no_notify            disable notification on device health status
+                                other than "ok"
+          -mailto               list of email recipients
+          -mail_subject         report email subject header
+          -notify_subject       notification email subject header
+          -email_domain         default email domain
+          -smtp_host            specify smtp host
+          -smtp_port            specify smtp server port
+          -smtp_username        specify smtp username
+          -smtp_password        specify smtp password
 
-    Traceback Check:
-      --tracebackcheck_logic_pattern TRACEBACKCHECK_LOGIC_PATTERN
-                            Specify logical expression for patterns to
-                            include/exclude when checking tracebacks following
-                            PyATS logic format. Default patternis to check for
-                            Tracebacks.
-      --tracebackcheck_clean_up TRACEBACKCHECK_CLEAN_UP
-                            Specify whether to clear all warnings and tracebacks
-                            after reporting error
-      --tracebackcheck_timeout TRACEBACKCHECK_TIMEOUT
-                            Specify duration (in seconds) to wait before timing
-                            out execution of a command
+        Traceback Check:
+          --tracebackcheck_logic_pattern TRACEBACKCHECK_LOGIC_PATTERN
+                                Specify logical expression for patterns to
+                                include/exclude when checking tracebacks
+                                following PyATS logic format. Default patternis
+                                to check for Tracebacks.
+          --tracebackcheck_clean_up TRACEBACKCHECK_CLEAN_UP
+                                Specify whether to clear all warnings and
+                                tracebacks after reporting error
+          --tracebackcheck_timeout TRACEBACKCHECK_TIMEOUT
+                                Specify duration (in seconds) to wait before
+                                timing out execution of a command
 
 
 
@@ -458,6 +463,7 @@ processed using python :argparse:`argparse <http>` module.
                              -email_domain cisco.com
                              -smtp_host cisco.com
                              -callback_notify http://your.socket.io.server
+
 .. note::
 
     This argument has prerequisite of ats.liveview package.
@@ -470,7 +476,7 @@ processed using python :argparse:`argparse <http>` module.
     for example: http://your.socket.io.server#jwt+<Token> will translate into
     Websocket request header: 
 
-    .. code-block::
+    .. code-block:: text
 
         Authorization: jwt <Token>
 
