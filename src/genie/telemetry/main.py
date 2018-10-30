@@ -6,7 +6,6 @@ import logging
 import getpass
 import platform
 import traceback
-import pprint
 
 from ats import log
 from ats.utils import sig_handlers
@@ -25,21 +24,29 @@ logger = logging.getLogger('genie.telemetry')
 __LOG_FILE__ = 'telemetry.log'
 __BUFF_SIZE__ = 5000
 
-class TelemetryLogHandler(log.TaskLogHandler):
+class StreamToLogger(object):
     """
-    A handler class that extends on top ats task log which publishes log to
-    websocket publisher queue.
+    Class that clone stdout content and publishes to websocket queue.
     """
+
     publisher = None
 
-    def emit(self, record):
+    def write(self, message):
+        # write to screen
+        sys.__stdout__.write(message)
+        # publish to liveview
         try:
-            if self.publisher:
-                self.publisher.put(dict(stream=self.format(record)))
-        except:
-            pass
+            if self.publisher and message:
+                self.publisher.put(dict(stream=message.strip('\n')))
+        except Exception as e:
+            sys.__stdout__.write(str(e))
+        sys.__stdout__.flush()
 
-        super().emit(record)
+    def flush(self):
+        sys.__stdout__.flush()
+
+    def close(self):
+        pass
 
 class GenieTelemetry(object):
 
@@ -68,6 +75,9 @@ class GenieTelemetry(object):
         self.parser = Parser()
         self.manager = None
         self.liveview = None
+
+        self.stream_logger = StreamToLogger()
+        sys.stdout = self.stream_logger
 
     def main(self, testbed={},
                    testbed_file = None,
@@ -125,13 +135,13 @@ class GenieTelemetry(object):
 
         self.runinfo_dir = runinfo_dir
         self.logfile = os.path.join(self.runinfo_dir, __LOG_FILE__)
-
         # configure log handler and logging level
         # ------------------------------
-        log.managed_handlers.tasklog = TelemetryLogHandler(self.logfile)
+        log.managed_handlers.tasklog = log.TaskLogHandler(self.logfile)
         logger.addHandler(log.managed_handlers.tasklog)
         logger.addHandler(log.managed_handlers.screen)
         logger.setLevel(loglevel)
+
 
         # configure MailBot
         # ------------------------------
@@ -176,6 +186,8 @@ class GenieTelemetry(object):
             # stop genie telemetry
             # ------------------------------
             self.stop()
+
+            sys.stdout = sys.__stdout__
 
     def post_call_plugin(self, device, results):
         '''post_call_plugin
@@ -248,8 +260,7 @@ class GenieTelemetry(object):
                                     'telemetryview-unsubscribe',
                                     'telemetryview-error'))
 
-        self.publisher = telemetryview.publisher
-        log.managed_handlers.tasklog.publisher = telemetryview.publisher
+        self.stream_logger.publisher = self.publisher = telemetryview.publisher
 
         return telemetryview
 
