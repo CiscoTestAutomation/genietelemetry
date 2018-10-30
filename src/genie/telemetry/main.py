@@ -58,12 +58,6 @@ class GenieTelemetry(object):
             user = getpass.getuser(),
             host = platform.node()
         )
-        # configure screen logger
-        # -----------------------
-        # (this does nothing if screen hander is there already)
-        logging.root.addHandler(log.managed_handlers.screen)
-        # self.telemetry_view = TelemetryLogHandler()
-        # logging.root.addHandler(self.telemetry_view)
 
         # enable double ctrl-c SIGINT handler
         # -----------------------------------
@@ -108,15 +102,6 @@ class GenieTelemetry(object):
         loglevel = loglevel or args.loglevel
         configuration_file = configuration_file or args.configuration
 
-        # Check if custom abstraction OS has been provided in testbed YAML
-        for dev in testbed.devices:
-            device = testbed.devices[dev]
-            # Check if custom abstraction OS is there, else provide default
-            if not getattr(device.custom, 'abstraction', None) or \
-               'order' not in device.custom.abstraction.keys():
-                # Set default
-                device.custom.setdefault('abstraction', {})['order'] = ['os']
-
         if not configuration and not configuration_file:
             raise AttributeError("'-configuration <path to config_file.yaml>"
                                  " is missing.")
@@ -145,6 +130,7 @@ class GenieTelemetry(object):
         # ------------------------------
         log.managed_handlers.tasklog = TelemetryLogHandler(self.logfile)
         logger.addHandler(log.managed_handlers.tasklog)
+        logger.addHandler(log.managed_handlers.screen)
         logger.setLevel(loglevel)
 
         # configure MailBot

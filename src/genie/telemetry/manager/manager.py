@@ -57,6 +57,14 @@ class Manager(object):
         self.testbed = testbed
         self.devices = testbed.devices
 
+        # Check if custom abstraction OS has been provided in testbed YAML
+        for name, device in self.devices.items():
+            # Check if custom abstraction OS is there, else provide default
+            if not getattr(device.custom, 'abstraction', None) or \
+               'order' not in device.custom.abstraction.keys():
+                # Set default
+                device.custom.setdefault('abstraction', {})['order'] = ['os']
+
         # Instantiate configuration loader
         self.configuration = Configuration(plugins=plugins)
         self.configuration.load(config=configuration, devices=self.devices)

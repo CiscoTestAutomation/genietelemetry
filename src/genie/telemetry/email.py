@@ -1,12 +1,20 @@
 import os
 import sys
 import abc
+import getpass
 import logging
 
 from ats.log.utils import banner
 from ats.utils.email import EmailMsg
 from ats.utils import parser as argparse
 from ats.datastructures import OrderableDict, classproperty
+
+try:
+    from ats import cisco
+    smtp_args = dict(smtp_host='mail.cisco.com', smtp_port='25',
+                     email_domain='cisco.com')
+except Exception as e:
+    smtp_args = dict()
 
 from . import utils
 
@@ -173,7 +181,7 @@ class MailBot(object):
         parser.add_argument('-smtp_username',
                             type = str,
                             metavar = '',
-                            default = argparse.SUPPRESS,
+                            default = getpass.getuser(),
                             dest = 'smtp_host',
                             help = 'specify smtp username')
 
@@ -224,14 +232,12 @@ class MailBot(object):
         self.from_addrs = from_addrs
         self.to_addrs = to_addrs
 
-        self.email_domain = email_domain
+        self.email_domain = email_domain or smtp_args.get('email_domain', None)
         # store smtp server to be used
-        self.smtp_host = smtp_host
-        self.smtp_port = smtp_port
+        self.smtp_host = smtp_host or smtp_args.get('smtp_host', None)
+        self.smtp_port = smtp_port or smtp_args.get('smtp_port', None)
         self.smtp_username = smtp_username
         self.smtp_password = smtp_password
-        self.smtp_credentials = dict(smtp_username=self.smtp_username,
-                                     smtp_password=self.smtp_password)
 
         # parse arguments into self
         # (overwrite any of the above)
@@ -247,6 +253,9 @@ class MailBot(object):
 
             self.smtp_args = dict(smtp_host=self.smtp_host,
                                   smtp_port=self.smtp_port)
+
+            self.smtp_credentials = dict(smtp_username=self.smtp_username,
+                                         smtp_password=self.smtp_password)
 
     def __enter__(self):
         '''context manager entry
