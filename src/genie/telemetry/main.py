@@ -6,7 +6,6 @@ import logging
 import getpass
 import platform
 import traceback
-import pprint
 
 from ats import log
 from ats.utils import sig_handlers
@@ -25,21 +24,29 @@ logger = logging.getLogger('genie.telemetry')
 __LOG_FILE__ = 'telemetry.log'
 __BUFF_SIZE__ = 5000
 
-class TelemetryLogHandler(log.TaskLogHandler):
+class StreamToLogger(object):
     """
-    A handler class that extends on top ats task log which publishes log to
-    websocket publisher queue.
+    Class that clone stdout content and publishes to websocket queue.
     """
+
     publisher = None
 
-    def emit(self, record):
+    def write(self, message):
+        # write to screen
+        sys.__stdout__.write(message)
+        # publish to liveview
         try:
-            if self.publisher:
-                self.publisher.put(dict(stream=self.format(record)))
-        except:
-            pass
+            if self.publisher and message:
+                self.publisher.put(dict(stream=message.strip('\n')))
+        except Exception as e:
+            sys.__stdout__.write(str(e))
+        sys.__stdout__.flush()
 
-        super().emit(record)
+    def flush(self):
+        sys.__stdout__.flush()
+
+    def close(self):
+        pass
 
 class GenieTelemetry(object):
 
@@ -58,12 +65,6 @@ class GenieTelemetry(object):
             user = getpass.getuser(),
             host = platform.node()
         )
-        # configure screen logger
-        # -----------------------
-        # (this does nothing if screen hander is there already)
-        logging.root.addHandler(log.managed_handlers.screen)
-        # self.telemetry_view = TelemetryLogHandler()
-        # logging.root.addHandler(self.telemetry_view)
 
         # enable double ctrl-c SIGINT handler
         # -----------------------------------
@@ -74,6 +75,9 @@ class GenieTelemetry(object):
         self.parser = Parser()
         self.manager = None
         self.liveview = None
+
+        self.stream_logger = StreamToLogger()
+        sys.stdout = self.stream_logger
 
     def main(self, testbed={},
                    testbed_file = None,
@@ -108,15 +112,6 @@ class GenieTelemetry(object):
         loglevel = loglevel or args.loglevel
         configuration_file = configuration_file or args.configuration
 
-        # Check if custom abstraction OS has been provided in testbed YAML
-        for dev in testbed.devices:
-            device = testbed.devices[dev]
-            # Check if custom abstraction OS is there, else provide default
-            if not getattr(device.custom, 'abstraction', None) or \
-               'order' not in device.custom.abstraction.keys():
-                # Set default
-                device.custom.setdefault('abstraction', {})['order'] = ['os']
-
         if not configuration and not configuration_file:
             raise AttributeError("'-configuration <path to config_file.yaml>"
                                  " is missing.")
@@ -140,12 +135,13 @@ class GenieTelemetry(object):
 
         self.runinfo_dir = runinfo_dir
         self.logfile = os.path.join(self.runinfo_dir, __LOG_FILE__)
-
         # configure log handler and logging level
         # ------------------------------
-        log.managed_handlers.tasklog = TelemetryLogHandler(self.logfile)
+        log.managed_handlers.tasklog = log.TaskLogHandler(self.logfile)
         logger.addHandler(log.managed_handlers.tasklog)
+        logger.addHandler(log.managed_handlers.screen)
         logger.setLevel(loglevel)
+
 
         # configure MailBot
         # ------------------------------
@@ -190,6 +186,8 @@ class GenieTelemetry(object):
             # stop genie telemetry
             # ------------------------------
             self.stop()
+
+            sys.stdout = sys.__stdout__
 
     def post_call_plugin(self, device, results):
         '''post_call_plugin
@@ -262,8 +260,7 @@ class GenieTelemetry(object):
                                     'telemetryview-unsubscribe',
                                     'telemetryview-error'))
 
-        self.publisher = telemetryview.publisher
-        log.managed_handlers.tasklog.publisher = telemetryview.publisher
+        self.stream_logger.publisher = self.publisher = telemetryview.publisher
 
         return telemetryview
 
