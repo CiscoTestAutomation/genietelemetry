@@ -57,14 +57,6 @@ class Manager(object):
         self.testbed = testbed
         self.devices = testbed.devices
 
-        # Check if custom abstraction OS has been provided in testbed YAML
-        for name, device in self.devices.items():
-            # Check if custom abstraction OS is there, else provide default
-            if not getattr(device.custom, 'abstraction', None) or \
-               'order' not in device.custom.abstraction.keys():
-                # Set default
-                device.custom.setdefault('abstraction', {})['order'] = ['os']
-
         # Instantiate configuration loader
         self.configuration = Configuration(plugins=plugins)
         self.configuration.load(config=configuration, devices=self.devices)
@@ -234,21 +226,25 @@ class Manager(object):
 
         key = getattr(tag, 'uid', tag)
         results = self.results.setdefault(key, {})
+        printed_summary = []
 
         for result in getattr(self.p, 'results', []) or []:
             if not isinstance(result, dict):
                 continue
+            for task_item in result:
+                if task_item not in printed_summary:
+                    logger.info(banner("Summary for Telemetry task '{}'".format(
+                        task_item)))
+                    printed_summary.append(task_item)
             for name, devices in result.items():
-                logger.info(banner(name))
                 for device_name, device in devices.items():
                     status = device.get('status', OK)
                     p_status = str(status).capitalize()
                     p_result = ordered_yaml_dump(device.get('result', {}),
                                                  default_flow_style=False)
                     logger.info(' - device ({})\n      - Status : {}\n'
-                                '      - Result : \n{}'.format(device_name,
-                                                               p_status,
-                                                               p_result))
+                                '      - Result : \n      {}'.format(
+                                    device_name, p_status, p_result))
 
                     self.plugins.set_device_plugin_status(device_name,
                                                           name,
@@ -268,6 +264,9 @@ class Manager(object):
 
             execution = results.setdefault(plugin_name,
                                           {}).setdefault(device.name, {})
+
+            logger.info(banner("Starting Telemetry task '{}' on device '{}'".\
+                format(plugin_name, device.name)))
 
             try:
 
