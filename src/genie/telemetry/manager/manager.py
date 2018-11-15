@@ -234,21 +234,21 @@ class Manager(object):
 
         key = getattr(tag, 'uid', tag)
         results = self.results.setdefault(key, {})
+        printed_summary = {}
 
         for result in getattr(self.p, 'results', []) or []:
             if not isinstance(result, dict):
                 continue
             for name, devices in result.items():
-                logger.info(banner(name))
+                if name not in printed_summary:
+                    printed_summary[name] = {}
                 for device_name, device in devices.items():
                     status = device.get('status', OK)
                     p_status = str(status).capitalize()
                     p_result = ordered_yaml_dump(device.get('result', {}),
                                                  default_flow_style=False)
-                    logger.info(' - device ({})\n      - Status : {}\n'
-                                '      - Result : \n{}'.format(device_name,
-                                                               p_status,
-                                                               p_result))
+                    printed_summary[name][device_name] = {'status': p_status,\
+                        'result': p_result}
 
                     self.plugins.set_device_plugin_status(device_name,
                                                           name,
@@ -257,6 +257,14 @@ class Manager(object):
                         self.instance.post_run(device_name, name, device)
 
             recursive_update(results, result)
+
+        for task in printed_summary:
+            logger.info(banner("Summary for Telemetry task '{}'".format(task)))
+            for dev in printed_summary[task]:
+                logger.info(' - device ({})\n      - Status : {}\n'
+                            '      - Result : \n      {}'.format(
+                                dev, printed_summary[task][dev]['status'],
+                                printed_summary[task][dev]['result']))
 
     def call_plugin(self, device, plugins):
 
@@ -268,6 +276,9 @@ class Manager(object):
 
             execution = results.setdefault(plugin_name,
                                           {}).setdefault(device.name, {})
+
+            logger.info(banner("Starting Telemetry task '{}' on device '{}'".\
+                format(plugin_name, device.name)))
 
             try:
 
