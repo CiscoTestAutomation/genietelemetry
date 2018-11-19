@@ -139,7 +139,6 @@ class GenieTelemetry(object):
         # ------------------------------
         log.managed_handlers.tasklog = log.TaskLogHandler(self.logfile)
         logger.addHandler(log.managed_handlers.tasklog)
-        logger.addHandler(log.managed_handlers.screen)
         logger.setLevel(loglevel)
 
 

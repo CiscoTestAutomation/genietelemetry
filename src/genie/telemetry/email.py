@@ -242,7 +242,6 @@ class MailBot(object):
         # parse arguments into self
         # (overwrite any of the above)
         self.parser.parse_args(namespace = self)
-
         if not self.nomail:
 
             if not self.email_domain:
@@ -254,8 +253,8 @@ class MailBot(object):
             self.smtp_args = dict(smtp_host=self.smtp_host,
                                   smtp_port=self.smtp_port)
 
-            self.smtp_credentials = dict(smtp_username=self.smtp_username,
-                                         smtp_password=self.smtp_password)
+        self.smtp_credentials = dict(smtp_username=self.smtp_username,
+                                     smtp_password=self.smtp_password)
 
     def __enter__(self):
         '''context manager entry
