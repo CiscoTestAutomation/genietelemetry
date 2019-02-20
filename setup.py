@@ -41,10 +41,8 @@ version, version_range = version_info('src',
                                       '__init__.py')
 
 install_requires=['setuptools', 'wheel',
-                  'genie.abstract >= 1.1.1',
-                  'genie.libs.telemetry',
-                  '{package} >= {range}'.format(package = PYATS_PKG,
-                                                range = '4.1.0')]
+                  'genie.abstract',
+                  'genie.libs.telemetry']
 
 # launch setup
 setup(
