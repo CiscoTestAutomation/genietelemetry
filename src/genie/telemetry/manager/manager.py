@@ -187,7 +187,7 @@ class Manager(object):
         # Pass device and corresponding plugins to Pcall
         #   child 1: args=(device1 object, [plugin1, plugin2])
         #   child 2: args=(device2 object, [plugin2])
-        self.p = Pcall(self.call_plugin,
+        self.p = pcall(self.call_plugin,
                        iargs=iargs,
                        timeout=self.timeout)
         try:
