@@ -6,8 +6,11 @@ import logging
 from copy import copy
 from datetime import datetime
 
-# pcall
-from ats.async import Pcall
+import importlib
+try:
+    pcall = importlib.import_module('ats.async').pcall
+except ImportError:
+    from ats.async_ import pcall
 
 # ATS
 from ats.log.utils import banner
