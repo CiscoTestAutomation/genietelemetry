@@ -14,4 +14,4 @@ April 5th
 Features:
 ^^^^^^^^^
 
- * Fix broken `async` call
+ * Fix Pcall issue and rename results YAML to `telemetry_results.yaml`

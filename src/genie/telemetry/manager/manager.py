@@ -7,7 +7,11 @@ from copy import copy
 from datetime import datetime
 
 # Pcall
-from ats.async import Pcall as Pcall
+import importlib
+try:
+    Pcall = importlib.import_module('ats.async').Pcall
+except ImportError:
+    from ats.async_ import Pcall
 
 # ATS
 from ats.log.utils import banner
