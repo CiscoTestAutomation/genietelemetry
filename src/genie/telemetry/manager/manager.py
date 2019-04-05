@@ -29,7 +29,7 @@ STATUS_KEYS = ('ok', 'warning', 'critical', 'errored', 'partial')
 
 class Manager(object):
 
-    report_file = 'telemetry.yaml'
+    report_file = 'telemetry_results.yaml'
 
     def __init__(self,
                  testbed,
