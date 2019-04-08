@@ -6,11 +6,12 @@ import logging
 from copy import copy
 from datetime import datetime
 
+# Pcall
 import importlib
 try:
-    pcall = importlib.import_module('ats.async').pcall
+    Pcall = importlib.import_module('ats.async').Pcall
 except ImportError:
-    from ats.async_ import pcall
+    from ats.async_ import Pcall
 
 # ATS
 from ats.log.utils import banner
@@ -187,15 +188,14 @@ class Manager(object):
         # Pass device and corresponding plugins to Pcall
         #   child 1: args=(device1 object, [plugin1, plugin2])
         #   child 2: args=(device2 object, [plugin2])
-        self.p = pcall(self.call_plugin,
+        self.p = Pcall(self.call_plugin,
                        iargs=iargs,
                        timeout=self.timeout)
         try:
-
             self.p.start()
             self.p.join()
-
-        except:
+        except Exception as e:
+            logger.error(e)
             self.terminate()
 
         # Associate testcase name with the plugin results
