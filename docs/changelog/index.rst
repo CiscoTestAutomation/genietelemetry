@@ -11,3 +11,4 @@ Changelog
    2019/march
    2019/april
    2019/may
+   2019/june
