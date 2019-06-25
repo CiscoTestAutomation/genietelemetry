@@ -5,6 +5,7 @@
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         = letter
+SOURCEDIR     = .
 BUILDDIR      = $(shell pwd)/../build/documentation
 HOSTNAME      = `hostname`
 VERSION       = v1.0
