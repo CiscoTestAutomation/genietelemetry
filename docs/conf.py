@@ -18,11 +18,6 @@ from datetime import datetime
 import sphinx_rtd_theme
 import subprocess
 
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../../genie/'))
-
 sys.path.append(os.path.abspath(''))
 import links
 
@@ -39,15 +34,10 @@ import links
 # ]
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'sphinx.ext.extlinks',
     'sphinx.ext.intersphinx'
 ]
-
-intersphinx_mapping = {
-    'python': ('http://docs.python.org/3.4', None ),
-}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates',]
@@ -63,7 +53,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Genie Telemetry'
-copyright = '%s, ASG, Cisco Internal Confidential' % datetime.now().year
+copyright = '%s, Cisco Systems Inc.' % datetime.now().year
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -274,4 +264,7 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 # Links for the documentation
-extlinks = links.internal_links
+if '-devnet' in sys.argv or os.environ.get('DEVNET', None) == 'true':
+    extlinks = links.external_links
+else:
+    extlinks = links.internal_links

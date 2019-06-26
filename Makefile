@@ -99,7 +99,9 @@ uninstall_build_deps:
 	@echo "--------------------------------------------------------------------"
 	@echo "Uninstalling pyats-distutils"
 	@pip uninstall cisco-distutils
- 
+
+html: docs
+
 docs:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
