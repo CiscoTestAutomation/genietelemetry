@@ -5,40 +5,18 @@
 See: 
     https://packaging.python.org/en/latest/distributing.html
 '''
-import os
 from ciscodistutils import setup, find_packages, is_devnet_build
-from ciscodistutils.tools import (read,
-                                  version_info,
-                                  generate_cython_modules)
-
-
-_INTERNAL_SUPPORT = 'pyats-support@cisco.com'
-_EXTERNAL_SUPPORT = 'pyats-support-ext@cisco.com'
-
-_INTERNAL_LICENSE = 'Cisco Systems, Inc. Cisco Confidential',
-_EXTERNAL_LICENSE = 'Apache 2.0'
-
-_INTERNAL_URL = 'http://wwwin-pyats.cisco.com/cisco-shared/genietelemetry/html/'
-_EXTERNAL_URL = 'https://developer.cisco.com/site/pyats/'
-
-
-# pyats support mailer
-SUPPORT = _EXTERNAL_SUPPORT if is_devnet_build() else _INTERNAL_SUPPORT
-
-# license statement
-LICENSE = _EXTERNAL_LICENSE if is_devnet_build() else _INTERNAL_LICENSE
-
-# project url
-URL = _EXTERNAL_URL if is_devnet_build() else _INTERNAL_URL
-
-# pyats package
-PYATS_PKG = 'pyats' if is_devnet_build() else 'ats'
+from ciscodistutils.tools import read, find_version, generate_cython_modules
+from ciscodistutils.common import (AUTHOR,
+                                   URL,
+                                   CLASSIFIERS,
+                                   PYATS_PKG,
+                                   SUPPORT,
+                                   LICENSE,
+                                   STD_EXTRA_REQ)
 
 # get version information
-version, version_range = version_info('src',
-                                      'genie',
-                                      'telemetry',
-                                      '__init__.py')
+version = find_version('src', 'genie', 'telemetry', '__init__.py')
 
 install_requires=['setuptools', 'wheel',
                   'genie.abstract',
@@ -53,34 +31,18 @@ setup(
     description = 'testbed health status monitoring tool',
     long_description = read('DESCRIPTION.rst'),
 
-    # the project's main homepage.
+   # the project's main homepage.
     url = URL,
 
     # author details
-    author = 'Cisco Systems Inc.',
+    author = AUTHOR,
     author_email = SUPPORT,
 
     # project licensing
     license = LICENSE,
 
     # see https://pypi.python.org/pypi?%3Aaction=list_classifiers
-    classifiers = [
-        'Development Status :: 5 - Production/Stable',
-        'Environment :: Console',
-        'Intended Audience :: Developers',
-        'Intended Audience :: Telecommunications Industry',
-        'Intended Audience :: Information Technology',
-        'License :: OSI Approved :: Apache Software License',
-        'Operating System :: POSIX :: Linux',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: Implementation :: CPython',
-        'Topic :: Software Development :: Testing',
-        'Topic :: Software Development :: Build Tools',
-        'Topic :: Software Development :: Libraries',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-    ],
-
+    classifiers = CLASSIFIERS,
 
     # project keywords
     keywords = 'genie telemetry pyats cisco',
@@ -118,7 +80,6 @@ setup(
         'dev': ['coverage',
                 'restview',
                 'Sphinx',
-                'sphinxcontrib-napoleon',
                 'sphinx-rtd-theme',
                 'sphinxcontrib-mockautodoc'],
     },

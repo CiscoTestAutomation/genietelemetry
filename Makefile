@@ -93,7 +93,7 @@ install_build_deps:
 	@echo "Installing cisco-distutils"
 	@pip install --index-url=http://pyats-pypi.cisco.com/simple \
 	             --trusted-host=pyats-pypi.cisco.com \
-	             cisco-distutils
+	             --upgrade cisco-distutils
  
 uninstall_build_deps:
 	@echo "--------------------------------------------------------------------"
