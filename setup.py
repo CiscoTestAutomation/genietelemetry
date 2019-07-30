@@ -5,12 +5,8 @@
 See: 
     https://packaging.python.org/en/latest/distributing.html
 '''
-import os
 from ciscodistutils import setup, find_packages, is_devnet_build
-from ciscodistutils.tools import (read,
-                                  version_info,
-                                  generate_cython_modules)
-
+from ciscodistutils.tools import read, find_version, generate_cython_modules
 from ciscodistutils.common import (AUTHOR,
                                    URL,
                                    CLASSIFIERS,
@@ -20,10 +16,7 @@ from ciscodistutils.common import (AUTHOR,
                                    STD_EXTRA_REQ)
 
 # get version information
-version, version_range = version_info('src',
-                                      'genie',
-                                      'telemetry',
-                                      '__init__.py')
+version = find_version('src', 'genie', 'telemetry', '__init__.py')
 
 install_requires=['setuptools', 'wheel',
                   'genie.abstract',
@@ -38,7 +31,7 @@ setup(
     description = 'testbed health status monitoring tool',
     long_description = read('DESCRIPTION.rst'),
 
-    # the project's main homepage.
+   # the project's main homepage.
     url = URL,
 
     # author details
