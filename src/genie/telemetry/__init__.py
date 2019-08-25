@@ -1,5 +1,5 @@
 # metadata
-__version__ = '19.7'
+__version__ = '19.8'
 __author__ = 'ASG/ATS Team'
 __contact__ = 'pyats-support@cisco.com'
 __copyright__ = 'Cisco Systems, Inc. Cisco Confidential'
