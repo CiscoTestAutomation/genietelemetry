@@ -8,11 +8,12 @@ from ats.easypy import runtime
 from ats import log
 # aetest
 from ats.aetest import CommonSetup, CommonCleanup
-
 from genie.telemetry import Manager
+from genie.harness.libs.prepostprocessor.processors import report
 
 logger = logging.getLogger(__name__)
 
+@report
 def genie_telemetry_processor(section):
     '''Check for genie telemetry plugins specified by the user in the
     genie_telemetry plugins provided.
