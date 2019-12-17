@@ -17,3 +17,4 @@ Changelog
    2019/september
    2019/october
    2019/november
+   2019/december
