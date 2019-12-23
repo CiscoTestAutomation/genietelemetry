@@ -4,13 +4,13 @@ import abc
 import getpass
 import logging
 
-from ats.log.utils import banner
-from ats.utils.email import EmailMsg
-from ats.utils import parser as argparse
-from ats.datastructures import OrderableDict, classproperty
+from pyats.log.utils import banner
+from pyats.utils.email import EmailMsg
+from pyats.utils import parser as argparse
+from pyats.datastructures import OrderableDict, classproperty
 
 try:
-    from ats import cisco
+    from pyats import cisco
     smtp_args = dict(smtp_host='mail.cisco.com', smtp_port='25',
                      email_domain='cisco.com')
 except Exception as e:

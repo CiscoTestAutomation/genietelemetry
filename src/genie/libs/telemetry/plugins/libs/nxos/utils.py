@@ -14,7 +14,7 @@ from genie.parsergen import oper_fill_tabular
 from genie.abstract import Lookup
 
 # Import FileUtils core utilities
-from ats.utils.fileutils import FileUtils
+from pyats.utils.fileutils import FileUtils
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog

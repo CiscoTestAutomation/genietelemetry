@@ -2,9 +2,9 @@ import logging
 from io import TextIOBase
 
 # argparse
-from ats.utils import parser as argparse
-from ats.utils.dicts import recursive_update
-from ats.datastructures import AttrDict, classproperty
+from pyats.utils import parser as argparse
+from pyats.utils.dicts import recursive_update
+from pyats.datastructures import AttrDict, classproperty
 
 from .loader import ConfigLoader
 from .plugins import PluginManager

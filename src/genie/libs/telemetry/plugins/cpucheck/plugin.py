@@ -9,9 +9,9 @@ import logging
 from argparse import ArgumentParser
 
 # ATS
-from ats.log.utils import banner
-from ats.utils import parser as argparse
-from ats.datastructures import classproperty
+from pyats.log.utils import banner
+from pyats.utils import parser as argparse
+from pyats.datastructures import classproperty
 
 # GenieTelemetry
 from genie.telemetry.plugin import BasePlugin

@@ -8,8 +8,8 @@ import argparse
 import datetime
 
 # ATS
-from ats.utils import parser as argparse
-from ats.datastructures import classproperty
+from pyats.utils import parser as argparse
+from pyats.datastructures import classproperty
 
 # GenieMonitor
 from genie.telemetry.plugin import BasePlugin

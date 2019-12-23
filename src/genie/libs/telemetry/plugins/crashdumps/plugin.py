@@ -9,8 +9,8 @@ import copy
 from argparse import ArgumentParser
 
 # ATS
-from ats.utils import parser as argparse
-from ats.datastructures import classproperty
+from pyats.utils import parser as argparse
+from pyats.datastructures import classproperty
 
 # GenieTelemetry
 from genie.telemetry.plugin import BasePlugin

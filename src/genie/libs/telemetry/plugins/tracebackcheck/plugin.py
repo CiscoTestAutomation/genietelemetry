@@ -8,11 +8,11 @@ import logging
 import copy
 
 # argparse
-from ats.utils import parser as argparse
+from pyats.utils import parser as argparse
 
 # ATS
-from ats.datastructures.logic import logic_str
-from ats.datastructures import classproperty
+from pyats.datastructures.logic import logic_str
+from pyats.datastructures import classproperty
 
 # GenieTelemetry
 from genie.telemetry.plugin import BasePlugin

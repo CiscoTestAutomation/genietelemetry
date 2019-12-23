@@ -13,7 +13,7 @@ import subprocess
 
 from tempfile import NamedTemporaryFile
 
-from ats.log.utils import banner
+from pyats.log.utils import banner
 
 def collect_unittest_files(top):
     files = []

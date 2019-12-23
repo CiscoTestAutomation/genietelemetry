@@ -3,11 +3,11 @@ import logging
 from copy import copy
 
 # runtime
-from ats.easypy import runtime
+from pyats.easypy import runtime
 
-from ats import log
+from pyats import log
 # aetest
-from ats.aetest import CommonSetup, CommonCleanup
+from pyats.aetest import CommonSetup, CommonCleanup
 from genie.telemetry import Manager
 from genie.harness.libs.prepostprocessor.processors import report
 

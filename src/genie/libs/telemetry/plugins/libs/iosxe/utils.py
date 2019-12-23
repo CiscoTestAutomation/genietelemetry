@@ -4,7 +4,7 @@ import re
 import logging
 
 # ATS
-from ats.log.utils import banner
+from pyats.log.utils import banner
 
 # GenieMonitor
 from genie.telemetry.status import OK, WARNING, ERRORED, PARTIAL, CRITICAL
@@ -13,7 +13,7 @@ from genie.telemetry.status import OK, WARNING, ERRORED, PARTIAL, CRITICAL
 from genie.abstract import Lookup
 
 # Import FileUtils core utilities
-from ats.utils.fileutils import FileUtils
+from pyats.utils.fileutils import FileUtils
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog

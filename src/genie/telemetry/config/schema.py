@@ -2,7 +2,7 @@
 import getpass
 from ipaddress import IPv4Interface, IPv6Interface, ip_address
 
-from ats.utils.schemaengine import (
+from pyats.utils.schemaengine import (
     Or,
     Any,
     Use,
@@ -13,8 +13,8 @@ from ats.utils.schemaengine import (
     Default,
     Fallback
 )
-from ats.utils.exceptions import SchemaError
-from ats.utils.import_utils import import_from_name, translate_host
+from pyats.utils.exceptions import SchemaError
+from pyats.utils.import_utils import import_from_name, translate_host
 
 # declare module as infra
 __genietelemetry_infra__ = True

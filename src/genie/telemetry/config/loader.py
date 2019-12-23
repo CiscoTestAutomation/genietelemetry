@@ -1,9 +1,9 @@
 import collections
 
-from ats.datastructures import AttrDict
+from pyats.datastructures import AttrDict
 
-from ats.utils.yaml import Loader
-from ats.utils.dicts import recursive_cast
+from pyats.utils.yaml import Loader
+from pyats.utils.dicts import recursive_cast
 
 from .schema import config_schema
 

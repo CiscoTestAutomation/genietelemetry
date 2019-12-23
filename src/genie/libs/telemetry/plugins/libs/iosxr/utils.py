@@ -13,7 +13,7 @@ from genie.abstract import Lookup
 from unicon.eal.dialogs import Statement, Dialog
 
 # Import FileUtils core utilities
-from ats.utils.fileutils import FileUtils
+from pyats.utils.fileutils import FileUtils
 
 # module logger
 logger = logging.getLogger(__name__)
