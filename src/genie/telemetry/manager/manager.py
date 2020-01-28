@@ -9,15 +9,15 @@ from datetime import datetime
 # Pcall
 import importlib
 try:
-    Pcall = importlib.import_module('ats.async').Pcall
+    Pcall = importlib.import_module('pyats.async').Pcall
 except ImportError:
-    from ats.async_ import Pcall
+    from pyats.async_ import Pcall
 
 # ATS
-from ats.log.utils import banner
-from ats.utils import parser as argparse
-from ats.utils.dicts import recursive_update
-from ats.datastructures import OrderableDict, classproperty
+from pyats.log.utils import banner
+from pyats.utils import parser as argparse
+from pyats.utils.dicts import recursive_update
+from pyats.datastructures import OrderableDict, classproperty
 
 # configuration loader
 from genie.telemetry.config.manager import Configuration

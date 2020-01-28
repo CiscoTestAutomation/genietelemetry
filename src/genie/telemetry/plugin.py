@@ -1,6 +1,6 @@
 import logging
 
-from ats.datastructures import classproperty
+from pyats.datastructures import classproperty
 
 from genie.telemetry.status import OK
 

@@ -11,7 +11,7 @@ import uuid
 import logging
 import re as re
 
-from ats.utils import parser
+from pyats.utils import parser
 from gettext import gettext
 
 from genie.telemetry.email import MailBot

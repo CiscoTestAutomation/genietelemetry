@@ -7,8 +7,8 @@ import traceback
 import multiprocessing
 from datetime import datetime
 
-from ats.topology import loader
-from ats.utils.dicts import recursive_update
+from pyats.topology import loader
+from pyats.utils.dicts import recursive_update
 
 from genie.telemetry.config import (
     Configuration,

@@ -112,7 +112,7 @@ in as argument, all defined plugins will be executed.
     import sys
     import tempfile
     from copy import copy
-    from ats.topology import loader
+    from pyats.topology import loader
     from genie.telemetry import Manager
 
     class HelloWorld(object):

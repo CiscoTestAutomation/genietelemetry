@@ -1,6 +1,6 @@
 import yaml
 import traceback
-from ats.datastructures import OrderableDict
+from pyats.datastructures import OrderableDict
 
 # declare module as infra
 __genietelemetry_infra__ = True

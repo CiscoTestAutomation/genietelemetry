@@ -7,10 +7,10 @@ import getpass
 import platform
 import traceback
 
-from ats import log
-from ats.utils import sig_handlers
-from ats.datastructures import AttrDict
-from ats.utils.import_utils import import_from_name
+from pyats import log
+from pyats.utils import sig_handlers
+from pyats.datastructures import AttrDict
+from pyats.utils.import_utils import import_from_name
 
 from .parser import Parser
 from .manager import TimedManager

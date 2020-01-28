@@ -14,13 +14,13 @@ from collections import OrderedDict
 from unittest.mock import Mock, patch, call, PropertyMock
 
 # ATS
-from ats.topology import loader
-from ats.aetest import CommonCleanup
-from ats.datastructures import AttrDict
-from ats.aetest.base import  TestContainer
-from ats.aetest.signals import AEtestPassxSignal
-from ats.connections.bases import BaseConnection
-from ats.results import Passed, Passx
+from pyats.topology import loader
+from pyats.aetest import CommonCleanup
+from pyats.datastructures import AttrDict
+from pyats.aetest.base import  TestContainer
+from pyats.aetest.signals import AEtestPassxSignal
+from pyats.connections.bases import BaseConnection
+from pyats.results import Passed, Passx
 
 # GenieTelemetry
 from genie.telemetry.parser import Parser
