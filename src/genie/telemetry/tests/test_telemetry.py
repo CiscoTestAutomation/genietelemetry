@@ -41,6 +41,9 @@ class MockConnection(BaseConnection):
     def __getattr__(self, *args, **kwargs):
         return Mock()
 
+    def parse(self, *args, **kwargs):
+        return "MOCKED_PARSER"
+
     def learn(self, *args, **kwargs):
         pass
 
@@ -140,7 +143,7 @@ class GenieTelemetryTestcase(unittest.TestCase):
                 mock_runtime.runinfo.runinfo_dir = runinfo_dir
                 with self.assertRaises(AEtestPassxSignal) as cm:
                     processors.genie_telemetry_processor(clean_up)
-                self.assertEqual(cm.exception.reason, msg)
+                    self.assertEqual(cm.exception.reason, msg)
                 fname = os.path.join(runinfo_dir, 'telemetry.yaml')
                 self.assertTrue(os.path.isfile(fname))
                 with open(fname, 'r') as tempfile:
