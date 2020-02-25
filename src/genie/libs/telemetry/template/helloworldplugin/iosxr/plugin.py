@@ -1,11 +1,14 @@
 ''' 
 GenieTelemetry HelloWorld Plugin for IOSXR.
 '''
+import logging
+from datetime import datetime
 
 # GenieTelemetry
 from ..plugin import Plugin as BasePlugin
 from genie.telemetry.status import OK, ERRORED
 
+logger = logging.getLogger(__name__)
 
 class Plugin(BasePlugin):
 

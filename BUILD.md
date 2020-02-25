@@ -155,7 +155,7 @@ CPU utilization Check:
 
 Traceback Check:
   --tracebackcheck_logic_pattern TRACEBACKCHECK_LOGIC_PATTERN
-                        Specify logical expression for patterns to include/exclude when checking tracebacks following PyATS logic format. Default patternis to check for Tracebacks.
+                        Specify logical expression for patterns to include/exclude when checking tracebacks following pyATS logic format. Default patternis to check for Tracebacks.
   --tracebackcheck_clean_up TRACEBACKCHECK_CLEAN_UP
                         Specify whether to clear all warnings and tracebacks after reporting error
   --tracebackcheck_timeout TRACEBACKCHECK_TIMEOUT

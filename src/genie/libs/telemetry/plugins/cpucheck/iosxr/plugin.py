@@ -8,4 +8,4 @@ from genie.telemetry.status import WARNING
 
 class Plugin(BasePlugin):
     def execution(self, device, **kwargs):    
-	    return WARNING('IOSXR not supported CpuUtilizationCheck')
+        return WARNING('IOSXR not supported CpuUtilizationCheck')

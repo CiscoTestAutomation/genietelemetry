@@ -212,7 +212,7 @@ accessible directly as part of the user PATH after activating your instance.
           --tracebackcheck_logic_pattern TRACEBACKCHECK_LOGIC_PATTERN
                                 Specify logical expression for patterns to
                                 include/exclude when checking tracebacks
-                                following PyATS logic format. Default patternis
+                                following pyATS logic format. Default patternis
                                 to check for Tracebacks.
           --tracebackcheck_clean_up TRACEBACKCHECK_CLEAN_UP
                                 Specify whether to clear all warnings and
