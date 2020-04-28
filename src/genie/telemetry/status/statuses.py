@@ -199,7 +199,7 @@ class HealthStatus(object):
         meta = self.meta.copy()
         meta.update(other.meta)
 
-        if other is 0:
+        if other == 0:
             return HealthStatus(code = self.code,
                                 meta = meta,
                                 syntax = syntax)
