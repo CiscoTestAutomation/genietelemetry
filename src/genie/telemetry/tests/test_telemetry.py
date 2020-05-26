@@ -147,7 +147,7 @@ class GenieTelemetryTestcase(unittest.TestCase):
                 fname = os.path.join(runinfo_dir, 'telemetry.yaml')
                 self.assertTrue(os.path.isfile(fname))
                 with open(fname, 'r') as tempfile:
-                    content = yaml.load(tempfile)
+                    content = yaml.safe_load(tempfile)
 
                 expected = { 'common_cleanup': {
                                 'genie.telemetry.tests.scripts.mockplugin': {
@@ -217,7 +217,7 @@ class GenieTelemetryTestcase(unittest.TestCase):
         fname = os.path.join(runinfo_dir, 'telemetry.yaml')
         self.assertTrue(os.path.isfile(fname))
         with open(fname, 'r') as tempfile:
-            results = yaml.load(tempfile)
+            results = yaml.safe_load(tempfile)
         expected = {'Crash Dumps Plugin': {'P1': {'status': 'Ok'}},
                     'Traceback Check Plugin': {'P1': {'status': 'Ok'}}}
         content = {}
