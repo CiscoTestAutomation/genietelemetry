@@ -29,11 +29,11 @@
 ################################################################################
 
 # Variables
-PKG_NAME      = genietelemetry
+PKG_NAME      = genie.telemetry
 BUILD_DIR     = $(shell pwd)/__build__
 DIST_DIR      = $(BUILD_DIR)/dist
 PROD_USER     = pyadm@pyats-ci
-PROD_PKGS     = /auto/pyats/packages/cisco-shared/genie/libs
+PROD_PKGS     = /auto/pyats/packages
 PYTHON        = python
 TESTCMD       = runAll
 BUILD_CMD     = $(PYTHON) setup.py bdist_wheel --dist-dir=$(DIST_DIR)
