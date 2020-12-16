@@ -94,11 +94,17 @@ install_build_deps:
 	@pip install --index-url=http://pyats-pypi.cisco.com/simple \
 	             --trusted-host=pyats-pypi.cisco.com \
 	             --upgrade cisco-distutils
+	@echo ""
+	@echo "Done."
+	@echo ""
  
 uninstall_build_deps:
 	@echo "--------------------------------------------------------------------"
 	@echo "Uninstalling pyats-distutils"
 	@pip uninstall cisco-distutils
+	@echo ""
+	@echo "Done."
+	@echo ""
 
 html: docs
 
@@ -111,6 +117,8 @@ docs:
 	sphinx-build -b html -c docs -d ./__build__/documentation/doctrees docs/ ./__build__/documentation/html
 	
 	@echo "Completed building docs for preview."
+	@echo ""
+	@echo "Done."
 	@echo ""
  
 test:
@@ -127,6 +135,8 @@ package:
 	@echo ""
 	@echo "Completed building: $@"
 	@echo ""
+	@echo "Done."
+	@echo ""
  
 develop:
 	@echo ""
@@ -141,6 +151,8 @@ develop:
 	@echo ""
 	@echo "Completed building and installing: $@"
 	@echo ""
+	@echo "Done."
+	@echo ""
  
 undevelop:
 	@echo ""
@@ -152,6 +164,8 @@ undevelop:
 	
 	@echo ""
 	@echo "Completed uninstalling: $@"
+	@echo ""
+	@echo "Done."
 	@echo ""
  
 clean:

@@ -17,7 +17,7 @@ from unittest.mock import Mock, patch, call, PropertyMock
 from pyats.topology import loader
 from pyats.aetest import CommonCleanup
 from pyats.datastructures import AttrDict
-from pyats.aetest.base import  TestContainer
+from pyats.aetest import container
 from pyats.aetest.signals import AEtestPassxSignal
 from pyats.connections.bases import BaseConnection
 from pyats.results import Passed, Passx
@@ -57,7 +57,7 @@ class MockConnection(BaseConnection):
 
         super().__init__(device = device, alias = alias, via = via, **kwargs)
 
-class MockTestScript(TestContainer):
+class MockTestScript(object):
     pass
 
 class MockSection(object):
@@ -149,7 +149,7 @@ class GenieTelemetryTestcase(unittest.TestCase):
                 with open(fname, 'r') as tempfile:
                     content = yaml.safe_load(tempfile)
 
-                expected = { 'common_cleanup': {
+                expected = { 'common cleanup': {
                                 'genie.telemetry.tests.scripts.mockplugin': {
                                     'P1': {'status': 'Partial'}},
                                 'Crash Dumps Plugin': {
