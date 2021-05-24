@@ -150,6 +150,7 @@ develop:
 	@echo "Building and installing $(PKG_NAME) development distributable: $@"
 	@echo ""
 
+	@pip uninstall -y genie.telemetry || true
 	@pip install $(DEPENDENCIES)
 
 	@$(PYTHON) setup.py develop --no-deps
