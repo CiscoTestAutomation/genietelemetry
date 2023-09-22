@@ -40,7 +40,7 @@ PYPIREPO      = pypitest
 # Development pkg requirements
 DEPENDENCIES  = restview psutil Sphinx wheel asynctest
 DEPENDENCIES += sphinx-rtd-theme
-DEPENDENCIES += Cython requests
+DEPENDENCIES += Cython==3.0.0 requests
 
 ifeq ($(MAKECMDGOALS), devnet)
     DEVNET = true
