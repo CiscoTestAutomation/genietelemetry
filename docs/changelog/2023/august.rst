@@ -13,5 +13,3 @@ August 29th
 
 Features:
 ^^^^^^^^^
-
- * No added features!
