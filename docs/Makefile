@@ -208,3 +208,14 @@ pseudoxml:
 	$(SPHINXBUILD) -b pseudoxml $(ALLSPHINXOPTS) $(BUILDDIR)/pseudoxml
 	@echo
 	@echo "Build finished. The pseudo-XML files are in $(BUILDDIR)/pseudoxml."
+
+changelogs:
+	@echo ""
+	@echo "--------------------------------------------------------------------"
+	@echo "Generating changelog file"
+	@echo ""
+	@python3 -c "from ciscodistutils.make_changelog import main; main('./docs/changelog/undistributed', './docs/changelog/undistributed.rst')"
+	@echo "genietelemetry changelog created..."
+	@echo ""
+	@echo "Done."
+	@echo ""
