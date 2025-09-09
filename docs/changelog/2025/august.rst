@@ -1,7 +1,7 @@
 August 2025
 ==========
 
-September 30 - Genietelemetry v25.8 
+August 23 - Genietelemetry v25.8 
 ------------------------
 
 
