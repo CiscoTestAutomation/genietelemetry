@@ -1,7 +1,7 @@
 September 2025
 ==========
 
- - Genietelemetry v25.9 
+September 30 - Genietelemetry v25.9 
 ------------------------
 
 
