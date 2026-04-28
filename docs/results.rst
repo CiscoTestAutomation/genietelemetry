@@ -14,7 +14,7 @@ Introduction
 ------------
 
 Similar to the most test infrastructures, health status are quantified in the
-following types ``OK``, ``WARNING``, ``CRITICAL``, ``PARTIAL`` or ``ERRORED``.
+following types ``OK``,``WARNING``,``CRITICAL``,``PARTIAL``or``ERRORED``.
 
 .. code-block:: python
 
@@ -225,7 +225,7 @@ by referencing the chart below:
     cross point, and this is the status you would get after roll up.
 
     Here is an example on how to read the table :
-    ``CRITICAL`` + ``WARNING`` = ``CRITICAL``
+    ``CRITICAL``+``WARNING``=``CRITICAL``
 
 When multiple statuses are added together in a single line, consider that
 operation to be the same as breaking it down to multiple intermediate two-item

@@ -1,7 +1,7 @@
 May 2025
 ==========
 
- - Genietelemetry v25.5 
+- Genietelemetry v25.5
 ------------------------
 
 

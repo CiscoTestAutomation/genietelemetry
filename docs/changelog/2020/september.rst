@@ -1,8 +1,8 @@
 September 2020
-==========
+==============
 
 September 29
---------
+------------
 
 +-------------------------------+-------------------------------+
 | Module                        | Versions                      |
@@ -16,7 +16,7 @@ Features:
 
  * No added features!
 
- Fixes:
+Fixes:
 ^^^^^^^^^
 
  * No changes!
