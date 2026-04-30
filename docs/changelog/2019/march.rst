@@ -29,4 +29,4 @@ March 7th
 Features:
 ^^^^^^^^^
 
- * Enhancement in `async` call for py37 compatibility.
+ * Enhancement in ``async`` call for py37 compatibility.

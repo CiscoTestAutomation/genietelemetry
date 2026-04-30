@@ -262,9 +262,9 @@ processed using python :argparse:`argparse <http>` module.
 
 .. tip::
 
-    ``genie.telemetry`` standardizes on single-dash ``-`` style arguments.
+    ``genie.telemetry``standardizes on single-dash``-`` style arguments.
 
-    ``genie.libs.telemtery`` standardizes on double-dash ``--`` style arguments.
+    ``genie.libs.telemtery``standardizes on double-dash``--`` style arguments.
 
 
 ``-help``
@@ -403,7 +403,7 @@ processed using python :argparse:`argparse <http>` module.
 
 ``-mail_subject``
     When specified, replaces the default email report subject line.
-    (default: ``Monitoring Report - testbed: <name> by: <username>, Status
+    (default: `` Monitoring Report - testbed: <name> by: <username>, Status
     <status>``)
 
     .. code-block:: bash
@@ -428,7 +428,7 @@ processed using python :argparse:`argparse <http>` module.
 
 ``-notify_subject``
     When specified, replaces the default email notification subject line.
-    (default: ``Monitoring Notification - device: <name> plugin: <plugin>
+    (default: `` Monitoring Notification - device: <name> plugin: <plugin>
     status: <status>``)
 
     .. code-block:: bash

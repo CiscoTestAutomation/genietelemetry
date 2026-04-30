@@ -1,18 +1,19 @@
-June 2025
+April 2026
 ==========
 
-June 29 - Genietelemetry v25.6 
-------------------------------
+April 28 - Genietelemetry v26.4
+-------------------------------
 
 
 
 .. csv-table:: New Module Versions
     :header: "Modules", "Version"
 
-    ``genie.telemetry``, v25.6 
+    ``genie.telemetry``, v26.4
 
 
 
 
 Changelogs
 ^^^^^^^^^^
+

@@ -16,7 +16,7 @@ Features:
 
  * No added features!
 
- Fixes:
+Fixes:
 ^^^^^^^^^
 
  * Fixed PyYAML deprecated message
