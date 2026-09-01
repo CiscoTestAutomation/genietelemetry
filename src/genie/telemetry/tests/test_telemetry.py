@@ -21,6 +21,8 @@ from pyats.aetest import container
 from pyats.aetest.signals import AEtestPassxSignal
 from pyats.connections.bases import BaseConnection
 from pyats.results import Passed, Passx
+from genie.abstract import Lookup
+from genie.telemetry.config import plugins as plugin_config
 
 # GenieTelemetry
 from genie.telemetry.parser import Parser
@@ -41,14 +43,22 @@ class MockConnection(BaseConnection):
     def __getattr__(self, *args, **kwargs):
         return Mock()
 
-    def parse(self, *args, **kwargs):
-        return "MOCKED_PARSER"
+    def parse(self, command, *args, **kwargs):
+        if command == 'show vdc current-vdc':
+            return {'current_vdc': {'id': '1'}}
+        raise AssertionError('Unmodelled parse command: {}'.format(command))
 
     def learn(self, *args, **kwargs):
         pass
 
-    def execute(self, *args, **kwargs):
-        return 'MOCKED_EXECUTION'
+    def execute(self, command, *args, **kwargs):
+        if command == 'show vdc current-vdc':
+            return 'Current vdc is 1 - N95_1'
+        if command == 'show cores vdc-all':
+            return 'VDC  Module  Instance  Process-name  PID  Date(Year-Month-Day Time)'
+        if command in ('show logging logfile', 'clear logging logfile'):
+            return 'No logging messages'
+        raise AssertionError('Unmodelled execute command: {}'.format(command))
 
     def __init__(self, device, alias=None, via=None, **kwargs):
 
@@ -83,6 +93,8 @@ class GenieTelemetryTestcase(unittest.TestCase):
         global testbed, testbed_file, config_file, config_file2
         global runinfo_dir, script, section, clean_up
 
+        self._argv = sys.argv[:]
+
         directory = os.path.dirname(os.path.abspath(__file__))
         testbed_file = os.path.join(directory, 'scripts', 'testbed.yaml')
         config_file = os.path.join(directory, 'scripts', 'config.yaml')
@@ -98,6 +110,7 @@ class GenieTelemetryTestcase(unittest.TestCase):
         clean_up.parent = script
 
     def tearDown(self):
+        sys.argv = self._argv
         rmtree(runinfo_dir)
 
     def test_base(self):
@@ -125,11 +138,18 @@ class GenieTelemetryTestcase(unittest.TestCase):
                 mock_runtime.testbed = testbed
                 mock_runtime.runinfo = AttrDict()
                 mock_runtime.runinfo.runinfo_dir = runinfo_dir
-                processors.genie_telemetry_processor(section)
+                original_from_device = Lookup.from_device
 
-            output = '\n'.join(cm.output)
-            msg = "failed to load abstration on device P1 for plugin mockplugin"
-            self.assertTrue(msg in output)
+                def load_abstraction(device, packages=None, **kwargs):
+                    if packages and 'mockplugin' in packages:
+                        raise ImportError('mockplugin has no abstraction package')
+                    return original_from_device(device, packages=packages,
+                                                **kwargs)
+
+                with patch.object(plugin_config, 'Lookup') as plugin_lookup:
+                    plugin_lookup.from_device.side_effect = load_abstraction
+                    processors.genie_telemetry_processor(section)
+
             self.assertEqual(section.result, Passx)
             self.assertIsNotNone(section.message)
             msg = ("'genie.telemetry' caught anomalies: \n"
@@ -279,7 +299,7 @@ class GenieTelemetryTestcase(unittest.TestCase):
         help_output = parser.format_help()
         expected = '''
 usage: genietelemetry [TESTBEDFILE]
-                      [-h] [-loglevel] [-configuration FILE] [-uid UID]
+                      [-h] [-loglevel LEVEL] [-configuration FILE] [-uid UID]
                       [-runinfo_dir RUNINFO_DIR]
                       [-callback_notify CALLBACK_NOTIFY] [-timeout TIMEOUT]
                       [-connection_timeout CONNECTION_TIMEOUT] [-no_mail]
@@ -302,7 +322,7 @@ Help:
   -h, -help             show this help message and exit
 
 Logging:
-  -loglevel             genie telemetry logging level
+  -loglevel LEVEL       genie telemetry logging level
                         eg: -loglevel="INFO"
 
 Configuration:

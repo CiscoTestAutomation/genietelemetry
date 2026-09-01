@@ -69,7 +69,7 @@ class Parser(parser.ArgsPropagationParser):
         log_grp.add_argument('-loglevel',
                              choices = ('CRITICAL', 'ERROR', 
                                         'WARNING', 'INFO', 'DEBUG'),
-                             metavar = '',
+                             metavar = 'LEVEL',
                              default = logging.INFO,
                              help = 'genie telemetry logging level\n'
                                     'eg: -loglevel="INFO"')
